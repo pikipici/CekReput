@@ -1,0 +1,7 @@
+{
+  "name": "cek-reput",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ]
+}
