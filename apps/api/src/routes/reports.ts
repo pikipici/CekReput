@@ -48,20 +48,43 @@ reportsRouter.post(
         phoneNumber: data.phoneNumber ?? null,
         entityName: data.entityName ?? null,
         bankName: data.bankName ?? null,
+        socialMedia: data.socialMedia && data.socialMedia.length > 0 ? data.socialMedia.join(', ') : null,
         accountType: data.accountType,
         firstReported: new Date(),
         lastReported: new Date(),
         totalReports: 1,
+        totalLoss: data.lossAmount || 0,
       }).returning()
       perpetrator = newPerp
     } else {
+      let updatedSm = perpetrator.socialMedia
+      if (data.socialMedia && data.socialMedia.length > 0) {
+        const existingSm = perpetrator.socialMedia ? perpetrator.socialMedia.split(', ') : []
+        updatedSm = Array.from(new Set([...existingSm, ...data.socialMedia])).join(', ')
+      }
+
+      let updatedEntityName = perpetrator.entityName
+      if (data.entityName && data.entityName.trim() !== '') {
+        const newName = data.entityName.trim()
+        if (!updatedEntityName) {
+          updatedEntityName = newName
+        } else {
+          const existingNames = updatedEntityName.split(',').map(n => n.trim())
+          const existingLower = existingNames.map(n => n.toLowerCase())
+          if (!existingLower.includes(newName.toLowerCase())) {
+            updatedEntityName = `${updatedEntityName}, ${newName}`
+          }
+        }
+      }
+
       // Update existing perpetrator
       await db.update(perpetrators).set({
         totalReports: perpetrator.totalReports + 1,
+        totalLoss: perpetrator.totalLoss + (data.lossAmount || 0),
         lastReported: new Date(),
-        // Update name/bank if provided and was null
-        entityName: perpetrator.entityName ?? data.entityName ?? null,
+        entityName: updatedEntityName,
         bankName: perpetrator.bankName ?? data.bankName ?? null,
+        socialMedia: updatedSm !== perpetrator.socialMedia ? updatedSm : perpetrator.socialMedia,
       }).where(eq(perpetrators.id, perpetrator.id))
     }
 
@@ -72,8 +95,23 @@ reportsRouter.post(
       category: data.category,
       chronology: data.chronology,
       incidentDate: data.incidentDate,
+      lossAmount: data.lossAmount,
+      evidenceLink: data.evidenceLink && data.evidenceLink.length > 0 ? data.evidenceLink : null,
       status: 'pending',
     }).returning()
+
+    // Insert evidence files if provided
+    if (data.evidenceFiles && data.evidenceFiles.length > 0) {
+      await db.insert(evidenceFiles).values(
+        data.evidenceFiles.map(file => ({
+          reportId: report.id,
+          fileUrl: file.url,
+          fileName: file.name,
+          mimeType: file.mimeType,
+          fileSizeBytes: file.sizeBytes,
+        }))
+      )
+    }
 
     return c.json({
       message: 'Laporan berhasil dikirim. Akan direview oleh admin.',

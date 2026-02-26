@@ -23,16 +23,22 @@ export function maskPhoneNumber(value: string | null): string {
   return `${start}-xxxx-${end}`
 }
 
-/** Mask entity name: "Anton Suryo" → "A***n S***o" */
+/** Mask entity name: "Anton Suryo, Budi" → "A***n S***o, B**i" */
 export function maskEntityName(value: string | null): string {
   if (!value) return ''
   return value
-    .split(' ')
-    .map((word) => {
-      if (word.length <= 2) return word[0] + '*'
-      return word[0] + '*'.repeat(word.length - 2) + word[word.length - 1]
+    .split(',')
+    .map(name => {
+      return name
+        .trim()
+        .split(' ')
+        .map((word) => {
+          if (word.length <= 2) return word[0] + '*'
+          return word[0] + '*'.repeat(word.length - 2) + word[word.length - 1]
+        })
+        .join(' ')
     })
-    .join(' ')
+    .join(', ')
 }
 
 /** Normalize phone number for search: remove +62, leading 0, spaces, dashes */

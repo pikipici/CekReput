@@ -31,7 +31,11 @@ export default function StepTwoForm({ isActive, form, updateForm, onNext, onBack
     )
   }
 
-  const canProceed = form.category && form.incidentDate && form.chronology.length >= 100
+  const canProceed = 
+    form.category && 
+    (form.category === 'other' ? (form.customCategory && form.customCategory.trim().length > 0) : true) && 
+    form.incidentDate && 
+    form.chronology.length >= 100
 
   return (
     <div className="glass-panel rounded-xl p-6 md:p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -62,6 +66,21 @@ export default function StepTwoForm({ isActive, form, updateForm, onNext, onBack
               <span className="material-symbols-outlined text-xl">expand_more</span>
             </div>
           </div>
+          
+          {/* Custom Category Input */}
+          {form.category === 'other' && (
+            <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
+              <label className="block text-sm font-medium text-slate-300 mb-2">Sebutkan Kategori Penipuan</label>
+              <input
+                type="text"
+                value={form.customCategory || ''}
+                onChange={(e) => updateForm({ customCategory: e.target.value })}
+                className="glass-input w-full rounded-lg px-4 py-3 placeholder:text-slate-500 focus:ring-0 text-slate-100 border-primary/50"
+                placeholder="Contoh: Penipuan Travel Umroh"
+                autoFocus
+              />
+            </div>
+          )}
         </div>
 
         {/* Date of Incident */}
@@ -74,6 +93,27 @@ export default function StepTwoForm({ isActive, form, updateForm, onNext, onBack
             max={new Date().toISOString().split('T')[0]}
             className="glass-input w-full rounded-lg px-4 py-3 text-slate-300 focus:ring-0 [&::-webkit-calendar-picker-indicator]:invert"
           />
+        </div>
+
+        {/* Loss Amount */}
+        <div className="col-span-1 md:col-span-2 space-y-2">
+           <label className="block text-sm font-medium text-slate-300">Estimasi Kerugian <span className="text-slate-500">(opsional)</span></label>
+           <p className="text-xs text-slate-400 mb-2">Isi jika Anda mengalami kerugian finansial dari kejadian ini.</p>
+           <div className="relative">
+             <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+               <span className="text-slate-500 font-medium">Rp</span>
+             </div>
+             <input
+               type="text"
+               value={form.lossAmount !== '' ? form.lossAmount?.toLocaleString('id-ID') : ''}
+               onChange={(e) => {
+                 const rawValue = e.target.value.replace(/\D/g, '')
+                 updateForm({ lossAmount: rawValue ? parseInt(rawValue, 10) : '' })
+               }}
+               className="glass-input w-full rounded-lg pl-12 pr-4 py-3 placeholder:text-slate-500 focus:ring-0 text-slate-100 font-mono text-lg"
+               placeholder="0"
+             />
+           </div>
         </div>
 
         {/* Chronology */}

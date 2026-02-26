@@ -19,6 +19,11 @@ export interface ReportFormData {
   incidentDate: string
   chronology: string
   agreedTerms: boolean
+  customCategory?: string
+  socialMedia: string[]
+  evidenceFiles: { url: string; name: string; mimeType: string; sizeBytes: number }[]
+  evidenceLink?: string
+  lossAmount?: number | ''
 }
 
 const INITIAL_FORM: ReportFormData = {
@@ -31,6 +36,11 @@ const INITIAL_FORM: ReportFormData = {
   incidentDate: '',
   chronology: '',
   agreedTerms: false,
+  customCategory: '',
+  socialMedia: [],
+  lossAmount: '',
+  evidenceFiles: [],
+  evidenceLink: '',
 }
 
 export default function ReportScam() {
@@ -68,11 +78,20 @@ export default function ReportScam() {
     setIsSubmitting(true)
     setSubmitError('')
 
-    const payload: Record<string, string | undefined> = {
+    let finalChronology = form.chronology
+    if (form.category === 'other' && form.customCategory) {
+      finalChronology = `[Kategori Lainnya: ${form.customCategory}]\n\n${form.chronology}`
+    }
+
+    const payload: Record<string, any> = {
       accountType: form.accountType,
       category: form.category,
-      chronology: form.chronology,
+      chronology: finalChronology,
       incidentDate: form.incidentDate,
+      lossAmount: form.lossAmount === '' ? undefined : form.lossAmount,
+      socialMedia: form.socialMedia.filter(s => s.trim().length > 0),
+      evidenceFiles: form.evidenceFiles,
+      evidenceLink: form.evidenceLink,
     }
 
     if (form.accountType === 'bank') {

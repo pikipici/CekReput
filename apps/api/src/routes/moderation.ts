@@ -23,7 +23,7 @@ moderation.get('/pending', zValidator('query', paginationSchema), async (c) => {
   const [countResult] = await db.select({ count: sql<number>`count(*)` }).from(reports).where(eq(reports.status, 'pending'))
   const total = Number(countResult?.count ?? 0)
 
-  const pending = await db
+  const pendingReports = await db
     .select()
     .from(reports)
     .where(eq(reports.status, 'pending'))
@@ -31,7 +31,33 @@ moderation.get('/pending', zValidator('query', paginationSchema), async (c) => {
     .limit(limit)
     .offset(offset)
 
-  return c.json({ reports: pending, page, limit, total })
+  // Fetch related data (perpetrators and evidence files) for these reports
+  const reportIds = pendingReports.map(r => r.id)
+  const perpIds = [...new Set(pendingReports.map(r => r.perpetratorId))]
+
+  let perpetratorsMap: Record<string, any> = {}
+  let evidenceMap: Record<string, any[]> = {}
+
+  if (reportIds.length > 0) {
+    const perps = await db.select().from(perpetrators).where(sql`${perpetrators.id} IN ${perpIds}`)
+    perps.forEach(p => perpetratorsMap[p.id] = p)
+
+    const { evidenceFiles } = await import('../db/schema.js')
+    const evFiles = await db.select().from(evidenceFiles).where(sql`${evidenceFiles.reportId} IN ${reportIds}`)
+    evFiles.forEach(f => {
+      if (!evidenceMap[f.reportId]) evidenceMap[f.reportId] = []
+      evidenceMap[f.reportId].push(f)
+    })
+  }
+
+  // Combine data
+  const enrichedReports = pendingReports.map(report => ({
+    ...report,
+    perpetrator: perpetratorsMap[report.perpetratorId] || null,
+    evidenceFiles: evidenceMap[report.id] || []
+  }))
+
+  return c.json({ reports: enrichedReports, page, limit, total })
 })
 
 // ─── Moderate Report (Verify/Reject) ─────────────────────────────

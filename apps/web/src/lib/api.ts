@@ -106,8 +106,10 @@ export interface Perpetrator {
   threatLevel: 'safe' | 'warning' | 'danger'
   totalReports: number
   verifiedReports: number
+  totalLoss: number
   firstReported: string | null
   lastReported: string | null
+  socialMedia: string | null
 }
 
 export interface SearchResponse {
@@ -131,6 +133,7 @@ export interface Report {
   category: string
   chronology: string
   incidentDate: string
+  lossAmount: number | null
   status: 'pending' | 'verified' | 'rejected'
   createdAt: string
 }

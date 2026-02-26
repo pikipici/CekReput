@@ -1,4 +1,5 @@
 import type { ReportFormData } from '../../pages/ReportScam'
+import FileUploader from './FileUploader'
 
 interface StepThreeFormProps {
   isActive: boolean
@@ -49,8 +50,42 @@ export default function StepThreeForm({ isActive, form, updateForm, onBack, onSu
         <p className="text-slate-400 text-sm mt-2 ml-10">Periksa kembali data laporan Anda sebelum mengirim.</p>
       </div>
 
-      {/* Summary Cards */}
+      {/* Evidence Upload */}
       <div className="space-y-4">
+        <h3 className="text-sm font-semibold text-primary uppercase tracking-wider flex items-center gap-2">
+          <span className="material-symbols-outlined text-[18px]">upload_file</span>
+          Lampirkan Bukti Penipuan
+        </h3>
+        <FileUploader 
+          files={form.evidenceFiles} 
+          onChange={(files) => updateForm({ evidenceFiles: files })} 
+          maxFiles={5}
+        />
+        
+        <div className="mt-6 pt-4 border-t border-slate-700/50">
+          <label className="block text-sm font-medium text-slate-300 mb-2">
+            Tautan Bukti Tambahan <span className="text-slate-500">(opsional, misal: Google Drive / DropBox)</span>
+          </label>
+          <div className="relative">
+            <input
+              type="url"
+              value={form.evidenceLink || ''}
+              onChange={(e) => updateForm({ evidenceLink: e.target.value })}
+              className="glass-input w-full rounded-lg pl-4 pr-10 py-3 placeholder:text-slate-500 focus:ring-0 text-slate-100"
+              placeholder="https://drive.google.com/..."
+            />
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <span className="material-symbols-outlined text-slate-500 text-xl">link</span>
+            </div>
+          </div>
+          <p className="text-xs text-slate-500 mt-2">
+            Gunakan opsi ini jika ukuran file sangat besar atau jika Anda memiliki kumpulan bukti dalam satu folder. Pastikan tautan dapat diakses publik.
+          </p>
+        </div>
+      </div>
+
+      {/* Summary Cards */}
+      <div className="space-y-4 border-t border-white/5 pt-6 mt-6">
         <div className="rounded-xl bg-slate-800/40 border border-slate-700/50 p-5 space-y-3">
           <h3 className="text-sm font-semibold text-primary uppercase tracking-wider flex items-center gap-2">
             <span className="material-symbols-outlined text-[18px]">person_search</span>

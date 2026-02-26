@@ -11,7 +11,22 @@ interface PendingReport {
   chronology: string
   incidentDate: string
   status: string
+  lossAmount?: number | null
   createdAt: string
+  evidenceLink?: string | null
+  perpetrator?: {
+    accountNumber: string
+    phoneNumber: string
+    entityName: string
+    bankName: string
+    socialMedia: string | null
+  } | null
+  evidenceFiles?: {
+    id: string
+    fileUrl: string
+    fileName: string
+    mimeType: string
+  }[]
 }
 
 const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3001'
@@ -227,12 +242,87 @@ export default function ModerationPage() {
             <DetailRow label="Status" value={viewReport.status} />
             <DetailRow label="Tanggal Kejadian" value={new Date(viewReport.incidentDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })} />
             <DetailRow label="Tanggal Lapor" value={new Date(viewReport.createdAt).toLocaleString('id-ID')} />
-            <div className="pt-2">
+            {viewReport.lossAmount !== undefined && viewReport.lossAmount !== null && (
+              <DetailRow label="Estimasi Kerugian" value={`Rp ${viewReport.lossAmount.toLocaleString('id-ID')}`} />
+            )}
+            
+            {/* Terlapor Details */}
+            {viewReport.perpetrator && (
+              <div className="pt-2 border-t border-white/5 mt-2">
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 block">Data Terlapor</span>
+                {viewReport.perpetrator.bankName && (
+                  <DetailRow label="Bank / E-Wallet" value={viewReport.perpetrator.bankName} />
+                )}
+                {viewReport.perpetrator.accountNumber && (
+                  <DetailRow label="Nomor Rekening" value={viewReport.perpetrator.accountNumber} mono />
+                )}
+                {viewReport.perpetrator.phoneNumber && (
+                  <DetailRow label="Nomor Telepon" value={viewReport.perpetrator.phoneNumber} mono />
+                )}
+                {viewReport.perpetrator.entityName && (
+                  <DetailRow label="Nama Entitas" value={viewReport.perpetrator.entityName} />
+                )}
+                {viewReport.perpetrator.socialMedia && (
+                  <div className="flex justify-between items-start py-2 group">
+                    <span className="text-sm font-medium text-slate-400 w-1/3">Sosial Media</span>
+                    <div className="w-2/3 flex flex-wrap gap-2">
+                      {viewReport.perpetrator.socialMedia.split(',').map((sm, i) => (
+                        <a key={i} href={sm.trim()} target="_blank" rel="noreferrer" className="text-xs text-primary hover:underline bg-primary/10 px-2 py-1 rounded">
+                          {sm.trim().replace(/^https?:\/\//, '')}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="pt-2 border-t border-white/5 mt-2">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Kronologi</span>
-              <div className="mt-2 p-4 rounded-xl bg-white/[0.03] border border-white/5">
+              <div className="mt-2 p-4 rounded-xl bg-white/[0.03] border border-white/5 overflow-y-auto max-h-48">
                 <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">{viewReport.chronology}</p>
               </div>
             </div>
+
+            {/* Evidence Links & Files */}
+            {(viewReport.evidenceLink || (viewReport.evidenceFiles && viewReport.evidenceFiles.length > 0)) && (
+              <div className="pt-2 border-t border-white/5 mt-2">
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-2">Bukti Lampiran</span>
+                
+                {viewReport.evidenceLink && (
+                  <div className="mb-3">
+                    <span className="text-sm text-slate-400 block mb-1">Tautan Bukti Tambahan:</span>
+                    <a href={viewReport.evidenceLink} target="_blank" rel="noreferrer" className="text-sm text-primary hover:underline break-all">
+                      {viewReport.evidenceLink}
+                    </a>
+                  </div>
+                )}
+
+                {viewReport.evidenceFiles && viewReport.evidenceFiles.length > 0 && (
+                  <div className="space-y-2">
+                    <span className="text-sm text-slate-400 block">File Bukti:</span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {viewReport.evidenceFiles.map(file => (
+                        <a 
+                          key={file.id} 
+                          href={file.fileUrl} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-slate-400">
+                            {file.mimeType.startsWith('image/') ? 'image' 
+                             : file.mimeType.includes('pdf') ? 'picture_as_pdf' 
+                             : 'insert_drive_file'}
+                          </span>
+                          <span className="text-xs font-medium text-slate-200 truncate">{file.fileName}</span>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </>
         )}
       </DetailModal>

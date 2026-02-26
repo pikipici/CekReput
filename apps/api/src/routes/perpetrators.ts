@@ -32,6 +32,8 @@ perpetratorsRouter.get('/:id', async (c) => {
       verifiedReports: perp.verifiedReports,
       firstReported: perp.firstReported,
       lastReported: perp.lastReported,
+      socialMedia: perp.socialMedia,
+      totalLoss: perp.totalLoss,
     },
   })
 })

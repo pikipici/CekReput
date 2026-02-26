@@ -220,6 +220,53 @@ export default function StepOneForm({ isActive, form, updateForm, onNext }: Step
             </div>
           </div>
         </div>
+        
+        {/* Social Media (optional) */}
+        <div className="col-span-1 md:col-span-2 space-y-3">
+          <label className="block text-sm font-medium text-slate-300 mb-1">
+            Akun Sosial Media Pelaku <span className="text-slate-500">(opsional)</span>
+          </label>
+          
+          {(form.socialMedia || []).map((sm, index) => (
+            <div key={index} className="flex gap-2 relative animate-in fade-in slide-in-from-top-2 duration-300">
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  value={sm}
+                  onChange={(e) => {
+                    const newSm = [...(form.socialMedia || [])]
+                    newSm[index] = e.target.value
+                    updateForm({ socialMedia: newSm })
+                  }}
+                  className="glass-input w-full rounded-lg pl-4 pr-10 py-3 placeholder:text-slate-500 focus:ring-0 text-slate-100"
+                  placeholder="Contoh: instagram.com/penipu atau @penipu"
+                />
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <span className="material-symbols-outlined text-slate-500 text-xl">link</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const newSm = form.socialMedia.filter((_, i) => i !== index)
+                  updateForm({ socialMedia: newSm })
+                }}
+                className="w-12 h-12 flex items-center justify-center rounded-lg border border-slate-600/50 text-slate-400 hover:text-danger hover:border-danger/50 hover:bg-danger/10 transition-colors"
+                title="Hapus baris ini"
+              >
+                <span className="material-symbols-outlined text-xl">delete</span>
+              </button>
+            </div>
+          ))}
+          
+          <button
+            type="button"
+            onClick={() => updateForm({ socialMedia: [...(form.socialMedia || []), ''] })}
+            className="text-sm text-primary hover:text-primary-100 font-medium flex items-center gap-1 transition-colors mt-2 p-2 hover:bg-primary/10 rounded-lg inline-flex"
+          >
+            <span className="material-symbols-outlined text-lg">add</span> Tambah Akun Sosial Media
+          </button>
+        </div>
       </div>
 
       {/* Form Actions */}

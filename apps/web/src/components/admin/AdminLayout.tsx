@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Outlet, Navigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import AdminSidebar from './AdminSidebar'
@@ -7,7 +7,7 @@ import AdminTopBar from './AdminTopBar'
 export default function AdminLayout() {
   const { user, isLoggedIn } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [stats, setStats] = useState({ pending: 0, clarifications: 0 })
+  const [stats] = useState({ pending: 0, clarifications: 0 })
 
   // Redirect if not admin/moderator
   if (!isLoggedIn || !user) {

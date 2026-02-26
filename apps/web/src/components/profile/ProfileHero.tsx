@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { Perpetrator } from '../../lib/api'
 
 interface ProfileHeroProps {
@@ -5,6 +6,8 @@ interface ProfileHeroProps {
 }
 
 export default function ProfileHero({ perpetrator }: ProfileHeroProps) {
+  const [showAllNames, setShowAllNames] = useState(false)
+
   if (!perpetrator) {
     return (
       <section className="glass-panel rounded-2xl p-6 lg:p-8 animate-pulse">
@@ -16,7 +19,10 @@ export default function ProfileHero({ perpetrator }: ProfileHeroProps) {
   const isBank = perpetrator.accountType === 'bank'
   const isPhone = perpetrator.accountType === 'phone'
 
-  const title = perpetrator.bankName || perpetrator.entityName || 'Unknown Entity'
+  // If there are multiple names (e.g. comma separated), we split them.
+  const rawNames = perpetrator.bankName || perpetrator.entityName || 'Unknown Entity'
+  const allNames = rawNames.split(',').map(n => n.trim()).filter(Boolean)
+  const primaryName = allNames[0] || 'Unknown Entity'
   
   // Format identifier
   let identifier = perpetrator.accountNumber || perpetrator.phoneNumber || ''
@@ -32,8 +38,8 @@ export default function ProfileHero({ perpetrator }: ProfileHeroProps) {
   const riskColor = isDanger ? 'bg-danger/20 text-danger border-danger/30' : isWarning ? 'bg-warning/20 text-warning border-warning/30' : 'bg-primary/20 text-primary border-primary/30'
   const riskBadgeBg = isDanger ? 'bg-danger' : isWarning ? 'bg-warning' : 'bg-primary'
   
-  // Estimate loss (dummy calculation for now, just to show a number)
-  const estLoss = new Intl.NumberFormat('id-ID').format(perpetrator.verifiedReports * 1500000)
+  // Estimate loss
+  const estLoss = new Intl.NumberFormat('id-ID').format(perpetrator.totalLoss || 0)
 
   return (
     <section className="glass-panel rounded-2xl p-6 lg:p-8 relative overflow-hidden group">
@@ -57,27 +63,61 @@ export default function ProfileHero({ perpetrator }: ProfileHeroProps) {
         {/* Entity Details */}
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-3 mb-2">
-            <h1 className="text-3xl font-bold text-white tracking-tight">{title}</h1>
+            <h1 className="text-3xl font-bold text-white tracking-tight flex items-center gap-2">
+              <span className="material-symbols-outlined text-3xl text-slate-400">
+                {isPhone ? 'call' : 'tag'}
+              </span>
+              {identifier}
+            </h1>
             <span className={`text-xs font-bold px-2 py-1 rounded uppercase tracking-wider ${riskColor}`}>
               {perpetrator.accountType}
             </span>
+            <span className="text-[10px] sm:text-xs text-slate-500 bg-slate-800/80 border border-slate-700 px-2 py-0.5 rounded font-mono">MASKED FOR PRIVACY</span>
           </div>
-          <p className="text-xl text-slate-300 font-mono mb-4 flex items-center gap-2">
-            <span className="material-symbols-outlined text-slate-500">
-              {isPhone ? 'call' : 'tag'}
-            </span>
-            {identifier} <span className="text-xs text-slate-500 bg-slate-800 px-2 py-0.5 rounded ml-2">MASKED FOR PRIVACY</span>
-          </p>
+          
+          <div className="mb-4">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-slate-500 text-[20px]">badge</span>
+              <p className="text-lg text-slate-300 font-medium">
+                {primaryName}
+              </p>
+              {allNames.length > 1 && (
+                <button 
+                  onClick={() => setShowAllNames(!showAllNames)}
+                  className="text-xs text-primary hover:text-primary-light bg-primary/10 hover:bg-primary/20 px-2 py-1 rounded-lg ml-2 transition-colors flex items-center gap-1"
+                >
+                  {showAllNames ? 'Tutup Daftar' : `+${allNames.length - 1} Nama Lain`}
+                  <span className="material-symbols-outlined text-[14px]">
+                    {showAllNames ? 'expand_less' : 'expand_more'}
+                  </span>
+                </button>
+              )}
+            </div>
+            
+            {showAllNames && allNames.length > 1 && (
+              <div className="mt-3 p-3 bg-white/5 border border-white/10 rounded-xl space-y-1">
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Teridentifikasi Menggunakan Nama:</p>
+                <div className="flex flex-wrap gap-2">
+                  {allNames.map((name, idx) => (
+                    <span key={idx} className="text-sm bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700">
+                      {name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Key Stats Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
             <div className="bg-background-dark/50 rounded-lg p-3 border border-white/5">
               <p className="text-slate-400 text-xs uppercase font-semibold">Total Laporan</p>
               <p className="text-2xl font-bold text-white mt-1">{perpetrator.totalReports}</p>
-              <p className={`${isDanger ? 'text-danger' : 'text-primary'} text-xs flex items-center gap-1 mt-1`}>
+              <p className="text-slate-400 text-xs flex items-center gap-1 mt-1 truncate">
                 <span className="material-symbols-outlined text-[14px]">
-                  {perpetrator.totalReports > 0 ? 'trending_up' : 'trending_flat'}
-                </span> Laporan
+                  calendar_today
+                </span> 
+                {perpetrator.lastReported ? `Terakhir ${new Date(perpetrator.lastReported).toLocaleDateString('id-ID')}` : 'Belum ada'}
               </p>
             </div>
             <div className="bg-background-dark/50 rounded-lg p-3 border border-white/5 min-w-0">
@@ -87,11 +127,25 @@ export default function ProfileHero({ perpetrator }: ProfileHeroProps) {
                 <span className="text-lg sm:text-xl font-bold text-white tracking-tight" title={estLoss}>{estLoss}</span>
               </div>
             </div>
-            <div className="bg-background-dark/50 rounded-lg p-3 border border-white/5">
-              <p className="text-slate-400 text-xs uppercase font-semibold">Terakhir Dilaporkan</p>
-              <p className="text-lg font-bold text-white mt-1">
-                {perpetrator.lastReported ? new Date(perpetrator.lastReported).toLocaleDateString('id-ID') : '-'}
-              </p>
+            <div className="bg-background-dark/50 rounded-lg p-3 border border-white/5 overflow-hidden">
+              <p className="text-slate-400 text-xs uppercase font-semibold leading-tight">Social Media Terindikasi</p>
+              <div className="mt-2 flex flex-wrap gap-1 max-h-12 overflow-y-auto custom-scrollbar">
+                {perpetrator.socialMedia ? (
+                  perpetrator.socialMedia.split(',').map((sm, idx) => (
+                    <a 
+                      key={idx} 
+                      href={sm.trim()} 
+                      target="_blank" 
+                      rel="noreferrer" 
+                      className="text-[10px] sm:text-xs text-primary bg-primary/10 hover:bg-primary/20 hover:underline px-2 py-1 rounded truncate max-w-full"
+                    >
+                      {sm.trim().replace(/^https?:\/\//, '')}
+                    </a>
+                  ))
+                ) : (
+                  <span className="text-sm font-medium text-slate-500 italic">Tidak ada data</span>
+                )}
+              </div>
             </div>
             <div className="bg-background-dark/50 rounded-lg p-3 border border-white/5">
               <p className="text-slate-400 text-xs uppercase font-semibold">Verifikasi Laporan</p>

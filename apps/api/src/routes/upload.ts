@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { authMiddleware } from '../middleware/auth.js'
 import type { JwtPayload } from '../middleware/auth.js'
+import { uploadToR2 } from '../utils/s3.js'
 
 const upload = new Hono()
 
@@ -33,20 +34,25 @@ upload.post('/evidence', authMiddleware, async (c) => {
     return c.json({ error: 'Ukuran file maksimal 5MB' }, 400)
   }
 
-  // In production: upload to Supabase Storage / S3
-  // For now: generate a mock URL
+  // In production: upload to Supabase Storage / S3 (Now using Cloudflare R2)
   const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
-  const fileUrl = `/uploads/evidence/${fileName}`
+  
+  try {
+    const fileUrl = await uploadToR2(file, fileName)
 
-  return c.json({
-    message: 'File berhasil diunggah',
-    file: {
-      url: fileUrl,
-      name: file.name,
-      mimeType: file.type,
-      sizeBytes: file.size,
-    },
-  }, 201)
+    return c.json({
+      message: 'File berhasil diunggah',
+      file: {
+        url: fileUrl,
+        name: file.name,
+        mimeType: file.type,
+        sizeBytes: file.size,
+      },
+    }, 201)
+  } catch (err) {
+    console.error('R2 Upload Error:', err)
+    return c.json({ error: 'Gagal mengunggah file ke cloud storage' }, 500)
+  }
 })
 
 export default upload

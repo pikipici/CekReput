@@ -29,6 +29,15 @@ export const createReportSchema = z.object({
   category: z.enum(REPORT_CATEGORIES),
   chronology: z.string().min(100, 'Kronologi minimal 100 karakter').max(5000),
   incidentDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Format tanggal: YYYY-MM-DD'),
+  socialMedia: z.array(z.string()).optional(),
+  lossAmount: z.number().int().min(0).optional(),
+  evidenceFiles: z.array(z.object({
+    url: z.string(),
+    name: z.string(),
+    mimeType: z.string(),
+    sizeBytes: z.number()
+  })).optional(),
+  evidenceLink: z.string().url('Format link tidak valid').optional().or(z.literal('')),
 }).refine(
   (data) => data.accountNumber || data.phoneNumber || data.entityName,
   { message: 'Minimal satu identitas pelaku harus diisi (rekening, telepon, atau nama)' }
