@@ -18,6 +18,12 @@ export const googleAuthSchema = z.object({
   idToken: z.string().min(1, 'Google ID token required'),
 })
 
+export const updateProfileSchema = z.object({
+  name: z.string().min(2, 'Nama minimal 2 karakter').max(255).optional(),
+  avatarUrl: z.string().url('URL avatar tidak valid').optional().or(z.literal('')),
+  bio: z.string().max(500, 'Bio maksimal 500 karakter').optional(),
+})
+
 // ─── Report Schemas ──────────────────────────────────────────────
 
 export const createReportSchema = z.object({
@@ -65,6 +71,12 @@ export const voteSchema = z.object({
 export const createClarificationSchema = z.object({
   perpetratorId: z.string().uuid('ID pelaku tidak valid'),
   statement: z.string().min(50, 'Pernyataan minimal 50 karakter').max(5000),
+  identityPhotoUrl: z.string().url('URL foto KTP tidak valid'),
+  selfiePhotoUrl: z.string().url('URL foto Selfie tidak valid'),
+  identityName: z.string().min(3, 'Nama KTP minimal 3 karakter').max(255),
+  identityNik: z.string().min(16, 'NIK harus 16 digit').max(50),
+  relationType: z.string().min(3, 'Hubungan minimal 3 karakter').max(100),
+  evidenceUrls: z.array(z.string().url('URL bukti tidak valid')).max(5).optional(),
 })
 
 // ─── Moderation Schema ──────────────────────────────────────────
@@ -72,10 +84,21 @@ export const createClarificationSchema = z.object({
 export const moderateReportSchema = z.object({
   action: z.enum(['verify', 'reject']),
   rejectionReason: z.string().max(500).optional(),
+  evidenceFiles: z.array(z.object({
+    url: z.string(),
+    name: z.string(),
+    mimeType: z.string(),
+    sizeBytes: z.number()
+  })).optional(),
 }).refine(
   (data) => data.action !== 'reject' || (data.rejectionReason && data.rejectionReason.length > 0),
   { message: 'Alasan penolakan wajib diisi saat menolak laporan' }
 )
+
+export const moderateClarificationSchema = z.object({
+  action: z.enum(['approve', 'reject']),
+  resetThreat: z.boolean().default(false),
+})
 
 // ─── API Key Schema ─────────────────────────────────────────────
 

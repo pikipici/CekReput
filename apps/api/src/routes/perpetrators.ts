@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
-import { eq, desc } from 'drizzle-orm'
+import { eq, desc, and } from 'drizzle-orm'
 import { db } from '../db/index.js'
-import { perpetrators, reports, comments, clarifications } from '../db/schema.js'
+import { perpetrators, reports, users, apiKeys, clarifications, comments, evidenceFiles } from '../db/schema.js'
 import { maskAccountNumber, maskPhoneNumber, maskEntityName } from '../utils/masking.js'
 import { paginationSchema } from '../utils/validators.js'
 import { zValidator } from '@hono/zod-validator'
@@ -64,6 +64,47 @@ perpetratorsRouter.get('/:id/reports', zValidator('query', paginationSchema), as
   return c.json({ reports: perpReports, page, limit })
 })
 
+// ─── Get Perpetrator's Verified Evidence ──────────────────────────
+
+perpetratorsRouter.get('/:id/verified-evidence', async (c) => {
+  const id = c.req.param('id')
+
+  const verifiedReports = await db
+    .select({
+      id: reports.id,
+      incidentDate: reports.incidentDate,
+      createdAt: reports.createdAt,
+    })
+    .from(reports)
+    .where(and(eq(reports.perpetratorId, id), eq(reports.status, 'verified')))
+    .orderBy(desc(reports.createdAt))
+
+  if (verifiedReports.length === 0) {
+    return c.json({ verifiedEvidence: [] })
+  }
+
+  const reportIds = verifiedReports.map(r => r.id)
+  
+  // To avoid query size limits, just do a simple IN fetch if within limits, or fetch all evidence for the perpetrator via join
+  const evidence = await db
+    .select({
+      id: evidenceFiles.id,
+      reportId: evidenceFiles.reportId,
+      fileUrl: evidenceFiles.fileUrl,
+      mimeType: evidenceFiles.mimeType,
+    })
+    .from(evidenceFiles)
+    .innerJoin(reports, eq(evidenceFiles.reportId, reports.id))
+    .where(and(eq(reports.perpetratorId, id), eq(reports.status, 'verified')))
+
+  const result = verifiedReports.map(report => ({
+    ...report,
+    evidenceFiles: evidence.filter(e => e.reportId === report.id)
+  }))
+
+  return c.json({ verifiedEvidence: result })
+})
+
 // ─── Get Perpetrator's Comments ──────────────────────────────────
 
 perpetratorsRouter.get('/:id/comments', zValidator('query', paginationSchema), async (c) => {
@@ -72,8 +113,20 @@ perpetratorsRouter.get('/:id/comments', zValidator('query', paginationSchema), a
   const offset = (page - 1) * limit
 
   const perpComments = await db
-    .select()
+    .select({
+      id: comments.id,
+      content: comments.content,
+      upvotes: comments.upvotes,
+      downvotes: comments.downvotes,
+      createdAt: comments.createdAt,
+      user: {
+        id: users.id,
+        name: users.name,
+        role: users.role,
+      }
+    })
     .from(comments)
+    .innerJoin(users, eq(comments.userId, users.id))
     .where(eq(comments.perpetratorId, id))
     .orderBy(desc(comments.createdAt))
     .limit(limit)
@@ -108,9 +161,15 @@ perpetratorsRouter.get('/:id/clarifications', async (c) => {
   const id = c.req.param('id')
 
   const approved = await db
-    .select()
+    .select({
+      id: clarifications.id,
+      statement: clarifications.statement,
+      evidenceUrls: clarifications.evidenceUrls,
+      relationType: clarifications.relationType,
+      createdAt: clarifications.createdAt,
+    })
     .from(clarifications)
-    .where(eq(clarifications.perpetratorId, id))
+    .where(and(eq(clarifications.perpetratorId, id), eq(clarifications.status, 'approved')))
     .orderBy(desc(clarifications.createdAt))
 
   return c.json({ clarifications: approved })

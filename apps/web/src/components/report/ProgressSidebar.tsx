@@ -1,5 +1,7 @@
 interface ProgressSidebarProps {
   currentStep: number;
+  highestStep?: number;
+  onStepClick?: (step: number) => void;
 }
 
 const STEPS = [
@@ -8,7 +10,7 @@ const STEPS = [
   { label: 'Langkah 3', title: 'Konfirmasi & Kirim' },
 ]
 
-export default function ProgressSidebar({ currentStep }: ProgressSidebarProps) {
+export default function ProgressSidebar({ currentStep, highestStep = 1, onStepClick }: ProgressSidebarProps) {
   return (
     <>
       {/* Desktop Progress Sidebar */}
@@ -19,11 +21,16 @@ export default function ProgressSidebar({ currentStep }: ProgressSidebarProps) {
             {STEPS.map((step, i) => {
               const stepNum = i + 1
               const isActive = currentStep >= stepNum
+              const isClickable = onStepClick && stepNum <= highestStep
               return (
-                <div key={stepNum} className="relative">
-                  <div className={`absolute -left-[21px] top-1 w-3 h-3 rounded-full ${isActive ? 'bg-primary' : 'bg-slate-700'} ring-4 ring-navy-dark`}></div>
-                  <p className={`${isActive ? 'text-primary' : 'text-slate-500'} font-bold text-sm mb-1`}>{step.label}</p>
-                  <p className={`${isActive ? 'text-white' : 'text-slate-400'} font-medium`}>{step.title}</p>
+                <div 
+                  key={stepNum} 
+                  className={`relative ${isClickable ? 'cursor-pointer group' : ''}`}
+                  onClick={() => isClickable && onStepClick(stepNum)}
+                >
+                  <div className={`absolute -left-[21px] top-1 w-3 h-3 rounded-full ${isActive ? 'bg-primary' : 'bg-slate-700'} ring-4 ring-navy-dark ${isClickable ? 'group-hover:ring-primary/20 transition-all' : ''}`}></div>
+                  <p className={`${isActive ? 'text-primary' : 'text-slate-500'} font-bold text-sm mb-1 ${isClickable && !isActive ? 'group-hover:text-primary/70 transition-colors' : ''}`}>{step.label}</p>
+                  <p className={`${isActive ? 'text-white' : 'text-slate-400'} font-medium ${isClickable && !isActive ? 'group-hover:text-slate-300 transition-colors' : ''}`}>{step.title}</p>
                 </div>
               )
             })}

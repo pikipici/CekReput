@@ -17,6 +17,11 @@ const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET ?? 'dev-access-secret-ce
  * Sets `c.set('user', payload)` on success.
  */
 export async function authMiddleware(c: Context, next: Next) {
+  // Pass through CORS preflight requests
+  if (c.req.method === 'OPTIONS') {
+    return next()
+  }
+
   const authHeader = c.req.header('Authorization')
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return c.json({ error: 'Unauthorized — token tidak ditemukan' }, 401)

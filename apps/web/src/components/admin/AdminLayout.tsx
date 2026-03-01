@@ -1,13 +1,31 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Outlet, Navigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import AdminSidebar from './AdminSidebar'
 import AdminTopBar from './AdminTopBar'
 
 export default function AdminLayout() {
-  const { user, isLoggedIn } = useAuth()
+  const { user, isLoggedIn, token } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [stats] = useState({ pending: 0, clarifications: 0 })
+  const [stats, setStats] = useState({ pending: 0, clarifications: 0 })
+
+  useEffect(() => {
+    if (!token) return
+    const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3001'
+    fetch(`${API_BASE}/api/moderation/stats`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.stats) {
+          setStats({
+            pending: data.stats.pending || 0,
+            clarifications: data.stats.pendingClarifications || 0
+          })
+        }
+      })
+      .catch(() => {})
+  }, [token])
 
   // Redirect if not admin/moderator
   if (!isLoggedIn || !user) {

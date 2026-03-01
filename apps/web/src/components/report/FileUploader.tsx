@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { useAuth } from '../../context/AuthContext'
 
-interface UploadedFile {
+export interface UploadedFile {
   url: string
   name: string
   mimeType: string

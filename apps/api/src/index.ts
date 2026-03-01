@@ -11,9 +11,10 @@ import auth from './routes/auth.js'
 import check from './routes/check.js'
 import reportsRouter from './routes/reports.js'
 import perpetratorsRouter from './routes/perpetrators.js'
+import usersRouter from './routes/users.js'
 import commentsRouter from './routes/comments.js'
 import moderation from './routes/moderation.js'
-import clarificationsRouter from './routes/clarification.js'
+import clarificationsRouter from './routes/clarifications.js'
 import developer, { developerApiV1 } from './routes/developer.js'
 import upload from './routes/upload.js'
 
@@ -130,6 +131,7 @@ app.route('/api/auth', auth)
 app.route('/api/check', check)
 app.route('/api/reports', reportsRouter)
 app.route('/api/perpetrators', perpetratorsRouter)
+app.route('/api/users', usersRouter)
 app.route('/api/comments', commentsRouter)
 app.route('/api/moderation', moderation)
 app.route('/api/clarifications', clarificationsRouter)

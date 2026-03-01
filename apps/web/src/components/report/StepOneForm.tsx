@@ -205,7 +205,7 @@ export default function StepOneForm({ isActive, form, updateForm, onNext }: Step
         {/* Entity Name (optional) */}
         <div className="col-span-1 md:col-span-2">
           <label className="block text-sm font-medium text-slate-300 mb-2">
-            Nama Pemilik Rekening <span className="text-slate-500">(opsional)</span>
+            {form.accountType === 'phone' ? 'Nama Pemilik Nomor' : 'Nama Pemilik Rekening'} <span className="text-slate-500">(opsional)</span>
           </label>
           <div className="relative">
             <input
@@ -213,7 +213,7 @@ export default function StepOneForm({ isActive, form, updateForm, onNext }: Step
               value={form.entityName}
               onChange={(e) => updateForm({ entityName: e.target.value })}
               className="glass-input w-full rounded-lg pl-4 pr-10 py-3 placeholder:text-slate-500 focus:ring-0 text-slate-100"
-              placeholder="Nama yang tertera di rekening"
+              placeholder={form.accountType === 'phone' ? 'Kosongkan jika tidak tahu atau tidak ada' : 'Nama yang tertera di rekening'}
             />
             <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
               <span className="material-symbols-outlined text-slate-500 text-xl">badge</span>

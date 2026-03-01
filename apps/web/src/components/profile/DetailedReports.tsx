@@ -17,7 +17,7 @@ interface ReportData {
   upvotes: number
 }
 
-type FilterType = 'recent' | 'helpful'
+type FilterType = 'recent' | 'oldest'
 
 interface DetailedReportsProps {
   perpetratorId: string | undefined
@@ -72,7 +72,7 @@ export default function DetailedReports({ perpetratorId }: DetailedReportsProps)
       if (filter === 'recent') {
         return b.timestamp - a.timestamp
       } else {
-        return b.upvotes - a.upvotes
+        return a.timestamp - b.timestamp
       }
     })
   }, [reports, filter])
@@ -115,10 +115,10 @@ export default function DetailedReports({ perpetratorId }: DetailedReportsProps)
             Terbaru
           </button>
           <button 
-            onClick={() => setFilter('helpful')}
-            className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-colors ${filter === 'helpful' ? 'text-white bg-[#214a42]' : 'text-slate-400 hover:text-white'}`}
+            onClick={() => setFilter('oldest')}
+            className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-colors ${filter === 'oldest' ? 'text-white bg-[#214a42]' : 'text-slate-400 hover:text-white'}`}
           >
-            Paling Membantu
+            Terlama
           </button>
         </div>
       </div>

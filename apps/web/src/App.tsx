@@ -5,6 +5,9 @@ import Home from './pages/Home'
 import SearchResults from './pages/SearchResults'
 import ProfileDetail from './pages/ProfileDetail'
 import ReportScam from './pages/ReportScam'
+import ClarifyPage from './pages/ClarifyPage'
+import MyReportsPage from './pages/MyReportsPage'
+import UserProfilePage from './pages/UserProfilePage'
 
 // Admin
 import AdminLayout from './components/admin/AdminLayout'
@@ -27,6 +30,9 @@ function App() {
           <Route path="/results" element={<SearchResults />} />
           <Route path="/profile/:id" element={<ProfileDetail />} />
           <Route path="/report" element={<ReportScam />} />
+          <Route path="/clarify/:id" element={<ClarifyPage />} />
+          <Route path="/my-reports" element={<MyReportsPage />} />
+          <Route path="/profile" element={<UserProfilePage />} />
 
           {/* Admin */}
           <Route path="/admin" element={<AdminLayout />}>

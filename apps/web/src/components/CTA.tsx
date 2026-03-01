@@ -2,11 +2,13 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import AuthModal from './AuthModal'
+import GuideModal from './GuideModal'
 
 export default function CTA() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [showAuth, setShowAuth] = useState(false)
+  const [showGuide, setShowGuide] = useState(false)
 
   const handleReport = () => {
     if (user) {
@@ -30,7 +32,10 @@ export default function CTA() {
             Jangan diam saja. Bantu orang lain agar tidak tertipu dengan melaporkan nomor atau rekening penipu di sini. Laporan Anda menyelamatkan yang lain.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button className="w-full sm:w-auto px-8 h-12 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-white font-medium transition-colors border border-slate-200 dark:border-slate-600">
+            <button
+              onClick={() => setShowGuide(true)}
+              className="w-full sm:w-auto px-8 h-12 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-white font-medium transition-colors border border-slate-200 dark:border-slate-600"
+            >
               Pelajari Cara Melapor
             </button>
             <button
@@ -49,6 +54,12 @@ export default function CTA() {
         isOpen={showAuth}
         onClose={() => setShowAuth(false)}
         initialTab="register"
+      />
+
+      {/* Guide Modal */}
+      <GuideModal
+        isOpen={showGuide}
+        onClose={() => setShowGuide(false)}
       />
     </section>
   )

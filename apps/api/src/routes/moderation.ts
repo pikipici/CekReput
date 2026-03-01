@@ -1,9 +1,9 @@
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
-import { eq, desc, sql, ilike, or } from 'drizzle-orm'
+import { eq, desc, sql, ilike, or, and, inArray } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '../db/index.js'
-import { reports, perpetrators, users, apiKeys } from '../db/schema.js'
+import { reports, perpetrators, users, apiKeys, clarifications } from '../db/schema.js'
 import { moderateReportSchema, paginationSchema } from '../utils/validators.js'
 import { authMiddleware } from '../middleware/auth.js'
 import { adminMiddleware } from '../middleware/admin.js'
@@ -39,11 +39,11 @@ moderation.get('/pending', zValidator('query', paginationSchema), async (c) => {
   let evidenceMap: Record<string, any[]> = {}
 
   if (reportIds.length > 0) {
-    const perps = await db.select().from(perpetrators).where(sql`${perpetrators.id} IN ${perpIds}`)
+    const perps = await db.select().from(perpetrators).where(inArray(perpetrators.id, perpIds))
     perps.forEach(p => perpetratorsMap[p.id] = p)
 
     const { evidenceFiles } = await import('../db/schema.js')
-    const evFiles = await db.select().from(evidenceFiles).where(sql`${evidenceFiles.reportId} IN ${reportIds}`)
+    const evFiles = await db.select().from(evidenceFiles).where(inArray(evidenceFiles.reportId, reportIds))
     evFiles.forEach(f => {
       if (!evidenceMap[f.reportId]) evidenceMap[f.reportId] = []
       evidenceMap[f.reportId].push(f)
@@ -68,7 +68,7 @@ moderation.patch(
   async (c) => {
     const id = c.req.param('id')
     const user = c.get('user') as JwtPayload
-    const { action, rejectionReason } = c.req.valid('json')
+    const { action, rejectionReason, evidenceFiles } = c.req.valid('json')
 
     const [report] = await db.select().from(reports).where(eq(reports.id, id)).limit(1)
 
@@ -96,6 +96,23 @@ moderation.patch(
 
     // If verified, recalculate perpetrator's threat level
     if (action === 'verify') {
+      // Replace evidence if uploaded
+      if (evidenceFiles && evidenceFiles.length > 0) {
+        const { evidenceFiles: dbEvidenceFiles } = await import('../db/schema.js')
+        // Delete old evidence
+        await db.delete(dbEvidenceFiles).where(eq(dbEvidenceFiles.reportId, id))
+        // Insert new evidence
+        await db.insert(dbEvidenceFiles).values(
+          evidenceFiles.map(file => ({
+            reportId: id,
+            fileUrl: file.url,
+            fileName: file.name,
+            mimeType: file.mimeType,
+            fileSizeBytes: file.sizeBytes
+          }))
+        )
+      }
+
       await recalculateThreatLevel(report.perpetratorId)
     }
 
@@ -108,6 +125,37 @@ moderation.patch(
   }
 )
 
+// ─── Get Perpetrator's Reports (Admin) ──────────────────────────
+
+const perpReportsQuerySchema = z.object({
+  status: z.enum(['pending', 'verified', 'rejected']).optional()
+})
+
+moderation.get('/perpetrators/:id/reports', zValidator('query', perpReportsQuerySchema), async (c) => {
+  const id = c.req.param('id')
+  const { status } = c.req.valid('query')
+
+  const conditions = [eq(reports.perpetratorId, id)]
+  if (status) conditions.push(eq(reports.status, status))
+
+  const perpReports = await db
+    .select({
+      id: reports.id,
+      category: reports.category,
+      incidentDate: reports.incidentDate,
+      createdAt: reports.createdAt,
+      lossAmount: reports.lossAmount,
+      reporterName: users.name,
+      status: reports.status,
+    })
+    .from(reports)
+    .innerJoin(users, eq(reports.reporterId, users.id))
+    .where(and(...conditions))
+    .orderBy(desc(reports.createdAt))
+
+  return c.json({ reports: perpReports })
+})
+
 // ─── Moderation Stats ────────────────────────────────────────────
 
 moderation.get('/stats', async (c) => {
@@ -118,7 +166,75 @@ moderation.get('/stats', async (c) => {
     total: sql<number>`count(*)`,
   }).from(reports)
 
-  return c.json({ stats })
+  const [clarificationStats] = await db.select({
+    pending: sql<number>`count(*) filter (where ${clarifications.status} = 'pending')`
+  }).from(clarifications)
+
+  const thirtyDaysAgo = new Date()
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29) // 29 to include today as the 30th day
+  thirtyDaysAgo.setHours(0, 0, 0, 0)
+
+  const trendsRaw = await db
+    .select({
+      date: sql<string>`to_char(${reports.createdAt} at time zone 'Asia/Jakarta', 'YYYY-MM-DD')`,
+      count: sql<number>`count(*)::int`
+    })
+    .from(reports)
+    .where(sql`${reports.createdAt} >= ${thirtyDaysAgo.toISOString()}`)
+    .groupBy(sql`to_char(${reports.createdAt} at time zone 'Asia/Jakarta', 'YYYY-MM-DD')`)
+    .orderBy(sql`to_char(${reports.createdAt} at time zone 'Asia/Jakarta', 'YYYY-MM-DD')`)
+
+  const trendsMap = new Map(trendsRaw.map(t => [t.date, t.count]))
+  const trends = []
+
+  // Fill all 30 days
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(thirtyDaysAgo)
+    d.setDate(d.getDate() + i)
+    const dateStr = d.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' }) // YYYY-MM-DD
+    trends.push({
+      date: dateStr,
+      count: trendsMap.get(dateStr) || 0
+    })
+  }
+
+  return c.json({ 
+    stats: {
+      ...stats,
+      pendingClarifications: Number(clarificationStats?.pending ?? 0)
+    }, 
+    trends 
+  })
+})
+
+// ─── Proxy Evidences Download ──────────────────────────────────────
+
+moderation.get('/evidence/download', async (c) => {
+  const url = c.req.query('url')
+  if (!url) {
+    return c.json({ error: 'URL is required' }, 400)
+  }
+
+  try {
+    const response = await fetch(url)
+    if (!response.ok) {
+      throw new Error(`Failed to fetch file: ${response.statusText}`)
+    }
+
+    const contentType = response.headers.get('content-type') || 'application/octet-stream'
+    const urlObj = new URL(url)
+    const filename = urlObj.pathname.split('/').pop() || 'downloaded-file'
+    
+    return new Response(response.body, {
+      headers: {
+        'Content-Type': contentType,
+        'Content-Disposition': `attachment; filename="${filename}"`
+      }
+    })
+  } catch(error) {
+    console.error('Download Proxy Error:', error)
+    return c.json({ error: 'Failed to proxy download' }, 500)
+  }
 })
 
 // ─── List All Perpetrators (Admin) ───────────────────────────────

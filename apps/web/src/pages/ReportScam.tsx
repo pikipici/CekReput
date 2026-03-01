@@ -54,6 +54,7 @@ export default function ReportScam() {
   }, [isLoggedIn, navigate])
 
   const [currentStep, setCurrentStep] = useState(1)
+  const [highestStep, setHighestStep] = useState(1)
   const [form, setForm] = useState<ReportFormData>(INITIAL_FORM)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
@@ -64,7 +65,11 @@ export default function ReportScam() {
   }
 
   const handleNext = () => {
-    setCurrentStep((prev) => Math.min(prev + 1, 3))
+    setCurrentStep((prev) => {
+      const nextStep = Math.min(prev + 1, 3)
+      setHighestStep((h) => Math.max(h, nextStep))
+      return nextStep
+    })
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -172,7 +177,13 @@ export default function ReportScam() {
 
         {/* Form Container */}
         <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          <ProgressSidebar currentStep={currentStep} />
+          <ProgressSidebar 
+            currentStep={currentStep} 
+            highestStep={highestStep}
+            onStepClick={(step) => {
+              if (step <= highestStep) setCurrentStep(step)
+            }}
+          />
           
           {/* Main Form Area */}
           <div className="col-span-1 lg:col-span-9 space-y-6 min-h-[500px]">

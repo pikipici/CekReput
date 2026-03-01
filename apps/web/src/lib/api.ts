@@ -48,11 +48,26 @@ async function request<T = unknown>(
     const data = await res.json()
 
     if (!res.ok) {
-      return { data: null, error: data.error ?? 'Terjadi kesalahan', status: res.status }
+      console.error('API Error Response:', data)
+      let errorMessage = data.error ?? data.message ?? 'Terjadi kesalahan'
+
+      // Parse Zod error objects
+      if (typeof data.error === 'object' && data.error !== null) {
+        if (Array.isArray(data.error.issues)) {
+          errorMessage = data.error.issues.map((i: any) => i.message).join(', ')
+        } else if (Array.isArray(data.error)) {
+          errorMessage = data.error.map((i: any) => i.message || JSON.stringify(i)).join(', ')
+        } else {
+          errorMessage = JSON.stringify(data.error)
+        }
+      }
+
+      return { data: null, error: errorMessage, status: res.status }
     }
 
     return { data: data as T, error: null, status: res.status }
   } catch (err) {
+    console.error('API Fetch Exception:', err)
     return { data: null, error: 'Tidak dapat terhubung ke server', status: 0 }
   }
 }
@@ -167,11 +182,17 @@ export const perpetratorsApi = {
   getReports: (id: string, page = 1) =>
     request<{ reports: Report[] }>(`/api/perpetrators/${id}/reports?page=${page}`),
 
-  getComments: (id: string, page = 1) =>
-    request(`/api/perpetrators/${id}/comments?page=${page}`),
+  getVerifiedEvidence: (id: string) =>
+    request<{ verifiedEvidence: Array<{ id: string; incidentDate: string; createdAt: string; evidenceFiles: Array<{ id: string; fileUrl: string; mimeType: string }> }> }>(`/api/perpetrators/${id}/verified-evidence`),
 
   getTimeline: (id: string) =>
     request(`/api/perpetrators/${id}/timeline`),
+
+  getClarifications: (id: string) =>
+    request<{ clarifications: any[] }>(`/api/perpetrators/${id}/clarifications`),
+
+  getComments: (id: string, page = 1) =>
+    request<{ comments: any[]; page: number; limit: number }>(`/api/perpetrators/${id}/comments?page=${page}`),
 }
 
 // ─── Comments API ────────────────────────────────────────────────
@@ -185,4 +206,30 @@ export const commentsApi = {
 
   delete: (id: string, token: string) =>
     request(`/api/comments/${id}`, { method: 'DELETE', token }),
+}
+
+// ─── Users API ───────────────────────────────────────────────────
+
+export const usersApi = {
+  getProfile: (token: string) =>
+    request<{ user: { id: string; name: string; email: string; avatarUrl: string | null; bio: string | null; role: string; createdAt: string }; stats: { totalReports: number; verifiedReports: number } }>('/api/users/profile', { token }),
+
+  updateProfile: (data: { name?: string; avatarUrl?: string; bio?: string }, token: string) =>
+    request('/api/users/profile', { method: 'PATCH', body: data, token }),
+
+  getComments: (token: string, page = 1) =>
+    request<{ comments: Array<{ id: string; content: string; upvotes: number; downvotes: number; createdAt: string; perpetrator: { id: string; entityName: string | null; accountNumber: string | null; phoneNumber: string | null; bankName: string | null } }>; page: number; limit: number; hasMore: boolean }>(`/api/users/comments?page=${page}`, { token }),
+}
+
+// ─── Clarifications API ──────────────────────────────────────────
+
+export const clarificationsApi = {
+  create: (data: any, token: string) =>
+    request('/api/clarifications', { method: 'POST', body: data, token }),
+
+  getPending: (page = 1, token: string) =>
+    request(`/api/clarifications/admin/pending?page=${page}`, { token }),
+
+  moderate: (id: string, data: { action: 'approve' | 'reject'; resetThreat?: boolean }, token: string) =>
+    request(`/api/clarifications/admin/${id}`, { method: 'PATCH', body: data, token }),
 }

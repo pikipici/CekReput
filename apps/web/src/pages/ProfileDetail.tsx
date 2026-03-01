@@ -6,7 +6,6 @@ import ProfileHero from '../components/profile/ProfileHero'
 import TimelineChart from '../components/profile/TimelineChart'
 import DetailedReports from '../components/profile/DetailedReports'
 import CommunityDiscussion from '../components/profile/CommunityDiscussion'
-import RelatedAlerts from '../components/profile/RelatedAlerts'
 import ProfileFooter from '../components/profile/ProfileFooter'
 
 export default function ProfileDetail() {
@@ -51,7 +50,6 @@ export default function ProfileDetail() {
           {/* Right Column: Community & Sidebar */}
           <div className="space-y-6 lg:sticky lg:top-24 lg:self-start">
             <CommunityDiscussion />
-            <RelatedAlerts />
           </div>
         </div>
       </main>

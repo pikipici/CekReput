@@ -148,9 +148,9 @@ async function seed() {
 
   // ─── 5. Clarifications ───────────────────────────────────────
   const clarificationData = [
-    { perpetratorId: perp3.id, requesterId: user5.id, statement: 'Saya adalah pemilik nomor HP 081234567890. Ini salah paham, transaksi sebenarnya sudah diselesaikan. Pembeli tidak sabar menunggu pengiriman yang memang lama karena dari luar kota. Saya punya bukti resi pengiriman.', status: 'pending' as const, evidenceUrl: null },
-    { perpetratorId: perp4.id, requesterId: user3.id, statement: 'Saya adalah pemilik toko di Shopee. Barang yang dikirim memang sesuai deskripsi, namun rusak di perjalanan. Saya sudah ajukan klaim ke ekspedisi dan siap ganti rugi. Ini bukan penipuan.', status: 'pending' as const, evidenceUrl: null },
-    { perpetratorId: perp1.id, requesterId: user4.id, statement: 'Rekening ini bukan milik saya, kemungkinan digunakan oleh pihak lain tanpa sepengetahuan saya. Saya korban identity theft.', status: 'rejected' as const, evidenceUrl: null },
+    { perpetratorId: perp3.id, requesterId: user5.id, statement: 'Saya adalah pemilik nomor HP 081234567890. Ini salah paham, transaksi sebenarnya sudah diselesaikan. Pembeli tidak sabar menunggu pengiriman yang memang lama karena dari luar kota. Saya punya bukti resi pengiriman.', status: 'pending' as const, evidenceUrls: [] },
+    { perpetratorId: perp4.id, requesterId: user3.id, statement: 'Saya adalah pemilik toko di Shopee. Barang yang dikirim memang sesuai deskripsi, namun rusak di perjalanan. Saya sudah ajukan klaim ke ekspedisi dan siap ganti rugi. Ini bukan penipuan.', status: 'pending' as const, evidenceUrls: [] },
+    { perpetratorId: perp1.id, requesterId: user4.id, statement: 'Rekening ini bukan milik saya, kemungkinan digunakan oleh pihak lain tanpa sepengetahuan saya. Saya korban identity theft.', status: 'rejected' as const, evidenceUrls: [] },
   ]
 
   await db.insert(clarifications).values(clarificationData)

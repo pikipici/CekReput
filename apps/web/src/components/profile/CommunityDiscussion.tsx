@@ -1,46 +1,24 @@
 import { useState, useRef, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { commentsApi } from '../../lib/api'
+import { perpetratorsApi, commentsApi } from '../../lib/api'
 import AuthModal from '../AuthModal'
 
 interface Comment {
   id: string
-  author: string
-  initial: string
-  color: string
-  timeAgo: string
   content: string
   upvotes: number
-  isAdmin?: boolean
-  hasUpvoted?: boolean
-  timestamp?: number
-}
-
-
-
-const STORAGE_KEY = 'cekreput_community_comments_global'
-
-const loadComments = (): Comment[] => {
-  const stored = localStorage.getItem(STORAGE_KEY)
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored) as Comment[]
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        // Backwards compatibility: add timestamps to legacy comments
-        return parsed.map(c => ({
-          ...c,
-          timestamp: c.timestamp || Date.now() - 60000 // default to 1 min ago if missing
-        }))
-      }
-    } catch {
-      // ignore
-    }
+  downvotes: number
+  createdAt: string
+  user: {
+    id: string
+    name: string
+    role: string
   }
-  return []
 }
 
-const getTimeAgo = (timestamp: number) => {
+const getTimeAgo = (dateStr: string) => {
+  const timestamp = new Date(dateStr).getTime()
   const seconds = Math.floor((Date.now() - timestamp) / 1000)
   if (seconds < 60) return 'baru saja'
   const minutes = Math.floor(seconds / 60)
@@ -56,7 +34,8 @@ const getTimeAgo = (timestamp: number) => {
 export default function CommunityDiscussion() {
   const { user, token } = useAuth()
   const { id } = useParams<{ id: string }>()
-  const [comments, setComments] = useState<Comment[]>(loadComments)
+  const [comments, setComments] = useState<Comment[]>([])
+  const [loading, setLoading] = useState(true)
   const [newComment, setNewComment] = useState('')
   const [showLoginPrompt, setShowLoginPrompt] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
@@ -75,10 +54,23 @@ export default function CommunityDiscussion() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [comments])
 
-  // Save to localStorage when comments change
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(comments))
-  }, [comments])
+    const fetchComments = async () => {
+      if (!id) return
+      setLoading(true)
+      try {
+        const res = await perpetratorsApi.getComments(id)
+        if (res.data) {
+          setComments(res.data.comments || [])
+        }
+      } catch (err) {
+        console.error('Gagal mengambil komentar:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchComments()
+  }, [id])
 
   const handleInputClick = () => {
     if (!user) {
@@ -92,64 +84,55 @@ export default function CommunityDiscussion() {
       return
     }
 
-    if (!newComment.trim() || isSubmitting) return
+    if (!newComment.trim() || isSubmitting || !token || !id) return
 
     const message = newComment.trim()
     setNewComment('')
     setIsSubmitting(true)
 
-    // Optimistic UI update
-    const tempId = Date.now().toString()
-    const commentObj: Comment = {
-      id: tempId,
-      author: user?.name || 'Anda',
-      initial: (user?.name || 'A').charAt(0).toUpperCase(),
-      color: 'bg-primary/20 text-primary border-primary/30',
-      timeAgo: 'baru saja',
-      content: message,
-      upvotes: 0,
-      timestamp: Date.now()
-    }
-
-    setComments(prev => [...prev, commentObj])
-
     // Send to backend
-    if (token && id) {
-      try {
-        const { error } = await commentsApi.create({
-          perpetratorId: id,
-          content: message
-        }, token)
-        
-        if (error) {
-          console.error("Failed to save comment to database: ", error)
-          // Even if it fails, we keep it in the optimistic UI & local storage
-          // so the user's input isn't abruptly lost during the demo.
+    try {
+      const res = await commentsApi.create({
+        perpetratorId: id,
+        content: message
+      }, token)
+      
+      if (res.data && (res.data as any).comment) {
+        // Construct the new comment with current user info
+        const newCom: Comment = {
+          ...(res.data as any).comment,
+          user: {
+            id: user.id || '',
+            name: user.name || 'Anda',
+            role: user.role || 'user'
+          }
         }
-      } catch (err) {
-        console.error("Error creating comment: ", err)
+        setComments(prev => [newCom, ...prev])
       }
+    } catch (err) {
+      console.error("Error creating comment: ", err)
+    } finally {
+      setIsSubmitting(false)
     }
-
-    setIsSubmitting(false)
   }
 
-  const handleUpvote = (id: string) => {
-    if (!user) {
+  const handleUpvote = async (commentId: string) => {
+    if (!user || !token) {
       setShowLoginPrompt(true)
       return
     }
 
-    setComments(comments.map(c => {
-      if (c.id === id) {
-        if (c.hasUpvoted) {
-          return { ...c, upvotes: c.upvotes - 1, hasUpvoted: false }
-        } else {
-          return { ...c, upvotes: c.upvotes + 1, hasUpvoted: true }
-        }
-      }
-      return c
-    }))
+    try {
+      setComments(comments.map(c => 
+        c.id === commentId ? { ...c, upvotes: c.upvotes + 1 } : c
+      ))
+      await commentsApi.vote(commentId, 'up', token)
+    } catch (err) {
+      // Revert on error
+      setComments(comments.map(c => 
+        c.id === commentId ? { ...c, upvotes: c.upvotes - 1 } : c
+      ))
+    }
   }
 
   return (
@@ -161,37 +144,46 @@ export default function CommunityDiscussion() {
         </h3>
         
         <div className="space-y-5 mb-6 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-          {comments.map((comment) => {
-            const displayTime = comment.timestamp ? getTimeAgo(comment.timestamp) : comment.timeAgo
-            return (
-              <div key={comment.id} className="flex gap-3">
-                <div className="shrink-0 mt-1">
-                  <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold border ${comment.color}`}>
-                    {comment.initial}
+          {loading ? (
+            <div className="flex justify-center py-8">
+              <span className="material-symbols-outlined animate-spin text-primary">progress_activity</span>
+            </div>
+          ) : comments.length === 0 ? (
+            <p className="text-slate-400 text-sm text-center py-4">Belum ada diskusi untuk profil ini.</p>
+          ) : (
+            comments.map((comment) => {
+              const displayTime = getTimeAgo(comment.createdAt)
+              const initial = comment.user.name.charAt(0).toUpperCase()
+              const isAdmin = comment.user.role === 'admin'
+              return (
+                <div key={comment.id} className="flex gap-3">
+                  <div className="shrink-0 mt-1">
+                    <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300">
+                      {initial}
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex justify-between items-baseline">
+                      <p className="text-xs font-bold text-white flex items-center gap-1">
+                        {comment.user.name}
+                        {isAdmin && <span className="material-symbols-outlined text-[12px] text-amber-500" title="Admin">shield_person</span>}
+                      </p>
+                      <span className="text-[10px] text-slate-500">{displayTime}</span>
+                    </div>
+                    <p className="text-xs text-slate-300 mt-1 leading-relaxed">{comment.content}</p>
+                    <div className="flex items-center gap-3 mt-2">
+                       <button 
+                         onClick={() => handleUpvote(comment.id)}
+                         className={`flex items-center gap-1 text-[10px] text-emerald-400 hover:text-emerald-300 transition-colors`}
+                       >
+                         <span className="material-symbols-outlined text-[14px]">thumb_up</span> {comment.upvotes}
+                       </button>
+                    </div>
                   </div>
                 </div>
-                <div className="flex-1">
-                  <div className="flex justify-between items-baseline">
-                    <p className="text-xs font-bold text-white flex items-center gap-1">
-                      {comment.author}
-                      {comment.isAdmin && <span className="material-symbols-outlined text-[12px] text-primary" title="Admin Terverifikasi">verified_user</span>}
-                    </p>
-                    <span className="text-[10px] text-slate-500">{displayTime}</span>
-                  </div>
-                  <p className="text-xs text-slate-300 mt-1 leading-relaxed">{comment.content}</p>
-                  <div className="flex items-center gap-3 mt-2">
-                    <button 
-                      onClick={() => handleUpvote(comment.id)}
-                      className={`flex items-center gap-1 text-[10px] hover:text-primary-dark transition-colors ${comment.hasUpvoted ? 'text-primary font-bold' : 'text-slate-400'}`}
-                    >
-                      <span className="material-symbols-outlined text-[14px]">arrow_upward</span> {comment.upvotes}
-                    </button>
-                    <button onClick={handleInputClick} className="text-[10px] text-slate-400 hover:text-white transition-colors">Balas</button>
-                  </div>
-                </div>
-              </div>
-            )
-          })}
+              )
+            })
+          )}
           <div ref={bottomRef} className="h-1 text-transparent" />
         </div>
 

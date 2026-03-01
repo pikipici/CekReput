@@ -14,6 +14,7 @@ const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3001'
 export default function AdminDashboard() {
   const { token } = useAuth()
   const [stats, setStats] = useState<ModerationStats>({ pending: 0, verified: 0, rejected: 0, total: 0 })
+  const [trends, setTrends] = useState<{ date: string; count: number }[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -24,6 +25,7 @@ export default function AdminDashboard() {
       .then(r => r.json())
       .then(data => {
         if (data.stats) setStats(data.stats)
+        if (data.trends) setTrends(data.trends)
       })
       .catch(() => {})
       .finally(() => setLoading(false))
@@ -79,17 +81,32 @@ export default function AdminDashboard() {
           </div>
           <div className="h-48 flex items-end gap-1">
             {/* Simple CSS bar chart */}
-            {Array.from({ length: 30 }, (_, i) => {
-              const h = Math.random() * 80 + 20
-              return (
-                <div
-                  key={i}
-                  className="flex-1 rounded-t bg-gradient-to-t from-primary/30 to-primary/80 hover:from-primary/50 hover:to-primary transition-all cursor-default"
-                  style={{ height: `${h}%` }}
-                  title={`Hari ke-${i + 1}`}
-                />
-              )
-            })}
+            {trends.length > 0 ? (
+              (() => {
+                const maxCount = Math.max(...trends.map(t => t.count), 1) // Prevent division by zero
+                return trends.map((t, i) => {
+                  const h = Math.max((t.count / maxCount) * 100, 2) // Minimum 2% height for visibility
+                  const dateStr = new Date(t.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
+                  return (
+                    <div
+                      key={i}
+                      className="flex-1 rounded-t bg-gradient-to-t from-primary/30 to-primary/80 hover:from-primary/50 hover:to-primary transition-all cursor-default relative group"
+                      style={{ height: `${h}%` }}
+                    >
+                      {/* Tooltip */}
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-10 whitespace-nowrap bg-slate-800 text-white text-xs py-1 px-2 rounded border border-slate-700 pointer-events-none">
+                        <span className="font-bold flex justify-center text-primary">{t.count}</span>
+                        <span className="text-[10px] text-slate-300">{dateStr}</span>
+                      </div>
+                    </div>
+                  )
+                })
+              })()
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-slate-500 text-sm">
+                Memuat data tren...
+              </div>
+            )}
           </div>
         </div>
 

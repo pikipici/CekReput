@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react'
+import JSZip from 'jszip'
+import saveAs from 'file-saver'
 import { useAuth } from '../../context/AuthContext'
 import Pagination from '../../components/admin/Pagination'
 import DetailModal, { DetailRow } from '../../components/admin/DetailModal'
+import FileUploader from '../../components/report/FileUploader'
+import type { UploadedFile } from '../../components/report/FileUploader'
 
 interface PendingReport {
   id: string
@@ -51,7 +55,10 @@ export default function ModerationPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [rejectId, setRejectId] = useState<string | null>(null)
   const [rejectReason, setRejectReason] = useState('')
+  const [downloadingId, setDownloadingId] = useState<string | null>(null)
   const [viewReport, setViewReport] = useState<PendingReport | null>(null)
+  const [verifyReport, setVerifyReport] = useState<PendingReport | null>(null)
+  const [verifyEvidence, setVerifyEvidence] = useState<UploadedFile[]>([])
 
   const fetchPending = () => {
     if (!token) return
@@ -71,17 +78,95 @@ export default function ModerationPage() {
 
   useEffect(() => { fetchPending() }, [token, page])
 
-  const handleVerify = async (id: string) => {
+  const handleVerify = async (id: string, evidenceFiles: UploadedFile[] = []) => {
     setActionLoading(id)
     try {
       await fetch(`${API_BASE}/api/moderation/reports/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ action: 'verify' }),
+        body: JSON.stringify({ action: 'verify', evidenceFiles }),
       })
       setReports(r => r.filter(rep => rep.id !== id))
     } catch {}
     setActionLoading(null)
+    setVerifyReport(null)
+    setVerifyEvidence([])
+  }
+
+  const handleDownloadEvidence = async (report: PendingReport) => {
+    if (report.evidenceFiles && report.evidenceFiles.length > 0) {
+      setDownloadingId(report.id)
+      
+      try {
+        if (report.evidenceFiles.length > 1) {
+          const zip = new JSZip()
+          // Use safe characters for folder/zip name
+          const perpName = report.perpetrator?.entityName ? report.perpetrator.entityName.replace(/[^a-zA-Z0-9]/g, '_') : 'Unknown'
+          const folderName = `Bukti_${perpName}_${report.id.substring(0,8)}`
+          const folder = zip.folder(folderName)
+          
+          let successCount = 0;
+          for (let i = 0; i < report.evidenceFiles.length; i++) {
+            const file = report.evidenceFiles[i]
+            const isAbsolute = file.fileUrl.startsWith('http://') || file.fileUrl.startsWith('https://')
+            const isLocalUpload = file.fileUrl.startsWith('/uploads/')
+
+            let downloadUrl = ''
+            if (isAbsolute) {
+              // Try to bypass CORS using a public proxy to enable JSZip to read external storage bytes (since R2 doesn't have CORS setup here)
+              downloadUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(file.fileUrl)}`
+            } else {
+              const targetPath = file.fileUrl.startsWith('/') ? file.fileUrl : (isLocalUpload ? file.fileUrl : `/uploads/evidence/${file.fileUrl}`)
+              downloadUrl = `${window.location.protocol}//${window.location.host}${targetPath}`
+            }
+
+            try {
+              const response = await fetch(downloadUrl)
+              if (!response.ok) throw new Error(`HTTP ${response.status}`)
+              const blob = await response.blob()
+              
+              // Ensure unique filenames within ZIP in case users upload multiple files with the same original name
+              folder?.file(`${i+1}_${file.fileName}`, blob)
+              successCount++;
+            } catch (err) {
+              console.error(`Failed to fetch ${downloadUrl} for ZIP:`, err)
+            }
+          }
+          
+          if (successCount === 0) {
+            // Failed to fetch any files (likely CORS block by R2 or ISP block). Fallback to Detail opening.
+            setViewReport(report);
+            alert('Gagal mengompresi bukti menjadi ZIP (kemungkinan masalah jaringan/CORS). Silakan buka bukti secara manual pada panel Detail ini.');
+          } else {
+            const content = await zip.generateAsync({ type: 'blob' })
+            saveAs(content, `${folderName}.zip`)
+            
+            if (successCount < report.evidenceFiles.length) {
+              alert(`Hanya ${successCount} dari ${report.evidenceFiles.length} file yang berhasil dimasukkan ke dalam ZIP. Sisanya diblokir oleh jaringan Anda.`)
+            }
+          }
+        } else {
+          // Standard single-file direct tab opening without JSZip processing
+          for (const file of report.evidenceFiles) {
+            const isAbsolute = file.fileUrl.startsWith('http://') || file.fileUrl.startsWith('https://')
+            const isLocalUpload = file.fileUrl.startsWith('/uploads/')
+
+            if (isAbsolute) {
+              window.open(file.fileUrl, '_blank')
+            } else {
+              const targetPath = file.fileUrl.startsWith('/') ? file.fileUrl : (isLocalUpload ? file.fileUrl : `/uploads/evidence/${file.fileUrl}`)
+              const localUrl = `${window.location.protocol}//${window.location.host}${targetPath}`
+              window.open(localUrl, '_blank')
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Download error:', error)
+        alert('Gagal membuka/mengunduh file bukti.')
+      } finally {
+        setTimeout(() => setDownloadingId(null), 500)
+      }
+    }
   }
 
   const handleReject = async () => {
@@ -168,18 +253,38 @@ export default function ModerationPage() {
               </div>
 
               {/* Actions */}
-              <div className="flex items-center gap-3 pt-4 border-t border-white/5">
+              <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-white/5">
                 <button
                   onClick={() => setViewReport(report)}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 text-slate-300 border border-white/10 hover:bg-white/10 hover:text-white text-sm font-semibold transition-all"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 text-slate-300 border border-white/10 hover:bg-white/10 hover:text-white text-sm font-semibold transition-all"
                 >
                   <span className="material-symbols-outlined text-[18px]">visibility</span>
                   Detail
                 </button>
+                {report.evidenceFiles && report.evidenceFiles.length > 0 && (
+                  <button
+                    onClick={() => handleDownloadEvidence(report)}
+                    disabled={downloadingId === report.id}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-500/15 text-blue-400 border border-blue-500/20 hover:bg-blue-500/25 text-sm font-semibold transition-all disabled:opacity-50"
+                    title="Unduh seluruh bukti terlampir"
+                  >
+                    {downloadingId === report.id ? (
+                      <>
+                        <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                        Mengunduh...
+                      </>
+                    ) : (
+                      <>
+                        <span className="material-symbols-outlined text-[18px]">download</span>
+                        Unduh Bukti
+                      </>
+                    )}
+                  </button>
+                )}
                 <button
-                  onClick={() => handleVerify(report.id)}
+                  onClick={() => { setVerifyReport(report); setVerifyEvidence([]) }}
                   disabled={actionLoading === report.id}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/25 text-sm font-semibold transition-all disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/25 text-sm font-semibold transition-all disabled:opacity-50"
                 >
                   <span className="material-symbols-outlined text-[18px]">check_circle</span>
                   Verifikasi
@@ -187,7 +292,7 @@ export default function ModerationPage() {
                 <button
                   onClick={() => setRejectId(report.id)}
                   disabled={actionLoading === report.id}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-rose-500/15 text-rose-400 border border-rose-500/20 hover:bg-rose-500/25 text-sm font-semibold transition-all disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-rose-500/15 text-rose-400 border border-rose-500/20 hover:bg-rose-500/25 text-sm font-semibold transition-all disabled:opacity-50"
                 >
                   <span className="material-symbols-outlined text-[18px]">cancel</span>
                   Tolak
@@ -225,6 +330,48 @@ export default function ModerationPage() {
                 className="px-5 py-2 rounded-xl bg-rose-500/15 text-rose-400 border border-rose-500/20 hover:bg-rose-500/25 text-sm font-semibold disabled:opacity-30 transition-all"
               >
                 Tolak Laporan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Verify Modal */}
+      {verifyReport && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="w-full max-w-2xl rounded-2xl bg-[#1a2332] border border-white/10 p-6 sm:p-8 shadow-2xl my-8">
+            <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+              <span className="material-symbols-outlined text-emerald-400">gavel</span>
+              Verifikasi Laporan
+            </h3>
+            <p className="text-sm text-slate-400 mb-6 bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-xl">
+              Anda wajib mengunduh bukti asli, <strong>menyensor data pribadi PII pelapor</strong> secara offline, lalu mengunggahnya kembali di bawah ini sebelum memverifikasi laporan. Jika tidak diubah, Anda bisa langsung verifikasi, namun data asli akan langsung tampil ke publik.
+            </p>
+            
+            <FileUploader 
+              files={verifyEvidence} 
+              onChange={setVerifyEvidence} 
+              maxFiles={5}
+            />
+
+            <div className="flex justify-end gap-3 mt-8 pt-4 border-t border-white/10">
+              <button
+                onClick={() => { setVerifyReport(null); setVerifyEvidence([]) }}
+                className="px-5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all"
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => handleVerify(verifyReport.id, verifyEvidence)}
+                disabled={actionLoading === verifyReport.id}
+                className="px-6 py-2.5 rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/25 text-sm font-bold disabled:opacity-30 transition-all flex items-center gap-2"
+              >
+                {actionLoading === verifyReport.id ? (
+                  <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                ) : (
+                  <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                )}
+                Konfirmasi Verifikasi
               </button>
             </div>
           </div>
@@ -302,22 +449,29 @@ export default function ModerationPage() {
                   <div className="space-y-2">
                     <span className="text-sm text-slate-400 block">File Bukti:</span>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {viewReport.evidenceFiles.map(file => (
-                        <a 
-                          key={file.id} 
-                          href={file.fileUrl} 
-                          target="_blank" 
-                          rel="noreferrer"
-                          className="flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
-                        >
-                          <span className="material-symbols-outlined text-slate-400">
-                            {file.mimeType.startsWith('image/') ? 'image' 
-                             : file.mimeType.includes('pdf') ? 'picture_as_pdf' 
-                             : 'insert_drive_file'}
-                          </span>
-                          <span className="text-xs font-medium text-slate-200 truncate">{file.fileName}</span>
-                        </a>
-                      ))}
+                      {viewReport.evidenceFiles.map(file => {
+                        const isAbsolute = file.fileUrl.startsWith('http://') || file.fileUrl.startsWith('https://')
+                        const isLocalUpload = file.fileUrl.startsWith('/uploads/')
+                        const targetPath = file.fileUrl.startsWith('/') ? file.fileUrl : (isLocalUpload ? file.fileUrl : `/uploads/evidence/${file.fileUrl}`)
+                        const targetUrl = isAbsolute ? file.fileUrl : `${window.location.protocol}//${window.location.host}${targetPath}`
+                        
+                        return (
+                          <a 
+                            key={file.id} 
+                            href={targetUrl} 
+                            target="_blank" 
+                            rel="noreferrer"
+                            className="flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
+                          >
+                            <span className="material-symbols-outlined text-slate-400">
+                              {file.mimeType.startsWith('image/') ? 'image' 
+                               : file.mimeType.includes('pdf') ? 'picture_as_pdf' 
+                               : 'insert_drive_file'}
+                            </span>
+                            <span className="text-xs font-medium text-slate-200 truncate">{file.fileName}</span>
+                          </a>
+                        )
+                      })}
                     </div>
                   </div>
                 )}

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 interface UserDropdownProps {
   userName: string
@@ -9,6 +10,7 @@ interface UserDropdownProps {
 export default function UserDropdown({ userName, userEmail, onLogout }: UserDropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const navigate = useNavigate()
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -58,25 +60,24 @@ export default function UserDropdown({ userName, userEmail, onLogout }: UserDrop
           {/* Menu Items */}
           <div className="py-1.5">
             <button
-              onClick={() => setIsOpen(false)}
+              onClick={() => {
+                setIsOpen(false)
+                navigate('/profile')
+              }}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-slate-700/40 transition-colors"
             >
               <span className="material-symbols-outlined text-[20px]">person</span>
               Profil Saya
             </button>
             <button
-              onClick={() => setIsOpen(false)}
+              onClick={() => {
+                setIsOpen(false)
+                navigate('/my-reports')
+              }}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-slate-700/40 transition-colors"
             >
               <span className="material-symbols-outlined text-[20px]">description</span>
               Laporan Saya
-            </button>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-slate-700/40 transition-colors"
-            >
-              <span className="material-symbols-outlined text-[20px]">settings</span>
-              Pengaturan
             </button>
           </div>
 
