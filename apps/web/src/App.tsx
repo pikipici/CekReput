@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { ThemeProvider } from './context/ThemeContext'
 import { AuthProvider } from './context/AuthContext'
 import Home from './pages/Home'
 import SearchResults from './pages/SearchResults'
@@ -8,6 +7,8 @@ import ReportScam from './pages/ReportScam'
 import ClarifyPage from './pages/ClarifyPage'
 import MyReportsPage from './pages/MyReportsPage'
 import UserProfilePage from './pages/UserProfilePage'
+import TermsOfService from './pages/TermsOfService'
+import PrivacyPolicy from './pages/PrivacyPolicy'
 
 // Admin
 import AdminLayout from './components/admin/AdminLayout'
@@ -21,7 +22,6 @@ import AdminSettingsPage from './pages/admin/AdminSettingsPage'
 
 function App() {
   return (
-    <ThemeProvider>
     <AuthProvider>
       <BrowserRouter>
         <Routes>
@@ -33,6 +33,8 @@ function App() {
           <Route path="/clarify/:id" element={<ClarifyPage />} />
           <Route path="/my-reports" element={<MyReportsPage />} />
           <Route path="/profile" element={<UserProfilePage />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
           {/* Admin */}
           <Route path="/admin" element={<AdminLayout />}>
@@ -47,7 +49,6 @@ function App() {
         </Routes>
       </BrowserRouter>
     </AuthProvider>
-    </ThemeProvider>
   )
 }
 

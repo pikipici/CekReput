@@ -37,12 +37,13 @@ const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3001'
 
 const categoryLabels: Record<string, string> = {
   marketplace: 'Penipuan Marketplace',
-  investment: 'Investasi Bodong',
-  loan: 'Pinjaman Online Ilegal',
+  investasi: 'Investasi Bodong',
+  pinjol: 'Pinjaman Online Ilegal',
   phishing: 'Phishing / Social Engineering',
   cod: 'COD Fiktif',
-  job: 'Penipuan Lowongan Kerja',
+  lowker: 'Penipuan Lowongan Kerja',
   romance: 'Romance Scam',
+  hackback: 'HackBack Akun',
   other: 'Lainnya',
 }
 

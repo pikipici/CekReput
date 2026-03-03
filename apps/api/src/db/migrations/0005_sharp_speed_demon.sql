@@ -1,0 +1,1 @@
+ALTER TYPE "public"."report_category" ADD VALUE 'hackback' BEFORE 'other';

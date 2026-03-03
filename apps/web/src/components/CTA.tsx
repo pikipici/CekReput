@@ -21,20 +21,20 @@ export default function CTA() {
   return (
     <section className="py-16 md:py-24 relative overflow-hidden">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-        <div className="rounded-3xl p-8 md:p-12 border border-slate-200 dark:border-slate-700/50 bg-white/90 dark:bg-slate-800/60 backdrop-blur-xl shadow-lg dark:shadow-none">
+        <div className="rounded-3xl p-8 md:p-12 border border-slate-700/50 bg-slate-800/60 backdrop-blur-xl shadow-none">
           <div className="flex justify-center mb-6">
             <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
               <span className="material-symbols-outlined text-[32px]">shield_person</span>
             </div>
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">Pernah Menjadi Korban Penipuan?</h2>
-          <p className="text-slate-600 dark:text-slate-400 text-lg mb-8 max-w-2xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Pernah Menjadi Korban Penipuan?</h2>
+          <p className="text-slate-400 text-lg mb-8 max-w-2xl mx-auto">
             Jangan diam saja. Bantu orang lain agar tidak tertipu dengan melaporkan nomor atau rekening penipu di sini. Laporan Anda menyelamatkan yang lain.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
               onClick={() => setShowGuide(true)}
-              className="w-full sm:w-auto px-8 h-12 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-white font-medium transition-colors border border-slate-200 dark:border-slate-600"
+              className="w-full sm:w-auto px-8 h-12 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-medium transition-colors border border-slate-600"
             >
               Pelajari Cara Melapor
             </button>

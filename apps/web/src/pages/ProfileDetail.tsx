@@ -27,7 +27,7 @@ export default function ProfileDetail() {
     : 'Memuat Profil...'
 
   return (
-    <div className="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased min-h-screen flex flex-col">
+    <div className="bg-background-dark font-display text-slate-100 antialiased min-h-screen flex flex-col">
       <ProfileNavbar />
 
       <main className="flex-grow container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">

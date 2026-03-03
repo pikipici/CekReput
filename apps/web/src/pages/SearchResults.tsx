@@ -54,7 +54,7 @@ export default function SearchResults() {
   }
 
   return (
-    <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col font-display selection:bg-primary selection:text-surface-darker">
+    <div className="bg-background-dark text-slate-100 min-h-screen flex flex-col font-display selection:bg-primary selection:text-surface-darker">
       <Header />
 
       <main className="flex-grow">
@@ -67,7 +67,7 @@ export default function SearchResults() {
                 <input
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
-                  className="w-full h-12 pl-12 pr-4 bg-white/5 border border-white/10 text-white placeholder-slate-500 text-sm rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                  className="w-full h-12 pl-12 pr-4 bg-slate-800/50 border border-slate-700 text-white placeholder-slate-500 text-sm rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
                   placeholder="Cari nomor rekening, e-wallet, atau telepon..."
                 />
               </div>
@@ -96,7 +96,7 @@ export default function SearchResults() {
                       ⚠ Tidak bisa mencari berdasarkan nama
                     </span>
                   ) : inputType ? (
-                    <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-white/5 border border-white/10">{inputType}</span>
+                    <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-slate-300">{inputType}</span>
                   ) : null}
                 </>
               )}
@@ -181,7 +181,7 @@ export default function SearchResults() {
 
                           {/* Date Range */}
                           {item.firstReported && (
-                            <p className="text-xs text-slate-600">
+                            <p className="text-xs text-slate-500">
                               Dilaporkan: {new Date(item.firstReported).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })}
                               {item.lastReported && item.lastReported !== item.firstReported && (
                                 <> — {new Date(item.lastReported).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })}</>

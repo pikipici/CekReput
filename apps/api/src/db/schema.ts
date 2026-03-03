@@ -16,7 +16,7 @@ export const userRoleEnum = pgEnum('user_role', ['user', 'moderator', 'admin'])
 export const accountTypeEnum = pgEnum('account_type', ['bank', 'ewallet', 'phone'])
 export const threatLevelEnum = pgEnum('threat_level', ['safe', 'warning', 'danger'])
 export const reportCategoryEnum = pgEnum('report_category', [
-  'marketplace', 'investasi', 'pinjol', 'phishing', 'cod', 'lowker', 'romance', 'other',
+  'marketplace', 'investasi', 'pinjol', 'phishing', 'cod', 'lowker', 'romance', 'hackback', 'other',
 ])
 export const reportStatusEnum = pgEnum('report_status', ['pending', 'verified', 'rejected'])
 export const clarificationStatusEnum = pgEnum('clarification_status', ['pending', 'approved', 'rejected'])

@@ -24,6 +24,8 @@ export interface ReportFormData {
   evidenceFiles: { url: string; name: string; mimeType: string; sizeBytes: number }[]
   evidenceLink?: string
   lossAmount?: number | ''
+  accountId?: string
+  gameType?: string
 }
 
 const INITIAL_FORM: ReportFormData = {
@@ -41,6 +43,8 @@ const INITIAL_FORM: ReportFormData = {
   lossAmount: '',
   evidenceFiles: [],
   evidenceLink: '',
+  accountId: '',
+  gameType: '',
 }
 
 export default function ReportScam() {
@@ -86,6 +90,8 @@ export default function ReportScam() {
     let finalChronology = form.chronology
     if (form.category === 'other' && form.customCategory) {
       finalChronology = `[Kategori Lainnya: ${form.customCategory}]\n\n${form.chronology}`
+    } else if (form.category === 'hackback') {
+      finalChronology = `[Target Hak milik: Akun ${form.gameType} (${form.accountId})]\n\n${form.chronology}`
     }
 
     const payload: Record<string, any> = {

@@ -1,13 +1,11 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { useTheme } from '../context/ThemeContext'
 import AuthModal from './AuthModal'
 import UserDropdown from './UserDropdown'
 
 export default function Header() {
   const { isLoggedIn, user, logout } = useAuth()
-  const { theme, toggleTheme } = useTheme()
   const [isAuthOpen, setIsAuthOpen] = useState(false)
   const [authTab, setAuthTab] = useState<'login' | 'register'>('login')
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -20,7 +18,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-slate-800 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
+      <header className="sticky top-0 z-50 w-full border-b border-slate-800 bg-background-dark/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -28,22 +26,11 @@ export default function Header() {
               <div className="flex items-center justify-center w-8 h-8 rounded bg-primary text-background-dark">
                 <span className="material-symbols-outlined text-[20px] font-bold">shield_lock</span>
               </div>
-              <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">CekReput</span>
+              <span className="text-xl font-bold tracking-tight text-white">CekReput</span>
             </Link>
 
             {/* Auth Area */}
             <div className="flex items-center gap-2 sm:gap-3">
-              {/* Dark Mode Toggle */}
-              <button
-                onClick={toggleTheme}
-                className="flex items-center justify-center w-9 h-9 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all"
-                title={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-              >
-                <span className="material-symbols-outlined text-[20px]">
-                  {theme === 'dark' ? 'light_mode' : 'dark_mode'}
-                </span>
-              </button>
-
               {isLoggedIn && user ? (
                 <UserDropdown
                   userName={user.name}

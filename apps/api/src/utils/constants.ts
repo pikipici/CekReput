@@ -14,6 +14,7 @@ export const REPORT_CATEGORIES = [
   'cod',
   'lowker',
   'romance',
+  'hackback',
   'other',
 ] as const
 export type ReportCategory = typeof REPORT_CATEGORIES[number]
@@ -35,6 +36,7 @@ export const REPORT_CATEGORY_LABELS: Record<ReportCategory, string> = {
   cod: 'COD Fiktif',
   lowker: 'Penipuan Lowongan Kerja',
   romance: 'Romance Scam',
+  hackback: 'HackBack Akun',
   other: 'Lainnya',
 }
 

@@ -18,6 +18,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   cod: 'COD Fiktif',
   lowker: 'Lowongan Palsu',
   romance: 'Romance Scam',
+  hackback: 'HackBack Akun',
   other: 'Lainnya',
 }
 
