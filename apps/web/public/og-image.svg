@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#05D9A8;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#07B88E;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0B1F2E;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#grad)"/>
+  
+  <!-- Shield Icon -->
+  <path d="M 600 150 L 750 200 L 750 350 C 750 450 600 550 600 550 C 600 550 450 450 450 350 L 450 200 Z" 
+        fill="#0B1F2E" opacity="0.3"/>
+  
+  <!-- Main Text -->
+  <text x="600" y="320" font-family="Arial, sans-serif" font-size="72" font-weight="bold" fill="#FFFFFF" text-anchor="middle">CekReput</text>
+  
+  <!-- Subtitle -->
+  <text x="600" y="400" font-family="Arial, sans-serif" font-size="36" fill="#E0F7F4" text-anchor="middle">Cek Rekening &amp; Telepon Penipu</text>
+  
+  <!-- Tagline -->
+  <text x="600" y="460" font-family="Arial, sans-serif" font-size="28" fill="#A7F3D0" text-anchor="middle">Database Penipuan Indonesia Terlengkap</text>
+  
+  <!-- URL -->
+  <text x="600" y="560" font-family="Arial, sans-serif" font-size="24" fill="#05D9A8" text-anchor="middle">cekreput.com</text>
+</svg>

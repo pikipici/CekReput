@@ -1,10 +1,18 @@
 import { Link } from 'react-router-dom'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
+import SEO from '../components/SEO'
 
 export default function TermsOfService() {
   return (
-    <div className="bg-background-dark text-slate-100 font-display min-h-screen flex flex-col antialiased selection:bg-primary selection:text-background-dark">
+    <>
+      <SEO
+        title="Terms of Service - Ketentuan Layanan"
+        description="Ketentuan layanan CekReput. Baca syarat dan ketentuan penggunaan platform database penipuan Indonesia."
+        keywords="terms of service, ketentuan layanan, syarat dan ketentuan, cekreput"
+        canonical="https://cekreput.com/terms-of-service"
+      />
+      <div className="bg-background-dark text-slate-100 font-display min-h-screen flex flex-col antialiased selection:bg-primary selection:text-background-dark">
       <Header />
 
       <main className="flex-grow">
@@ -254,5 +262,6 @@ export default function TermsOfService() {
 
       <Footer />
     </div>
+    </>
   )
 }

@@ -1,0 +1,224 @@
+{
+  "app": {
+    "name": "CekReput",
+    "tagline": "Cek Reputasi, Hindari Penipuan"
+  },
+  "nav": {
+    "home": "Beranda",
+    "myReports": "Laporan Saya",
+    "profile": "Profil",
+    "reportScam": "Lapor Penipuan",
+    "login": "Masuk",
+    "logout": "Keluar",
+    "admin": "Admin",
+    "check": "Cek",
+    "report": "Laporkan",
+    "api": "API",
+    "about": "Tentang"
+  },
+  "home": {
+    "title": "Cek Reputasi, Hindari Scam",
+    "subtitle": "Platform Crowdsourced untuk verifikasi mandiri dan melacak riwayat transaksi mencurigakan. Satu langkah cerdas untuk meminimalisir risiko penipuan online secara kolektif.",
+    "searchPlaceholder": "Masukkan nomor rekening, telepon, atau ID game...",
+    "searchButton": "Cek Sekarang",
+    "reportCTA": "Menemukan sesuatu yang mencurigakan? Laporkan sekarang!",
+    "reportButton": "Lapor Penipu",
+    "liveDatabase": "Database Perlindungan Langsung",
+    "verifiedData": "Data Terverifikasi",
+    "privacySecure": "Privasi Aman",
+    "realtimeUpdate": "Pembaruan Real-time",
+    "searchTypes": {
+      "all": "Semua",
+      "bankAccount": "Rekening Bank",
+      "eWallet": "E-Wallet",
+      "phoneNumber": "Nomor Telepon",
+      "gameId": "ID Game"
+    },
+    "placeholders": {
+      "bankAccount": "Masukkan nomor rekening bank...",
+      "eWallet": "Masukkan nomor e-wallet...",
+      "phoneNumber": "Masukkan nomor telepon...",
+      "gameId": "Masukkan ID game...",
+      "all": "Masukkan nomor rekening, telepon, atau ID game..."
+    },
+    "features": {
+      "title": "Fitur",
+      "search": {
+        "title": "Pencarian Cepat",
+        "description": "Cari profil di berbagai platform secara instan."
+      },
+      "report": {
+        "title": "Lapor Penipuan",
+        "description": "Laporkan profil mencurigakan dan bantu lindungi orang lain."
+      },
+      "clarify": {
+        "title": "Klarifikasi Laporan",
+        "description": "Tanggapi laporan yang dibuat terhadap profil Anda."
+      },
+      "secure": {
+        "title": "Aman & Privat",
+        "description": "Data Anda dilindungi dengan keamanan standar industri."
+      }
+    },
+    "stats": {
+      "title": "Statistik Platform",
+      "reports": "Total Laporan",
+      "users": "Pengguna Aktif",
+      "resolved": "Kasus Selesai"
+    }
+  },
+  "searchResults": {
+    "title": "Hasil Pencarian",
+    "noResults": "Tidak ada hasil ditemukan",
+    "noResultsDesc": "Coba kata kunci berbeda atau periksa ejaan Anda",
+    "profiles": "Profil",
+    "reports": "Laporan"
+  },
+  "profileDetail": {
+    "title": "Detail Profil",
+    "reports": "Laporan",
+    "clarifications": "Klarifikasi",
+    "status": "Status",
+    "platform": "Platform",
+    "username": "Nama Pengguna",
+    "email": "Email",
+    "phone": "Telepon",
+    "reportDate": "Tanggal Laporan",
+    "description": "Deskripsi",
+    "addClarification": "Tambah Klarifikasi"
+  },
+  "reportScam": {
+    "title": "Lapor Penipuan",
+    "subtitle": "Bantu lindungi orang lain dengan melaporkan aktivitas mencurigakan",
+    "platform": "Platform",
+    "platformSelect": "Pilih Platform",
+    "username": "Nama Pengguna/Handle",
+    "email": "Alamat Email",
+    "phone": "Nomor Telepon",
+    "description": "Deskripsi",
+    "descriptionPlaceholder": "Jelaskan aktivitas mencurigakan secara detail",
+    "evidence": "Bukti",
+    "evidenceHint": "Tambahkan tangkapan layar atau bukti lain (opsional)",
+    "submit": "Kirim Laporan",
+    "submitting": "Mengirim...",
+    "success": "Laporan berhasil dikirim!",
+    "error": "Gagal mengirim laporan. Silakan coba lagi."
+  },
+  "clarifyPage": {
+    "title": "Klarifikasi Laporan",
+    "subtitle": "Berikan versi cerita Anda",
+    "reportInfo": "Informasi Laporan",
+    "yourClarification": "Klarifikasi Anda",
+    "clarificationPlaceholder": "Jelaskan perspektif Anda tentang situasi ini",
+    "submit": "Kirim Klarifikasi",
+    "submitting": "Mengirim...",
+    "success": "Klarifikasi berhasil dikirim!",
+    "error": "Gagal mengirim klarifikasi. Silakan coba lagi."
+  },
+  "myReports": {
+    "title": "Laporan Saya",
+    "subtitle": "Lihat dan kelola laporan yang Anda kirimkan",
+    "noReports": "Belum ada laporan",
+    "noReportsDesc": "Anda belum mengirimkan laporan apa pun",
+    "reportFirst": "Buat laporan pertama Anda",
+    "status": "Status",
+    "platform": "Platform",
+    "date": "Tanggal",
+    "actions": "Aksi",
+    "view": "Lihat",
+    "delete": "Hapus",
+    "pending": "Menunggu",
+    "verified": "Terverifikasi",
+    "rejected": "Ditolak"
+  },
+  "userProfile": {
+    "title": "Profil Pengguna",
+    "email": "Email",
+    "username": "Nama Pengguna",
+    "memberSince": "Anggota Sejak",
+    "totalReports": "Total Laporan",
+    "settings": "Pengaturan",
+    "language": "Bahasa",
+    "darkMode": "Mode Gelap"
+  },
+  "auth": {
+    "login": {
+      "title": "Masuk",
+      "email": "Email",
+      "password": "Kata Sandi",
+      "submit": "Masuk",
+      "noAccount": "Belum punya akun?",
+      "register": "Daftar"
+    },
+    "register": {
+      "title": "Daftar",
+      "username": "Nama Pengguna",
+      "email": "Email",
+      "password": "Kata Sandi",
+      "confirmPassword": "Konfirmasi Kata Sandi",
+      "submit": "Daftar",
+      "haveAccount": "Sudah punya akun?",
+      "login": "Masuk"
+    }
+  },
+  "admin": {
+    "dashboard": "Dasbor",
+    "moderation": "Moderasi",
+    "perpetrators": "Pelaku",
+    "users": "Pengguna",
+    "clarifications": "Klarifikasi",
+    "settings": "Pengaturan",
+    "reports": {
+      "title": "Laporan",
+      "pending": "Laporan Menunggu",
+      "verified": "Laporan Terverifikasi",
+      "rejected": "Laporan Ditolak"
+    }
+  },
+  "common": {
+    "loading": "Memuat...",
+    "error": "Kesalahan",
+    "success": "Berhasil",
+    "cancel": "Batal",
+    "confirm": "Konfirmasi",
+    "delete": "Hapus",
+    "edit": "Edit",
+    "save": "Simpan",
+    "search": "Cari",
+    "filter": "Filter",
+    "sort": "Urutkan",
+    "back": "Kembali",
+    "next": "Lanjut",
+    "previous": "Sebelumnya",
+    "close": "Tutup",
+    "yes": "Ya",
+    "no": "Tidak"
+  },
+  "footer": {
+    "rights": "Hak cipta dilindungi",
+    "terms": "Syarat Layanan",
+    "privacy": "Kebijakan Privasi",
+    "contact": "Hubungi Kami"
+  },
+  "cta": {
+    "title": "Suarakan Pengalaman Anda",
+    "description": "Jangan biarkan orang lain jatuh ke lubang yang sama. Laporkan indikasi transaksi mencurigakan untuk membantu membangun komunitas yang lebih aman dan terpercaya.",
+    "learnButton": "Cara Melapor",
+    "reportButton": "Laporkan Sekarang",
+    "securityNote": "Laporan Anda akan melalui proses moderasi untuk memastikan validitas bukti."
+  },
+  "stats": {
+    "reports": "Laporan Masuk",
+    "perpetrators": "Laporan Terverifikasi",
+    "checks": "Total Pengecekan"
+  },
+  "hero": {
+    "evidenceBadge": "100% Berbasis Bukti Nyata"
+  },
+  "tos": {
+    "title": "Syarat Layanan"
+  },
+  "privacy": {
+    "title": "Kebijakan Privasi"
+  }
+}

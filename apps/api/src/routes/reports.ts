@@ -7,7 +7,8 @@ import { createReportSchema, paginationSchema } from '../utils/validators.js'
 import { authMiddleware } from '../middleware/auth.js'
 import type { JwtPayload } from '../middleware/auth.js'
 import { reportRateLimit } from '../middleware/rate-limit.js'
-
+import redis from '../lib/redis.js'
+import { verifyTurnstile } from '../utils/turnstile.js'
 const reportsRouter = new Hono()
 
 // ─── Create Report ───────────────────────────────────────────────
@@ -20,6 +21,13 @@ reportsRouter.post(
   async (c) => {
     const user = c.get('user') as JwtPayload
     const data = c.req.valid('json')
+
+    // Verify Turnstile
+    const clientIp = c.req.header('x-forwarded-for') || c.req.header('cf-connecting-ip')
+    const isBotFree = await verifyTurnstile(data.turnstileToken, clientIp)
+    if (!isBotFree) {
+      return c.json({ error: 'Verifikasi Anti-Bot (Turnstile) gagal. Silakan coba lagi.' }, 403)
+    }
 
     // Find or create perpetrator
     let perpetrator
@@ -111,6 +119,20 @@ reportsRouter.post(
           fileSizeBytes: file.sizeBytes,
         }))
       )
+    }
+
+    // --- Invalidate Caches ---
+    try {
+      await redis.del('stats:public')
+      await redis.del('reports:recent')
+      const stream = redis.scanStream({ match: 'check:*', count: 100 })
+      stream.on('data', async (keys) => {
+        if (keys.length) {
+          await redis.del(...keys)
+        }
+      })
+    } catch (err) {
+      console.error('Redis Invalidation Error:', err)
     }
 
     return c.json({

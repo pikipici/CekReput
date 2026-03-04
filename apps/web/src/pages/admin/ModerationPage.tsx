@@ -425,12 +425,37 @@ export default function ModerationPage() {
               </div>
             )}
 
-            <div className="pt-2 border-t border-white/5 mt-2">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Kronologi</span>
-              <div className="mt-2 p-4 rounded-xl bg-white/[0.03] border border-white/5 overflow-y-auto max-h-48">
-                <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">{viewReport.chronology}</p>
-              </div>
-            </div>
+            {(() => {
+              let displayChro = viewReport.chronology
+              let gameType = null
+              let accountId = null
+
+              if (viewReport.category === 'hackback') {
+                const match = displayChro.match(/^\[Target Hak milik: Akun (.+?) \((.+?)\)\]\s*\n\n([\s\S]*)$/)
+                if (match) {
+                  gameType = match[1]
+                  accountId = match[2]
+                  displayChro = match[3]
+                }
+              }
+
+              return (
+                <>
+                  {gameType && accountId && (
+                    <>
+                      <DetailRow label="Jenis Game" value={gameType} />
+                      <DetailRow label="ID Akun" value={accountId} mono />
+                    </>
+                  )}
+                  <div className="pt-2 border-t border-white/5 mt-2">
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Kronologi</span>
+                    <div className="mt-2 p-4 rounded-xl bg-white/[0.03] border border-white/5 overflow-y-auto max-h-48">
+                      <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">{displayChro}</p>
+                    </div>
+                  </div>
+                </>
+              )
+            })()}
 
             {/* Evidence Links & Files */}
             {(viewReport.evidenceLink || (viewReport.evidenceFiles && viewReport.evidenceFiles.length > 0)) && (

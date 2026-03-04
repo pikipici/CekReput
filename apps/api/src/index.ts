@@ -5,6 +5,7 @@ import { serve } from '@hono/node-server'
 import { sql, desc, gte } from 'drizzle-orm'
 import { db } from './db/index.js'
 import { reports, perpetrators } from './db/schema.js'
+import redis from './lib/redis.js'
 
 // Route imports
 import auth from './routes/auth.js'
@@ -64,21 +65,43 @@ app.get('/', (c) => {
 
 // Public stats (no auth)
 app.get('/api/stats', async (c) => {
+  try {
+    const cachedStats = await redis.get('stats:public')
+    if (cachedStats) return c.json(JSON.parse(cachedStats))
+  } catch (err) {
+    console.error('Redis stats GET error:', err)
+  }
+
   const [reportStats] = await db.select({ total: sql<number>`count(*)` }).from(reports)
   const [perpStats] = await db.select({
     verified: sql<number>`count(*) filter (where ${perpetrators.threatLevel} in ('danger', 'warning'))`,
     total: sql<number>`count(*)`,
   }).from(perpetrators)
 
-  return c.json({
+  const responseData = {
     totalReports: Number(reportStats?.total ?? 0),
     verifiedPerpetrators: Number(perpStats?.verified ?? 0),
     totalChecks: Number(perpStats?.total ?? 0),
-  })
+  }
+
+  try {
+    await redis.set('stats:public', JSON.stringify(responseData), 'EX', 300)
+  } catch (err) {
+    console.error('Redis stats SET error:', err)
+  }
+
+  return c.json(responseData)
 })
 
 // Recent reports for live ticker (max 2 days ago, no auth)
 app.get('/api/reports/recent', async (c) => {
+  try {
+    const cachedRecent = await redis.get('reports:recent')
+    if (cachedRecent) return c.json(JSON.parse(cachedRecent))
+  } catch (err) {
+    console.error('Redis recent reports GET error:', err)
+  }
+
   const twoDaysAgo = new Date()
   twoDaysAgo.setDate(twoDaysAgo.getDate() - 2)
 
@@ -124,7 +147,15 @@ app.get('/api/reports/recent', async (c) => {
     }
   })
 
-  return c.json({ reports: masked })
+  const responseData = { reports: masked }
+
+  try {
+    await redis.set('reports:recent', JSON.stringify(responseData), 'EX', 120) // cache 2 mins
+  } catch (err) {
+    console.error('Redis recent reports SET error:', err)
+  }
+
+  return c.json(responseData)
 })
 
 app.route('/api/auth', auth)

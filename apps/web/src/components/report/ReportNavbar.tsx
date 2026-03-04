@@ -44,6 +44,8 @@ export default function ReportNavbar() {
           {isLoggedIn && user ? (
             <UserDropdown
               userName={user.name}
+              userEmail={user.email}
+              userBadges={user.badges}
               onLogout={logout}
             />
           ) : (

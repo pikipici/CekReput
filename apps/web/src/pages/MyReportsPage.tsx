@@ -4,6 +4,7 @@ import Header from '../components/Header'
 import Footer from '../components/Footer'
 import { useAuth } from '../context/AuthContext'
 import { reportsApi, type Report } from '../lib/api'
+import SEO from '../components/SEO'
 
 export default function MyReportsPage() {
   const { token, isLoggedIn } = useAuth()
@@ -64,8 +65,15 @@ export default function MyReportsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col font-sans selection:bg-primary/30">
-      <Header />
+    <>
+      <SEO
+        title="Laporan Saya"
+        description="Kelola dan pantau semua laporan penipuan yang telah Anda kirimkan ke CekReput."
+        canonical="https://cekreput.com/my-reports"
+        noIndex={true}
+      />
+      <div className="min-h-screen bg-slate-950 flex flex-col font-sans selection:bg-primary/30">
+        <Header />
 
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-12 lg:py-16">
         
@@ -208,5 +216,6 @@ export default function MyReportsPage() {
 
       <Footer />
     </div>
+    </>
   )
 }

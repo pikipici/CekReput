@@ -5,6 +5,8 @@ import { Link } from 'react-router-dom'
 
 interface ProfileHeroProps {
   perpetrator: Perpetrator | null
+  matchedGameId?: string | null
+  matchedGameType?: string | null
 }
 
 interface EvidenceFile {
@@ -20,7 +22,7 @@ interface VerifiedEvidence {
   evidenceFiles: EvidenceFile[]
 }
 
-export default function ProfileHero({ perpetrator }: ProfileHeroProps) {
+export default function ProfileHero({ perpetrator, matchedGameId, matchedGameType }: ProfileHeroProps) {
   const [showAllNames, setShowAllNames] = useState(false)
   const [showSocialModal, setShowSocialModal] = useState(false)
   const [verifiedEvidence, setVerifiedEvidence] = useState<VerifiedEvidence[]>([])
@@ -63,15 +65,15 @@ export default function ProfileHero({ perpetrator }: ProfileHeroProps) {
   // If there are multiple names saved in entityName (e.g. comma separated), we split them.
   const rawNames = perpetrator.entityName || ''
   const allNames = perpetrator.entityName ? rawNames.split(',').map(n => n.trim()).filter(Boolean) : []
-  const displayBankName = perpetrator.bankName || (isBank ? 'Rekening Bank' : isPhone ? 'Kontak / E-Wallet' : 'Entitas Terlapor')
+  const displayBankName = matchedGameType || perpetrator.bankName || (isBank ? 'Rekening Bank' : isPhone ? 'Kontak / E-Wallet' : 'Entitas Terlapor')
   
   // Format identifier
-  let identifier = perpetrator.accountNumber || perpetrator.phoneNumber || ''
-  if (identifier.length > 5) {
+  let identifier = matchedGameId || perpetrator.accountNumber || perpetrator.phoneNumber || ''
+  if (!matchedGameId && identifier.length > 5) {
     identifier = `${identifier.slice(0, 3)}${'x'.repeat(identifier.length - 6)}${identifier.slice(-3)}`
   }
 
-  const iconName = isBank ? 'account_balance' : isPhone ? 'smartphone' : 'storefront'
+  const iconName = matchedGameId ? 'sports_esports' : isBank ? 'account_balance' : isPhone ? 'smartphone' : 'storefront'
   
   const isDanger = perpetrator.threatLevel === 'danger'
   const isWarning = perpetrator.threatLevel === 'warning'
@@ -110,14 +112,14 @@ export default function ProfileHero({ perpetrator }: ProfileHeroProps) {
                 <div className="flex flex-wrap items-center gap-3 mb-2">
                   <h1 className="text-3xl font-bold text-white tracking-tight flex items-center gap-2">
                     <span className="material-symbols-outlined text-3xl text-slate-400">
-                      {isPhone ? 'call' : 'tag'}
+                      {matchedGameId ? 'sports_esports' : isPhone ? 'call' : 'tag'}
                     </span>
                     {identifier}
                   </h1>
                   <span className={`text-xs font-bold px-2 py-1 rounded uppercase tracking-wider ${riskColor}`}>
-                    {perpetrator.accountType}
+                    {matchedGameId ? 'ID Game' : perpetrator.accountType}
                   </span>
-                  <span className="text-[10px] sm:text-xs text-slate-500 bg-slate-800/80 border border-slate-700 px-2 py-0.5 rounded font-mono">MASKED FOR PRIVACY</span>
+                  {!matchedGameId && <span className="text-[10px] sm:text-xs text-slate-500 bg-slate-800/80 border border-slate-700 px-2 py-0.5 rounded font-mono">MASKED FOR PRIVACY</span>}
                 </div>
                 
                 <div className="flex flex-wrap items-center gap-2">

@@ -1,0 +1,224 @@
+{
+  "app": {
+    "name": "CekReput",
+    "tagline": "Check Reputation, Avoid Scams"
+  },
+  "nav": {
+    "home": "Home",
+    "myReports": "My Reports",
+    "profile": "Profile",
+    "reportScam": "Report Scam",
+    "login": "Login",
+    "logout": "Logout",
+    "admin": "Admin",
+    "check": "Check",
+    "report": "Report",
+    "api": "API",
+    "about": "About"
+  },
+  "home": {
+    "title": "Check Reputation, Avoid Scams",
+    "subtitle": "Crowdsourced Platform for self-verification and tracking suspicious transaction history. One smart step to minimize online fraud risks collectively.",
+    "searchPlaceholder": "Enter bank account, phone, or game ID...",
+    "searchButton": "Check Now",
+    "reportCTA": "Found something suspicious? Report it now!",
+    "reportButton": "Report Scammer",
+    "liveDatabase": "Live Database Protection",
+    "verifiedData": "Verified Data",
+    "privacySecure": "Secure Privacy",
+    "realtimeUpdate": "Real-time Update",
+    "searchTypes": {
+      "all": "All",
+      "bankAccount": "Bank Account",
+      "eWallet": "E-Wallet",
+      "phoneNumber": "Phone Number",
+      "gameId": "Game ID"
+    },
+    "placeholders": {
+      "bankAccount": "Enter bank account number...",
+      "eWallet": "Enter e-wallet number...",
+      "phoneNumber": "Enter phone number...",
+      "gameId": "Enter game ID...",
+      "all": "Enter bank account, phone, or game ID..."
+    },
+    "features": {
+      "title": "Features",
+      "search": {
+        "title": "Quick Search",
+        "description": "Search for profiles across multiple platforms instantly."
+      },
+      "report": {
+        "title": "Report Scams",
+        "description": "Report suspicious profiles and help protect others."
+      },
+      "clarify": {
+        "title": "Clarify Reports",
+        "description": "Respond to reports made against your profile."
+      },
+      "secure": {
+        "title": "Secure & Private",
+        "description": "Your data is protected with industry-standard security."
+      }
+    },
+    "stats": {
+      "title": "Platform Statistics",
+      "reports": "Total Reports",
+      "users": "Active Users",
+      "resolved": "Cases Resolved"
+    }
+  },
+  "searchResults": {
+    "title": "Search Results",
+    "noResults": "No results found",
+    "noResultsDesc": "Try different keywords or check your spelling",
+    "profiles": "Profiles",
+    "reports": "Reports"
+  },
+  "profileDetail": {
+    "title": "Profile Details",
+    "reports": "Reports",
+    "clarifications": "Clarifications",
+    "status": "Status",
+    "platform": "Platform",
+    "username": "Username",
+    "email": "Email",
+    "phone": "Phone",
+    "reportDate": "Report Date",
+    "description": "Description",
+    "addClarification": "Add Clarification"
+  },
+  "reportScam": {
+    "title": "Report a Scam",
+    "subtitle": "Help protect others by reporting suspicious activities",
+    "platform": "Platform",
+    "platformSelect": "Select Platform",
+    "username": "Username/Handle",
+    "email": "Email Address",
+    "phone": "Phone Number",
+    "description": "Description",
+    "descriptionPlaceholder": "Describe the suspicious activity in detail",
+    "evidence": "Evidence",
+    "evidenceHint": "Add screenshots or other evidence (optional)",
+    "submit": "Submit Report",
+    "submitting": "Submitting...",
+    "success": "Report submitted successfully!",
+    "error": "Failed to submit report. Please try again."
+  },
+  "clarifyPage": {
+    "title": "Clarify Report",
+    "subtitle": "Provide your side of the story",
+    "reportInfo": "Report Information",
+    "yourClarification": "Your Clarification",
+    "clarificationPlaceholder": "Explain your perspective on this situation",
+    "submit": "Submit Clarification",
+    "submitting": "Submitting...",
+    "success": "Clarification submitted successfully!",
+    "error": "Failed to submit clarification. Please try again."
+  },
+  "myReports": {
+    "title": "My Reports",
+    "subtitle": "View and manage your submitted reports",
+    "noReports": "No reports yet",
+    "noReportsDesc": "You haven't submitted any reports yet",
+    "reportFirst": "Make your first report",
+    "status": "Status",
+    "platform": "Platform",
+    "date": "Date",
+    "actions": "Actions",
+    "view": "View",
+    "delete": "Delete",
+    "pending": "Pending",
+    "verified": "Verified",
+    "rejected": "Rejected"
+  },
+  "userProfile": {
+    "title": "User Profile",
+    "email": "Email",
+    "username": "Username",
+    "memberSince": "Member Since",
+    "totalReports": "Total Reports",
+    "settings": "Settings",
+    "language": "Language",
+    "darkMode": "Dark Mode"
+  },
+  "auth": {
+    "login": {
+      "title": "Login",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Login",
+      "noAccount": "Don't have an account?",
+      "register": "Register"
+    },
+    "register": {
+      "title": "Register",
+      "username": "Username",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "submit": "Register",
+      "haveAccount": "Already have an account?",
+      "login": "Login"
+    }
+  },
+  "admin": {
+    "dashboard": "Dashboard",
+    "moderation": "Moderation",
+    "perpetrators": "Perpetrators",
+    "users": "Users",
+    "clarifications": "Clarifications",
+    "settings": "Settings",
+    "reports": {
+      "title": "Reports",
+      "pending": "Pending Reports",
+      "verified": "Verified Reports",
+      "rejected": "Rejected Reports"
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "save": "Save",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "close": "Close",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "footer": {
+    "rights": "All rights reserved",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "contact": "Contact Us"
+  },
+  "cta": {
+    "title": "Speak Up About Your Experience",
+    "description": "Don't let others fall into the same trap. Report suspicious transactions to help build a safer and more trusted community.",
+    "learnButton": "How to Report",
+    "reportButton": "Report Now",
+    "securityNote": "Your report will go through moderation to ensure evidence validity."
+  },
+  "stats": {
+    "reports": "Reports Received",
+    "perpetrators": "Verified Reports",
+    "checks": "Total Checks"
+  },
+  "hero": {
+    "evidenceBadge": "100% Evidence-Based"
+  },
+  "tos": {
+    "title": "Terms of Service"
+  },
+  "privacy": {
+    "title": "Privacy Policy"
+  }
+}

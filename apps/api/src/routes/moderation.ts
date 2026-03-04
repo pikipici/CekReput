@@ -113,7 +113,31 @@ moderation.patch(
         )
       }
 
+
       await recalculateThreatLevel(report.perpetratorId)
+      
+      // GAMIFICATION: Increase reporter's reputation and assign badges
+      const [reporter] = await db.select().from(users).where(eq(users.id, report.reporterId)).limit(1)
+      if (reporter) {
+        const newScore = reporter.reputationScore + 10
+        let newBadges = [...(reporter.badges || [])]
+        
+        // Example badge logic:
+        if (newScore >= 50 && !newBadges.includes('Spam Hunter')) {
+          newBadges.push('Spam Hunter')
+        }
+        if (newScore >= 200 && !newBadges.includes('Elite Tracker')) {
+          newBadges.push('Elite Tracker')
+        }
+        if (newScore >= 500 && !newBadges.includes('Verify Master')) {
+          newBadges.push('Verify Master')
+        }
+        
+        await db.update(users).set({
+          reputationScore: newScore,
+          badges: newBadges.length > 0 ? newBadges : null
+        }).where(eq(users.id, reporter.id))
+      }
     }
 
     return c.json({

@@ -4,6 +4,7 @@ import Header from '../components/Header'
 import Footer from '../components/Footer'
 import { useAuth } from '../context/AuthContext'
 import { usersApi } from '../lib/api'
+import SEO from '../components/SEO'
 
 interface UserProfile {
   id: string
@@ -161,7 +162,14 @@ export default function UserProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col font-sans selection:bg-primary/30">
+    <>
+      <SEO
+        title="Profil Pengguna"
+        description="Kelola profil pengguna CekReput Anda, lihat statistik kontribusi, dan kelola diskusi."
+        canonical="https://cekreput.com/profile"
+        noIndex={true}
+      />
+      <div className="min-h-screen bg-slate-950 flex flex-col font-sans selection:bg-primary/30">
       <Header />
 
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-12 lg:py-16">
@@ -456,5 +464,6 @@ export default function UserProfilePage() {
 
       <Footer />
     </div>
+    </>
   )
 }

@@ -265,10 +265,35 @@ export default function PerpetratorsPage() {
             {viewReport.report.lossAmount !== null && (
               <DetailRow label="Kerugian" value={`Rp ${viewReport.report.lossAmount.toLocaleString('id-ID')}`} />
             )}
-            <div className="pt-2 border-t border-white/5 mt-2">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Kronologi</span>
-              <p className="text-sm text-slate-300 mt-2 p-3 bg-white/5 rounded-xl">{viewReport.report.chronology}</p>
-            </div>
+            {(() => {
+              let displayChro = viewReport.report.chronology
+              let gameType = null
+              let accountId = null
+
+              if (viewReport.report.category === 'hackback') {
+                const match = displayChro.match(/^\[Target Hak milik: Akun (.+?) \((.+?)\)\]\s*\n\n([\s\S]*)$/)
+                if (match) {
+                  gameType = match[1]
+                  accountId = match[2]
+                  displayChro = match[3]
+                }
+              }
+
+              return (
+                <>
+                  {gameType && accountId && (
+                    <>
+                      <DetailRow label="Jenis Game" value={gameType} />
+                      <DetailRow label="ID Akun" value={accountId} mono />
+                    </>
+                  )}
+                  <div className="pt-2 border-t border-white/5 mt-2">
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Kronologi</span>
+                    <p className="text-sm text-slate-300 mt-2 p-3 bg-white/5 rounded-xl whitespace-pre-wrap">{displayChro}</p>
+                  </div>
+                </>
+              )
+            })()}
             {viewReport.evidence && viewReport.evidence.length > 0 && (
               <div className="pt-2 border-t border-white/5 mt-2">
                 <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">File Bukti</span>

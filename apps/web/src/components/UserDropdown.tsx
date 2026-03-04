@@ -4,10 +4,13 @@ import { useNavigate } from 'react-router-dom'
 interface UserDropdownProps {
   userName: string
   userEmail?: string
+  userBadges?: string[] | null
   onLogout: () => void
 }
 
-export default function UserDropdown({ userName, userEmail, onLogout }: UserDropdownProps) {
+import UserBadge from './profile/UserBadge'
+
+export default function UserDropdown({ userName, userEmail, userBadges, onLogout }: UserDropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
@@ -52,9 +55,12 @@ export default function UserDropdown({ userName, userEmail, onLogout }: UserDrop
       {isOpen && (
         <div className="absolute right-0 top-full mt-2 w-56 rounded-xl glass-panel shadow-2xl py-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
           {/* User Info Header */}
-          <div className="px-4 py-3 border-b border-slate-700/50">
+          <div className="px-4 py-3 border-b border-slate-700/50 flex flex-col gap-1">
             <p className="text-sm font-semibold text-white truncate">{userName}</p>
-            <p className="text-xs text-slate-400 truncate">{userEmail ?? ''}</p>
+            <p className="text-xs text-slate-400 truncate mb-1">{userEmail ?? ''}</p>
+            {userBadges && userBadges.length > 0 && (
+               <UserBadge badges={userBadges} />
+            )}
           </div>
 
           {/* Menu Items */}

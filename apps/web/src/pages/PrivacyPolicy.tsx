@@ -1,10 +1,18 @@
 import { Link } from 'react-router-dom'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
+import SEO from '../components/SEO'
 
 export default function PrivacyPolicy() {
   return (
-    <div className="bg-background-dark text-slate-100 font-display min-h-screen flex flex-col antialiased selection:bg-primary selection:text-background-dark">
+    <>
+      <SEO
+        title="Privacy Policy - Kebijakan Privasi"
+        description="Kebijakan privasi CekReput. Pelajari bagaimana kami mengumpulkan, menggunakan, dan melindungi data pribadi Anda."
+        keywords="privacy policy, kebijakan privasi, perlindungan data pribadi, UU PDP, cekreput"
+        canonical="https://cekreput.com/privacy-policy"
+      />
+      <div className="bg-background-dark text-slate-100 font-display min-h-screen flex flex-col antialiased selection:bg-primary selection:text-background-dark">
       <Header />
 
       <main className="flex-grow">
@@ -272,5 +280,6 @@ export default function PrivacyPolicy() {
 
       <Footer />
     </div>
+    </>
   )
 }

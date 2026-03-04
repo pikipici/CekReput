@@ -44,6 +44,7 @@ export const createReportSchema = z.object({
     sizeBytes: z.number()
   })).optional(),
   evidenceLink: z.string().url('Format link tidak valid').optional().or(z.literal('')),
+  turnstileToken: z.string().min(1, 'Turnstile token wajib diisi (verifikasi anti-bot)'),
 }).refine(
   (data) => data.accountNumber || data.phoneNumber || data.entityName,
   { message: 'Minimal satu identitas pelaku harus diisi (rekening, telepon, atau nama)' }
@@ -53,6 +54,7 @@ export const createReportSchema = z.object({
 
 export const searchSchema = z.object({
   q: z.string().min(3, 'Query minimal 3 karakter').max(100),
+  filter: z.string().optional(),
 })
 
 // ─── Comment Schema ──────────────────────────────────────────────
@@ -60,6 +62,7 @@ export const searchSchema = z.object({
 export const createCommentSchema = z.object({
   perpetratorId: z.string().uuid('ID pelaku tidak valid'),
   content: z.string().min(10, 'Komentar minimal 10 karakter').max(2000),
+  turnstileToken: z.string().min(1, 'Turnstile token wajib diisi (verifikasi anti-bot)'),
 })
 
 export const voteSchema = z.object({

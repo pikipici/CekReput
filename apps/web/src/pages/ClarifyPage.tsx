@@ -4,6 +4,7 @@ import { perpetratorsApi, clarificationsApi } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import Header from '../components/Header'
 import FileUploader, { type UploadedFile } from '../components/report/FileUploader'
+import SEO from '../components/SEO'
 
 export default function ClarifyPage() {
   const { id } = useParams<{ id: string }>()
@@ -103,18 +104,33 @@ export default function ClarifyPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col">
-        <Header />
-        <div className="flex-1 flex items-center justify-center">
-          <span className="material-symbols-outlined animate-spin text-primary text-4xl">progress_activity</span>
+      <>
+        <SEO
+          title="Memuat..."
+          description="Formulir Hak Jawab - CekReput"
+          canonical={`https://cekreput.com/clarify/${id || ''}`}
+          noIndex={true}
+        />
+        <div className="min-h-screen bg-slate-950 flex flex-col">
+          <Header />
+          <div className="flex-1 flex items-center justify-center">
+            <span className="material-symbols-outlined animate-spin text-primary text-4xl">progress_activity</span>
+          </div>
         </div>
-      </div>
+      </>
     )
   }
 
   if (success) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col">
+      <>
+        <SEO
+          title="Pengajuan Berhasil Dikirim"
+          description="Pengajuan klarifikasi Anda telah berhasil dikirim ke CekReput."
+          canonical={`https://cekreput.com/clarify/${id || ''}`}
+          noIndex={true}
+        />
+        <div className="min-h-screen bg-slate-950 flex flex-col">
         <Header />
         <div className="flex-1 flex items-center justify-center p-6">
           <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center relative overflow-hidden">
@@ -134,12 +150,20 @@ export default function ClarifyPage() {
             </button>
           </div>
         </div>
-      </div>
+        </div>
+      </>
     )
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col font-sans">
+    <>
+      <SEO
+        title="Formulir Hak Jawab - Klarifikasi"
+        description="Ajukan klarifikasi resmi jika Anda adalah pemilik nomor atau entitas yang dilaporkan dan merasa tidak melakukan penipuan."
+        canonical={`https://cekreput.com/clarify/${id || ''}`}
+        noIndex={true}
+      />
+      <div className="min-h-screen bg-slate-950 flex flex-col font-sans">
       <Header />
       
       <main className="flex-1 max-w-4xl w-full mx-auto px-6 py-12">
@@ -369,5 +393,6 @@ export default function ClarifyPage() {
         </form>
       </main>
     </div>
+    </>
   )
 }

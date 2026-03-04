@@ -72,6 +72,7 @@ export default function ResultNavbar() {
                 <UserDropdown
                   userName={user.name}
                   userEmail={user.email}
+                  userBadges={user.badges}
                   onLogout={logout}
                 />
               ) : (

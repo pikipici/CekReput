@@ -32,14 +32,14 @@ auth.post('/register', zValidator('json', registerSchema), async (c) => {
   const [user] = await db
     .insert(users)
     .values({ name, email, passwordHash })
-    .returning({ id: users.id, name: users.name, email: users.email, role: users.role })
+    .returning({ id: users.id, name: users.name, email: users.email, role: users.role, badges: users.badges })
 
   const payload: JwtPayload = { userId: user.id, email: user.email, role: user.role }
   const tokens = generateTokens(payload)
 
   return c.json({
     message: 'Registrasi berhasil',
-    user: { id: user.id, name: user.name, email: user.email, role: user.role },
+    user: { id: user.id, name: user.name, email: user.email, role: user.role, badges: user.badges },
     ...tokens,
   }, 201)
 })
@@ -63,7 +63,7 @@ auth.post('/login', zValidator('json', loginSchema), async (c) => {
   const tokens = generateTokens(payload)
 
   return c.json({
-    user: { id: user.id, name: user.name, email: user.email, role: user.role },
+    user: { id: user.id, name: user.name, email: user.email, role: user.role, badges: user.badges },
     ...tokens,
   })
 })
@@ -118,7 +118,7 @@ auth.post('/google', async (c) => {
   const tokens = generateTokens(payload)
 
   return c.json({
-    user: { id: user.id, name: user.name, email: user.email, role: user.role, avatarUrl: user.avatarUrl },
+    user: { id: user.id, name: user.name, email: user.email, role: user.role, avatarUrl: user.avatarUrl, badges: user.badges },
     ...tokens,
   })
 })
@@ -162,6 +162,7 @@ auth.get('/me', authMiddleware, async (c) => {
       email: users.email,
       role: users.role,
       avatarUrl: users.avatarUrl,
+      badges: users.badges,
       createdAt: users.createdAt,
     })
     .from(users)

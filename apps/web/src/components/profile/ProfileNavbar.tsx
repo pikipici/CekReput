@@ -52,6 +52,7 @@ export default function ProfileNavbar() {
                 <UserDropdown
                   userName={user.name}
                   userEmail={user.email}
+                  userBadges={user.badges}
                   onLogout={logout}
                 />
               ) : (

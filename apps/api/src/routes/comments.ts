@@ -7,6 +7,7 @@ import { createCommentSchema, voteSchema } from '../utils/validators.js'
 import { authMiddleware } from '../middleware/auth.js'
 import type { JwtPayload } from '../middleware/auth.js'
 import { commentRateLimit } from '../middleware/rate-limit.js'
+import { verifyTurnstile } from '../utils/turnstile.js'
 
 const commentsRouter = new Hono()
 
@@ -19,7 +20,13 @@ commentsRouter.post(
   zValidator('json', createCommentSchema),
   async (c) => {
     const user = c.get('user') as JwtPayload
-    const { perpetratorId, content } = c.req.valid('json')
+    const { perpetratorId, content, turnstileToken } = c.req.valid('json')
+
+    const clientIp = c.req.header('x-forwarded-for') || c.req.header('cf-connecting-ip')
+    const isBotFree = await verifyTurnstile(turnstileToken, clientIp)
+    if (!isBotFree) {
+      return c.json({ error: 'Verifikasi Anti-Bot gagal. Silakan coba lagi.' }, 403)
+    }
 
     const [comment] = await db.insert(comments).values({
       perpetratorId,

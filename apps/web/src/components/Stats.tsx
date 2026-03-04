@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 
 const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3001'
 
@@ -9,6 +10,7 @@ function formatNumber(n: number): string {
 }
 
 export default function Stats() {
+  const { t } = useTranslation()
   const [stats, setStats] = useState({ totalReports: 0, verifiedPerpetrators: 0, totalChecks: 0 })
 
   useEffect(() => {
@@ -27,7 +29,7 @@ export default function Stats() {
             <span className="material-symbols-outlined text-[28px]">report_problem</span>
           </div>
           <div>
-            <p className="text-sm font-medium text-slate-400">Laporan Masuk</p>
+            <p className="text-sm font-medium text-slate-400">{t('stats.reports')}</p>
             <p className="text-2xl sm:text-3xl font-bold text-white tabular-nums tracking-tight">
               {formatNumber(stats.totalReports)}
             </p>
@@ -35,13 +37,14 @@ export default function Stats() {
         </div>
 
         {/* Stat Card 2 */}
-        <div className="glass-panel rounded-2xl p-6 flex items-center gap-4 hover:bg-slate-800/50 transition-colors cursor-default group">
-          <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center text-rose-500 group-hover:scale-110 transition-transform">
+        <div className="glass-panel rounded-2xl p-6 flex items-center gap-4 hover:bg-slate-800/50 transition-colors cursor-default group relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform relative z-10">
             <span className="material-symbols-outlined text-[28px]">gpp_bad</span>
           </div>
-          <div>
-            <p className="text-sm font-medium text-slate-400">Penipu Terverifikasi</p>
-            <p className="text-2xl sm:text-3xl font-bold text-white tabular-nums tracking-tight">
+          <div className="relative z-10">
+            <p className="text-sm font-medium text-slate-400">{t('stats.perpetrators')}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-amber-400 tabular-nums tracking-tight drop-shadow-sm">
               {formatNumber(stats.verifiedPerpetrators)}
             </p>
           </div>
@@ -53,7 +56,7 @@ export default function Stats() {
             <span className="material-symbols-outlined text-[28px]">search_check</span>
           </div>
           <div>
-            <p className="text-sm font-medium text-slate-400">Total Pengecekan</p>
+            <p className="text-sm font-medium text-slate-400">{t('stats.checks')}</p>
             <p className="text-2xl sm:text-3xl font-bold text-white tabular-nums tracking-tight">
               {formatNumber(stats.totalChecks)}
             </p>

@@ -80,6 +80,7 @@ export interface User {
   email: string
   role: 'user' | 'moderator' | 'admin'
   avatarUrl?: string
+  badges?: string[] | null
 }
 
 export interface AuthResponse {
@@ -198,7 +199,7 @@ export const perpetratorsApi = {
 // ─── Comments API ────────────────────────────────────────────────
 
 export const commentsApi = {
-  create: (data: { perpetratorId: string; content: string }, token: string) =>
+  create: (data: { perpetratorId: string; content: string; turnstileToken?: string }, token: string) =>
     request('/api/comments', { method: 'POST', body: data, token }),
 
   vote: (id: string, type: 'up' | 'down', token: string) =>

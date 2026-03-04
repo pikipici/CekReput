@@ -8,6 +8,7 @@ import StepOneForm from '../components/report/StepOneForm'
 import StepTwoForm from '../components/report/StepTwoForm'
 import StepThreeForm from '../components/report/StepThreeForm'
 import ReportFooter from '../components/report/ReportFooter'
+import SEO from '../components/SEO'
 
 export interface ReportFormData {
   accountType: 'bank' | 'ewallet' | 'phone'
@@ -26,6 +27,7 @@ export interface ReportFormData {
   lossAmount?: number | ''
   accountId?: string
   gameType?: string
+  turnstileToken?: string
 }
 
 const INITIAL_FORM: ReportFormData = {
@@ -45,6 +47,7 @@ const INITIAL_FORM: ReportFormData = {
   evidenceLink: '',
   accountId: '',
   gameType: '',
+  turnstileToken: '',
 }
 
 export default function ReportScam() {
@@ -103,6 +106,7 @@ export default function ReportScam() {
       socialMedia: form.socialMedia.filter(s => s.trim().length > 0),
       evidenceFiles: form.evidenceFiles,
       evidenceLink: form.evidenceLink,
+      turnstileToken: form.turnstileToken || '',
     }
 
     if (form.accountType === 'bank') {
@@ -129,7 +133,14 @@ export default function ReportScam() {
 
   if (submitSuccess) {
     return (
-      <div className="bg-navy-dark text-slate-100 min-h-screen flex flex-col font-display">
+      <>
+        <SEO
+          title="Laporan Berhasil Dikirim"
+          description="Laporan penipuan Anda telah berhasil dikirim ke CekReput. Tim moderator akan meninjau laporan ini."
+          canonical="https://cekreput.com/report"
+          noIndex={true}
+        />
+        <div className="bg-navy-dark text-slate-100 min-h-screen flex flex-col font-display">
         <div className="fixed inset-0 overflow-hidden pointer-events-none">
           <div className="orb bg-primary w-96 h-96 top-[-10%] left-[-10%] opacity-20"></div>
           <div className="orb bg-blue-600 w-[500px] h-[500px] bottom-[-10%] right-[-5%] opacity-10"></div>
@@ -162,11 +173,20 @@ export default function ReportScam() {
         </main>
         <ReportFooter />
       </div>
+      </>
     )
   }
 
   return (
-    <div className="bg-navy-dark text-slate-100 min-h-screen flex flex-col font-display selection:bg-primary/30 selection:text-primary-100 overflow-x-hidden">
+    <>
+      <SEO
+        title="Laporkan Penipuan"
+        description="Laporkan aktivitas penipuan ke CekReput. Bantu lindungi komunitas dengan mendokumentasikan aktivitas kecurangan secara aman dan anonim."
+        keywords="lapor penipuan, lapor scam, laporan penipuan online, cekreput"
+        canonical="https://cekreput.com/report"
+        noIndex={true}
+      />
+      <div className="bg-navy-dark text-slate-100 min-h-screen flex flex-col font-display selection:bg-primary/30 selection:text-primary-100 overflow-x-hidden">
       {/* Background Orbs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="orb bg-primary w-96 h-96 top-[-10%] left-[-10%] opacity-20"></div>
@@ -235,5 +255,6 @@ export default function ReportScam() {
 
       <ReportFooter />
     </div>
+    </>
   )
 }

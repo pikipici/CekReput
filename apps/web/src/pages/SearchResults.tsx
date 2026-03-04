@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
+import SEO from '../components/SEO'
 
 const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3001'
 
@@ -17,6 +18,8 @@ interface SearchResult {
   verifiedReports: number
   firstReported: string | null
   lastReported: string | null
+  matchedGameId?: string | null
+  matchedGameType?: string | null
 }
 
 const threatConfig: Record<string, { label: string; color: string; icon: string; bg: string; border: string }> = {
@@ -28,15 +31,24 @@ const threatConfig: Record<string, { label: string; color: string; icon: string;
 export default function SearchResults() {
   const [searchParams] = useSearchParams()
   const query = searchParams.get('q') ?? ''
+  const filterParam = searchParams.get('filter') ?? 'Semua'
+
   const [results, setResults] = useState<SearchResult[]>([])
   const [loading, setLoading] = useState(true)
   const [inputType, setInputType] = useState('')
   const [searchInput, setSearchInput] = useState(query)
+  const [searchFilter, setSearchFilter] = useState(filterParam)
 
   useEffect(() => {
     if (!query) { setLoading(false); return }
     setLoading(true)
-    fetch(`${API_BASE}/api/check?q=${encodeURIComponent(query)}`)
+    
+    let apiUrl = `${API_BASE}/api/check?q=${encodeURIComponent(query)}`
+    if (filterParam && filterParam !== 'Semua') {
+      apiUrl += `&filter=${encodeURIComponent(filterParam)}`
+    }
+
+    fetch(apiUrl)
       .then(r => r.json())
       .then(data => {
         setResults(data.results ?? [])
@@ -50,25 +62,58 @@ export default function SearchResults() {
     e.preventDefault()
     const q = searchInput.trim()
     if (!q) return
-    window.location.href = `/results?q=${encodeURIComponent(q)}`
+    let url = `/results?q=${encodeURIComponent(q)}`
+    if (searchFilter !== 'Semua') {
+      url += `&filter=${encodeURIComponent(searchFilter)}`
+    }
+    window.location.href = url
   }
 
   return (
-    <div className="bg-background-dark text-slate-100 min-h-screen flex flex-col font-display selection:bg-primary selection:text-surface-darker">
-      <Header />
+    <>
+      <SEO
+        title={`Hasil Pencarian: ${query || 'Cari Data'}`}
+        description={query ? `Hasil pencarian untuk "${query}". Cek reputasi rekening bank, nomor telepon, e-wallet, atau ID game dari database penipuan Indonesia.` : 'Cari data penipuan di database CekReput'}
+        keywords={`cek ${query || 'rekening penipu'}, database penipuan, verifikasi laporan`}
+        canonical={`https://cekreput.com/results?q=${encodeURIComponent(query || '')}`}
+        noIndex={!query}
+      />
+      <div className="bg-background-dark text-slate-100 min-h-screen flex flex-col font-display selection:bg-primary selection:text-surface-darker">
+        <Header />
 
-      <main className="flex-grow">
+        <main className="flex-grow">
         <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
           {/* Search Bar */}
           <form onSubmit={handleSearch} className="mb-8">
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="relative min-w-[140px] shrink-0">
+                <select 
+                  value={searchFilter}
+                  onChange={(e) => setSearchFilter(e.target.value)}
+                  className="w-full h-12 pl-10 pr-8 bg-slate-800/50 border border-slate-700 text-slate-200 text-sm rounded-xl focus:ring-primary focus:border-primary appearance-none cursor-pointer"
+                >
+                  <option value="Semua">Semua</option>
+                  <option value="Rekening Bank">Rekening Bank</option>
+                  <option value="E-Wallet">E-Wallet</option>
+                  <option value="Nomor Telepon">Nomor Telepon</option>
+                  <option value="ID Game">ID Game</option>
+                </select>
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">filter_list</span>
+                <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px] pointer-events-none">expand_more</span>
+              </div>
               <div className="flex-1 relative">
                 <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-primary text-[22px]">search</span>
                 <input
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   className="w-full h-12 pl-12 pr-4 bg-slate-800/50 border border-slate-700 text-white placeholder-slate-500 text-sm rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
-                  placeholder="Cari nomor rekening, e-wallet, atau telepon..."
+                  placeholder={
+                    searchFilter === 'Rekening Bank' ? 'Masukkan nomor rekening bank...' :
+                    searchFilter === 'E-Wallet' ? 'Masukkan nomor e-wallet...' :
+                    searchFilter === 'Nomor Telepon' ? 'Masukkan nomor telepon...' :
+                    searchFilter === 'ID Game' ? 'Masukkan ID game...' :
+                    'Cari nomor rekening, telepon, atau ID game...'
+                  }
                 />
               </div>
               <button
@@ -138,7 +183,7 @@ export default function SearchResults() {
                 return (
                   <Link
                     key={item.id}
-                    to={`/profile/${item.id}`}
+                    to={`/profile/${item.id}${item.matchedGameId ? `?gameId=${encodeURIComponent(item.matchedGameId)}&gameType=${encodeURIComponent(item.matchedGameType || '')}` : ''}`}
                     className="block rounded-2xl border border-white/5 bg-white/[0.02] p-5 hover:bg-white/[0.04] hover:border-white/10 transition-all group"
                   >
                     <div className="flex items-start justify-between gap-4">
@@ -153,7 +198,7 @@ export default function SearchResults() {
                           {/* Identity */}
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-mono text-base font-bold text-white">
-                              {item.accountNumber ?? item.phoneNumber ?? item.entityName ?? '—'}
+                              {item.matchedGameId ? item.matchedGameId : (item.accountNumber ?? item.phoneNumber ?? item.entityName ?? '—')}
                             </span>
                             <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-md border ${threat.bg} ${threat.border} ${threat.color}`}>
                               {threat.label}
@@ -162,10 +207,20 @@ export default function SearchResults() {
 
                           {/* Meta */}
                           <div className="flex items-center gap-4 text-xs text-slate-500">
-                            {item.bankName && (
+                            {item.matchedGameId ? (
+                              <span className="flex items-center gap-1">
+                                <span className="material-symbols-outlined text-[14px]">sports_esports</span>
+                                {item.matchedGameType}
+                              </span>
+                            ) : item.bankName ? (
                               <span className="flex items-center gap-1">
                                 <span className="material-symbols-outlined text-[14px]">account_balance</span>
                                 {item.bankName}
+                              </span>
+                            ) : (
+                              <span className="flex items-center gap-1 capitalize">
+                                <span className="material-symbols-outlined text-[14px]">{item.accountType === 'phone' ? 'smartphone' : 'storefront'}</span>
+                                {item.accountType}
                               </span>
                             )}
                             <span className="flex items-center gap-1">
@@ -206,5 +261,6 @@ export default function SearchResults() {
 
       <Footer />
     </div>
+    </>
   )
 }

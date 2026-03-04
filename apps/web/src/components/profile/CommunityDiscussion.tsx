@@ -3,6 +3,9 @@ import { useParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { perpetratorsApi, commentsApi } from '../../lib/api'
 import AuthModal from '../AuthModal'
+import UserBadge from './UserBadge'
+import { Turnstile } from '@marsidev/react-turnstile'
+import type { TurnstileInstance } from '@marsidev/react-turnstile'
 
 interface Comment {
   id: string
@@ -14,6 +17,7 @@ interface Comment {
     id: string
     name: string
     role: string
+    badges?: string[]
   }
 }
 
@@ -40,6 +44,8 @@ export default function CommunityDiscussion() {
   const [showLoginPrompt, setShowLoginPrompt] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+  const turnstileRef = useRef<TurnstileInstance>(null)
   
   // Force re-render periodically to update timestamps
   const [, setNowTick] = useState(0)
@@ -94,7 +100,8 @@ export default function CommunityDiscussion() {
     try {
       const res = await commentsApi.create({
         perpetratorId: id,
-        content: message
+        content: message,
+        turnstileToken: turnstileToken || '',
       }, token)
       
       if (res.data && (res.data as any).comment) {
@@ -109,8 +116,11 @@ export default function CommunityDiscussion() {
         }
         setComments(prev => [newCom, ...prev])
       }
-    } catch (err) {
+      } catch (err) {
       console.error("Error creating comment: ", err)
+      // Reset turnstile on error so they can try again
+      turnstileRef.current?.reset()
+      setTurnstileToken(null)
     } finally {
       setIsSubmitting(false)
     }
@@ -163,12 +173,15 @@ export default function CommunityDiscussion() {
                     </div>
                   </div>
                   <div className="flex-1">
-                    <div className="flex justify-between items-baseline">
-                      <p className="text-xs font-bold text-white flex items-center gap-1">
-                        {comment.user.name}
-                        {isAdmin && <span className="material-symbols-outlined text-[12px] text-amber-500" title="Admin">shield_person</span>}
-                      </p>
-                      <span className="text-[10px] text-slate-500">{displayTime}</span>
+                    <div className="flex justify-between items-baseline mb-2">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                        <p className="text-xs font-bold text-white flex items-center gap-1">
+                          {comment.user.name}
+                          {isAdmin && <span className="material-symbols-outlined text-[12px] text-amber-500" title="Admin">shield_person</span>}
+                        </p>
+                        <UserBadge badges={comment.user.badges} />
+                      </div>
+                      <span className="text-[10px] text-slate-500 shrink-0">{displayTime}</span>
                     </div>
                     <p className="text-xs text-slate-300 mt-1 leading-relaxed">{comment.content}</p>
                     <div className="flex items-center gap-3 mt-2">
@@ -188,7 +201,17 @@ export default function CommunityDiscussion() {
         </div>
 
         {/* Comment Input */}
-        <div className="mt-auto pt-4 border-t border-slate-700/50">
+        <div className="mt-auto pt-4 border-t border-slate-700/50 flex flex-col gap-2">
+          {user && (
+             <div className="self-end my-1">
+               <Turnstile
+                 siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
+                 onSuccess={(t) => setTurnstileToken(t)}
+                 ref={turnstileRef}
+                 options={{ size: 'flexible', theme: 'dark' }}
+               />
+             </div>
+          )}
           <div className="flex items-center gap-2 bg-[#10231f] border border-[#214a42] rounded-full px-4 py-2 focus-within:ring-1 focus-within:ring-primary focus-within:border-primary">
             <input 
               type="text"
@@ -208,7 +231,7 @@ export default function CommunityDiscussion() {
             />
             <button 
               onClick={handleSend}
-              disabled={(!newComment.trim() || !user)}
+              disabled={(!newComment.trim() || !user || !turnstileToken)}
               className="shrink-0 bg-primary text-[#0f231f] h-7 w-7 flex items-center justify-center rounded-full hover:bg-primary-dark transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <span className="material-symbols-outlined text-[16px]">send</span>

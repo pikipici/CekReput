@@ -4,7 +4,7 @@ export default function ProfileFooter() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2 text-white">
           <span className="material-symbols-outlined text-primary">shield_lock</span>
-          <span className="text-sm font-medium">© 2024 CekReput. Community-driven fraud prevention.</span>
+          <span className="text-sm font-medium">© 2026 CekReput. Community-driven fraud prevention.</span>
         </div>
         <div className="flex gap-6 text-sm text-slate-400">
           <a className="hover:text-primary" href="#">Privacy Policy</a>

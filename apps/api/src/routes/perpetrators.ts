@@ -123,6 +123,7 @@ perpetratorsRouter.get('/:id/comments', zValidator('query', paginationSchema), a
         id: users.id,
         name: users.name,
         role: users.role,
+        badges: users.badges,
       }
     })
     .from(comments)

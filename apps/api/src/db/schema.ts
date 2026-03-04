@@ -31,6 +31,8 @@ export const users = pgTable('users', {
   googleId: varchar('google_id', { length: 255 }).unique(),
   avatarUrl: varchar('avatar_url', { length: 500 }),
   bio: text('bio'),
+  reputationScore: integer('reputation_score').notNull().default(0),
+  badges: text('badges').array(),
   role: userRoleEnum('role').notNull().default('user'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
