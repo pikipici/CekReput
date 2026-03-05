@@ -54,9 +54,9 @@ async function request<T = unknown>(
       // Parse Zod error objects
       if (typeof data.error === 'object' && data.error !== null) {
         if (Array.isArray(data.error.issues)) {
-          errorMessage = data.error.issues.map((i: any) => i.message).join(', ')
+          errorMessage = data.error.issues.map((i: { message?: string }) => i.message ?? 'Invalid input').join(', ')
         } else if (Array.isArray(data.error)) {
-          errorMessage = data.error.map((i: any) => i.message || JSON.stringify(i)).join(', ')
+          errorMessage = data.error.map((i: { message?: string }) => i.message ?? 'Unknown error').join(', ')
         } else {
           errorMessage = JSON.stringify(data.error)
         }
@@ -142,6 +142,16 @@ export const checkApi = {
 
 // ─── Reports API ─────────────────────────────────────────────────
 
+export interface EvidenceFile {
+  id: string
+  reportId: string
+  fileUrl: string
+  fileName: string
+  mimeType: string
+  fileSizeBytes: number
+  uploadedAt: string
+}
+
 export interface Report {
   id: string
   perpetratorId: string
@@ -152,6 +162,29 @@ export interface Report {
   lossAmount: number | null
   status: 'pending' | 'verified' | 'rejected'
   createdAt: string
+  evidence?: EvidenceFile[]
+  reporterName?: string
+}
+
+export interface Clarification {
+  id: string
+  perpetratorId: string
+  requesterId: string
+  statement: string
+  status: 'pending' | 'approved' | 'rejected'
+  evidenceUrls: string[] | null
+  identityPhotoUrl: string | null
+  selfiePhotoUrl: string | null
+  identityName: string | null
+  identityNik: string | null
+  relationType: string | null
+  createdAt: string
+  // Additional fields from admin endpoint
+  perpetratorData?: { accountNumber: string | null; phoneNumber: string | null; entityName: string | null; bankName: string | null }
+  perpetratorPhone?: string
+  perpetratorName?: string
+  requesterName?: string
+  requesterEmail?: string
 }
 
 export const reportsApi = {
@@ -190,13 +223,28 @@ export const perpetratorsApi = {
     request(`/api/perpetrators/${id}/timeline`),
 
   getClarifications: (id: string) =>
-    request<{ clarifications: any[] }>(`/api/perpetrators/${id}/clarifications`),
+    request<{ clarifications: Clarification[] }>(`/api/perpetrators/${id}/clarifications`),
 
   getComments: (id: string, page = 1) =>
-    request<{ comments: any[]; page: number; limit: number }>(`/api/perpetrators/${id}/comments?page=${page}`),
+    request<{ comments: UserComment[]; page: number; limit: number }>(`/api/perpetrators/${id}/comments?page=${page}`),
 }
 
 // ─── Comments API ────────────────────────────────────────────────
+
+export interface UserComment {
+  id: string
+  content: string
+  upvotes: number
+  downvotes: number
+  createdAt: string
+  perpetrator: {
+    id: string
+    entityName: string | null
+    accountNumber: string | null
+    phoneNumber: string | null
+    bankName: string | null
+  }
+}
 
 export const commentsApi = {
   create: (data: { perpetratorId: string; content: string; turnstileToken?: string }, token: string) =>
@@ -224,8 +272,18 @@ export const usersApi = {
 
 // ─── Clarifications API ──────────────────────────────────────────
 
+export interface CreateClarificationData {
+  statement: string
+  evidenceUrls?: string[]
+  identityPhotoUrl?: string
+  selfiePhotoUrl?: string
+  identityName?: string
+  identityNik?: string
+  relationType?: string
+}
+
 export const clarificationsApi = {
-  create: (data: any, token: string) =>
+  create: (data: CreateClarificationData, token: string) =>
     request('/api/clarifications', { method: 'POST', body: data, token }),
 
   getPending: (page = 1, token: string) =>

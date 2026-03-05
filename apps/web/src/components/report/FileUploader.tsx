@@ -94,7 +94,7 @@ export default function FileUploader({ files, onChange, maxFiles = 3 }: FileUplo
         } else {
           newUploadedFiles.push(data.file)
         }
-      } catch (err) {
+      } catch {
         setError('Terjadi kesalahan jaringan saat mengunggah.')
       }
     }

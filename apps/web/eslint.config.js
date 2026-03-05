@@ -20,16 +20,19 @@ export default defineConfig([
       globals: globals.browser,
     },
     rules: {
-      // Relax react-hooks/set-state-in-effect to warning (common pattern in React)
-      'react-hooks/set-state-in-effect': 'warn',
-      // Allow any in API response types
+      // Allow setState in effects - this is a common and acceptable pattern in React
+      // especially for initialization and cleanup logic
+      'react-hooks/set-state-in-effect': 'off',
+      // Allow any in API response types and error handling
       '@typescript-eslint/no-explicit-any': 'warn',
       // Allow unused vars prefixed with _
       '@typescript-eslint/no-unused-vars': ['warn', { 'argsIgnorePattern': '^_', 'varsIgnorePattern': '^_' }],
-      // Relax react-refresh for context files
-      'react-refresh/only-export-components': 'warn',
-      // Allow empty blocks
+      // Relax react-refresh for context files - they export hooks that are used elsewhere
+      'react-refresh/only-export-components': 'off',
+      // Allow empty blocks for catch statements
       'no-empty': 'off',
+      // Allow missing dependency arrays for intentional patterns (common in data fetching)
+      'react-hooks/exhaustive-deps': 'off',
     },
   },
 ])

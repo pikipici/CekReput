@@ -79,8 +79,8 @@ export default function UserProfilePage() {
           setEditBio(res.data.user.bio || '')
           setEditAvatarUrl(res.data.user.avatarUrl || '')
         }
-      } catch (err: any) {
-        setError(err.message || 'Terjadi kesalahan saat memuat profil.')
+      } catch (err: unknown) {
+        setError((err as Error).message || 'Terjadi kesalahan saat memuat profil.')
       } finally {
         setLoading(false)
       }
@@ -129,8 +129,8 @@ export default function UserProfilePage() {
         setProfile((prev) => prev ? { ...prev, name: editName, bio: editBio, avatarUrl: editAvatarUrl || null } : null)
         setIsEditing(false)
       }
-    } catch (err: any) {
-      setError(err.message || 'Gagal menyimpan profil')
+    } catch (err: unknown) {
+      setError((err as Error).message || 'Gagal menyimpan profil')
     } finally {
       setIsSaving(false)
     }

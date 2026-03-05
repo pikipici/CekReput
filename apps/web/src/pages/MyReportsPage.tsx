@@ -34,8 +34,8 @@ export default function MyReportsPage() {
           setReports(res.data.reports || [])
           setHasMore((res.data.reports || []).length === limit)
         }
-      } catch (err: any) {
-        setError(err.message || 'Terjadi kesalahan saat mengambil data laporan')
+      } catch (err: unknown) {
+        setError((err as Error).message || 'Terjadi kesalahan saat mengambil data laporan')
       } finally {
         setLoading(false)
       }

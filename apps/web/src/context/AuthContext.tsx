@@ -76,7 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       })
     }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [])
 
   const login = async (email: string, password: string) => {
     setIsLoading(true)

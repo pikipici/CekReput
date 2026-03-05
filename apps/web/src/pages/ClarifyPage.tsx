@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { perpetratorsApi, clarificationsApi } from '../lib/api'
+import { perpetratorsApi, clarificationsApi, type Perpetrator } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import Header from '../components/Header'
 import FileUploader, { type UploadedFile } from '../components/report/FileUploader'
@@ -11,7 +11,7 @@ export default function ClarifyPage() {
   const navigate = useNavigate()
   const { token } = useAuth()
 
-  const [perpetrator, setPerpetrator] = useState<any>(null)
+  const [perpetrator, setPerpetrator] = useState<Perpetrator | null>(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -38,7 +38,7 @@ export default function ClarifyPage() {
 
     if (id) {
       perpetratorsApi.getById(id)
-        .then(res => setPerpetrator(res.data?.perpetrator))
+        .then(res => setPerpetrator(res.data?.perpetrator ?? null))
         .catch(() => setError('Data pelaku tidak ditemukan'))
         .finally(() => setLoading(false))
     }
@@ -79,11 +79,10 @@ export default function ClarifyPage() {
 
       // 2. Submit clarification
       const res = await clarificationsApi.create({
-        perpetratorId: id,
-        identityName: formData.identityName,
-        identityNik: formData.identityNik,
+        identityName: formData.identityName ?? undefined,
+        identityNik: formData.identityNik ?? undefined,
         statement: formData.statement,
-        relationType: finalRelationType,
+        relationType: finalRelationType ?? undefined,
         evidenceUrls: evidenceUrls.length > 0 ? evidenceUrls : undefined,
         identityPhotoUrl,
         selfiePhotoUrl,
@@ -95,8 +94,8 @@ export default function ClarifyPage() {
       }
 
       setSuccess(true)
-    } catch (err: any) {
-      setError(err.message || 'Terjadi kesalahan saat mengirim pengajuan')
+    } catch (err: unknown) {
+      setError((err as Error).message || 'Terjadi kesalahan saat mengirim pengajuan')
     } finally {
       setSubmitting(false)
     }

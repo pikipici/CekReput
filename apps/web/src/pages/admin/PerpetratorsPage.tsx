@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import Pagination from '../../components/admin/Pagination'
 import DetailModal, { DetailRow } from '../../components/admin/DetailModal'
-import { reportsApi } from '../../lib/api'
+import { reportsApi, type Report, type EvidenceFile } from '../../lib/api'
 
 interface PerpetratorRow {
   id: string
@@ -41,9 +41,9 @@ export default function PerpetratorsPage() {
   // Report Modals State
   const [reportsModalPerpId, setReportsModalPerpId] = useState<string | null>(null)
   const [reportsModalType, setReportsModalType] = useState<'all' | 'verified'>('verified')
-  const [modalReportsList, setModalReportsList] = useState<any[]>([])
+  const [modalReportsList, setModalReportsList] = useState<Report[]>([])
   const [loadingReports, setLoadingReports] = useState(false)
-  const [viewReport, setViewReport] = useState<any | null>(null)
+  const [viewReport, setViewReport] = useState<Report | null>(null)
   const [loadingReportDetail, setLoadingReportDetail] = useState(false)
 
   useEffect(() => {
@@ -63,7 +63,7 @@ export default function PerpetratorsPage() {
   const handleViewReportDetail = (reportId: string) => {
     setLoadingReportDetail(true)
     reportsApi.getById(reportId)
-      .then(res => setViewReport(res.data))
+      .then(res => setViewReport(res.data?.report ?? null))
       .catch(() => {})
       .finally(() => setLoadingReportDetail(false))
   }
@@ -256,21 +256,21 @@ export default function PerpetratorsPage() {
           <div className="flex justify-center py-8">
             <span className="material-symbols-outlined animate-spin text-primary text-3xl">progress_activity</span>
           </div>
-        ) : viewReport?.report ? (
+        ) : viewReport ? (
           <>
-            <DetailRow label="ID Laporan" value={viewReport.report.id} mono />
-            <DetailRow label="ID Pelapor" value={viewReport.report.reporterId} mono />
-            <DetailRow label="Kategori" value={viewReport.report.category} />
-            <DetailRow label="Tanggal Kejadian" value={new Date(viewReport.report.incidentDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })} />
-            {viewReport.report.lossAmount !== null && (
-              <DetailRow label="Kerugian" value={`Rp ${viewReport.report.lossAmount.toLocaleString('id-ID')}`} />
+            <DetailRow label="ID Laporan" value={viewReport.id} mono />
+            <DetailRow label="ID Pelapor" value={viewReport.reporterId} mono />
+            <DetailRow label="Kategori" value={viewReport.category} />
+            <DetailRow label="Tanggal Kejadian" value={new Date(viewReport.incidentDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })} />
+            {viewReport.lossAmount !== null && (
+              <DetailRow label="Kerugian" value={`Rp ${viewReport.lossAmount.toLocaleString('id-ID')}`} />
             )}
             {(() => {
-              let displayChro = viewReport.report.chronology
-              let gameType = null
-              let accountId = null
+              let displayChro = viewReport.chronology
+              let gameType: string | null = null
+              let accountId: string | null = null
 
-              if (viewReport.report.category === 'hackback') {
+              if (viewReport.category === 'hackback') {
                 const match = displayChro.match(/^\[Target Hak milik: Akun (.+?) \((.+?)\)\]\s*\n\n([\s\S]*)$/)
                 if (match) {
                   gameType = match[1]
@@ -298,7 +298,7 @@ export default function PerpetratorsPage() {
               <div className="pt-2 border-t border-white/5 mt-2">
                 <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">File Bukti</span>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {viewReport.evidence.map((file: any) => (
+                  {viewReport.evidence.map((file: EvidenceFile) => (
                     <a key={file.id} href={file.fileUrl} target="_blank" rel="noreferrer" className="px-3 py-2 bg-slate-800 rounded-lg text-xs text-primary hover:bg-slate-700 flex items-center gap-1">
                       <span className="material-symbols-outlined text-[16px]">attachment</span>
                       {file.fileName}

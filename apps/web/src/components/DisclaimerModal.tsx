@@ -4,12 +4,14 @@ const STORAGE_KEY = 'cekreput_disclaimer_accepted'
 
 export default function DisclaimerModal() {
   const [isOpen, setIsOpen] = useState(false)
+  const [hasChecked, setHasChecked] = useState(false)
 
   useEffect(() => {
     const accepted = localStorage.getItem(STORAGE_KEY)
     if (!accepted) {
       setIsOpen(true)
     }
+    setHasChecked(true)
   }, [])
 
   const handleAccept = () => {
@@ -17,7 +19,8 @@ export default function DisclaimerModal() {
     setIsOpen(false)
   }
 
-  if (!isOpen) return null
+  // Don't render until we've checked localStorage
+  if (!hasChecked || !isOpen) return null
 
   return (
     <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center px-3 sm:px-4 pb-3 sm:pb-0 bg-black/70 backdrop-blur-md">

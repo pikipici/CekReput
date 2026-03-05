@@ -66,11 +66,15 @@ export default function CommunityDiscussion() {
       setLoading(true)
       try {
         const res = await perpetratorsApi.getComments(id)
-        if (res.data) {
-          setComments(res.data.comments || [])
+        if (res.data?.comments) {
+          // Map UserComment to Comment format
+          setComments(res.data.comments.map(c => ({
+            ...c,
+            user: { id: 'unknown', name: 'Anonymous', role: 'user' }
+          })))
         }
-      } catch (err) {
-        console.error('Gagal mengambil komentar:', err)
+      } catch {
+        console.error('Gagal mengambil komentar:')
       } finally {
         setLoading(false)
       }
@@ -104,10 +108,10 @@ export default function CommunityDiscussion() {
         turnstileToken: turnstileToken || '',
       }, token)
       
-      if (res.data && (res.data as any).comment) {
+      if (res.data && typeof res.data === 'object' && 'comment' in res.data) {
         // Construct the new comment with current user info
         const newCom: Comment = {
-          ...(res.data as any).comment,
+          ...(res.data as { comment: Comment }).comment,
           user: {
             id: user.id || '',
             name: user.name || 'Anda',
@@ -116,8 +120,8 @@ export default function CommunityDiscussion() {
         }
         setComments(prev => [newCom, ...prev])
       }
-      } catch (err) {
-      console.error("Error creating comment: ", err)
+      } catch {
+      console.error('Error creating comment')
       // Reset turnstile on error so they can try again
       turnstileRef.current?.reset()
       setTurnstileToken(null)
@@ -137,7 +141,7 @@ export default function CommunityDiscussion() {
         c.id === commentId ? { ...c, upvotes: c.upvotes + 1 } : c
       ))
       await commentsApi.vote(commentId, 'up', token)
-    } catch (err) {
+    } catch {
       // Revert on error
       setComments(comments.map(c => 
         c.id === commentId ? { ...c, upvotes: c.upvotes - 1 } : c

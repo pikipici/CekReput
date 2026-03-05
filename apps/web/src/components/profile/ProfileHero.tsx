@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { perpetratorsApi } from '../../lib/api'
-import type { Perpetrator } from '../../lib/api'
+import type { Perpetrator, Clarification } from '../../lib/api'
 import { Link } from 'react-router-dom'
 
 interface ProfileHeroProps {
@@ -26,7 +26,7 @@ export default function ProfileHero({ perpetrator, matchedGameId, matchedGameTyp
   const [showAllNames, setShowAllNames] = useState(false)
   const [showSocialModal, setShowSocialModal] = useState(false)
   const [verifiedEvidence, setVerifiedEvidence] = useState<VerifiedEvidence[]>([])
-  const [clarifications, setClarifications] = useState<any[]>([])
+  const [clarifications, setClarifications] = useState<Clarification[]>([])
   
   // Modal states
   const [showEvidenceListModal, setShowEvidenceListModal] = useState(false)

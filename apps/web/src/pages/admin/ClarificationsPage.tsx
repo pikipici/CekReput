@@ -1,18 +1,18 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
-import { clarificationsApi } from '../../lib/api'
+import { clarificationsApi, type Clarification } from '../../lib/api'
 
 export default function ClarificationsPage() {
   const { token } = useAuth()
-  const [clarifications, setClarifications] = useState<any[]>([])
+  const [clarifications, setClarifications] = useState<Clarification[]>([])
   const [loading, setLoading] = useState(true)
-  
+
   // Modal State
-  const [selectedClarification, setSelectedClarification] = useState<any | null>(null)
+  const [selectedClarification, setSelectedClarification] = useState<Clarification | null>(null)
   const [resetThreat, setResetThreat] = useState(false)
   const [processing, setProcessing] = useState(false)
 
-  const handleDownloadEvidence = async (clarification: any) => {
+  const handleDownloadEvidence = async (clarification: Clarification) => {
     if (!clarification.evidenceUrls || clarification.evidenceUrls.length === 0) return
 
     try {
@@ -36,7 +36,7 @@ export default function ClarificationsPage() {
       const { saveAs } = await import('file-saver')
       
       const zip = new JSZip()
-      const perpName = clarification.perpetratorData || clarification.perpetratorPhone || clarification.perpetratorName || 'Unknown'
+      const perpName = typeof clarification.perpetratorData === 'string' ? clarification.perpetratorData : (clarification.perpetratorPhone || clarification.perpetratorName || 'Unknown')
       const folderName = `Klarifikasi_Bukti_${perpName.replace(/[^a-zA-Z0-9]/g, '_')}_${clarification.id.substring(0,8)}`
       const folder = zip.folder(folderName)
       
@@ -59,7 +59,7 @@ export default function ClarificationsPage() {
           try {
              const u = new URL(url)
              filename = u.pathname.split('/').pop() || filename
-          } catch(e) {}
+          } catch {}
         }
         folder?.file(filename, blob)
       })
@@ -80,9 +80,10 @@ export default function ClarificationsPage() {
     setLoading(true)
     try {
       const res = await clarificationsApi.getPending(1, token)
-      setClarifications((res as any).data?.clarifications || [])
-    } catch (error) {
-      console.error(error)
+      const data = res.data as { clarifications?: Clarification[] } | undefined
+      setClarifications(data?.clarifications ?? [])
+    } catch {
+      console.error('Failed to fetch clarifications')
     } finally {
       setLoading(false)
     }
@@ -106,7 +107,7 @@ export default function ClarificationsPage() {
       setClarifications(prev => prev.filter(c => c.id !== selectedClarification.id))
       setSelectedClarification(null)
       setResetThreat(false)
-    } catch (error) {
+    } catch {
       alert('Gagal memproses klarifikasi')
     } finally {
       setProcessing(false)
@@ -161,7 +162,7 @@ export default function ClarificationsPage() {
                       {new Date(item.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </td>
                     <td className="px-6 py-4 font-mono font-bold text-white">
-                      {item.perpetratorData || item.perpetratorPhone || item.perpetratorName}
+                      {typeof item.perpetratorData === 'string' ? item.perpetratorData : (item.perpetratorPhone || item.perpetratorName || '-')}
                     </td>
                     <td className="px-6 py-4">
                       {item.identityName}
@@ -224,17 +225,17 @@ export default function ClarificationsPage() {
                     </div>
 
                     <div className="space-y-4">
-                      <div className="bg-slate-950 border border-slate-800 rounded-xl p-2 relative group cursor-pointer" onClick={() => window.open(selectedClarification.identityPhotoUrl, '_blank')}>
+                      <div className="bg-slate-950 border border-slate-800 rounded-xl p-2 relative group cursor-pointer" onClick={() => selectedClarification.identityPhotoUrl && window.open(selectedClarification.identityPhotoUrl, '_blank')}>
                         <span className="absolute top-2 right-2 px-2 py-1 bg-black/60 backdrop-blur rounded text-[10px] text-white font-bold tracking-widest uppercase z-10 pointer-events-none">FOTO KTP</span>
-                        <img src={selectedClarification.identityPhotoUrl} alt="KTP" className="w-full h-40 object-cover rounded-lg group-hover:opacity-80 transition-opacity" />
+                        <img src={selectedClarification.identityPhotoUrl ?? ''} alt="KTP" className="w-full h-40 object-cover rounded-lg group-hover:opacity-80 transition-opacity" />
                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                           <span className="material-symbols-outlined text-white text-3xl drop-shadow-md">open_in_new</span>
                         </div>
                       </div>
 
-                      <div className="bg-slate-950 border border-slate-800 rounded-xl p-2 relative group cursor-pointer" onClick={() => window.open(selectedClarification.selfiePhotoUrl, '_blank')}>
+                      <div className="bg-slate-950 border border-slate-800 rounded-xl p-2 relative group cursor-pointer" onClick={() => selectedClarification.selfiePhotoUrl && window.open(selectedClarification.selfiePhotoUrl, '_blank')}>
                          <span className="absolute top-2 right-2 px-2 py-1 bg-black/60 backdrop-blur rounded text-[10px] text-white font-bold tracking-widest uppercase z-10 pointer-events-none">SELFIE + KTP</span>
-                        <img src={selectedClarification.selfiePhotoUrl} alt="Selfie" className="w-full h-40 object-cover rounded-lg group-hover:opacity-80 transition-opacity" />
+                        <img src={selectedClarification.selfiePhotoUrl ?? ''} alt="Selfie" className="w-full h-40 object-cover rounded-lg group-hover:opacity-80 transition-opacity" />
                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                           <span className="material-symbols-outlined text-white text-3xl drop-shadow-md">open_in_new</span>
                         </div>
@@ -250,8 +251,8 @@ export default function ClarificationsPage() {
                     
                     <div className="bg-background-dark border border-slate-800 rounded-xl p-4 mb-4">
                       <p className="text-xs text-slate-400 font-semibold mb-1">Target Data:</p>
-                      <p className="font-bold text-white text-lg font-mono">{selectedClarification.perpetratorData || selectedClarification.perpetratorPhone || selectedClarification.perpetratorName}</p>
-                      <p className="text-xs text-slate-500 mt-1">Diajukan oleh: {selectedClarification.requesterName} ({selectedClarification.requesterEmail})</p>
+                      <p className="font-bold text-white text-lg font-mono">{typeof selectedClarification.perpetratorData === 'string' ? selectedClarification.perpetratorData : (selectedClarification.perpetratorPhone || selectedClarification.perpetratorName || '-')}</p>
+                      <p className="text-xs text-slate-500 mt-1">Diajukan oleh: {selectedClarification.requesterName ?? '-'} ({selectedClarification.requesterEmail ?? '-'})</p>
                     </div>
 
                     <div className="bg-slate-950 border border-slate-800 rounded-xl p-5 mb-6">

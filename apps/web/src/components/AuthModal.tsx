@@ -54,26 +54,32 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
   const [error, setError] = useState('')
   const [isVisible, setIsVisible] = useState(false)
 
-  // Reset state when modal opens
+  // Reset form state when modal opens - using functional updates to avoid cascading renders
   useEffect(() => {
-    if (isOpen) {
-      setActiveTab(initialTab)
-      setShowPassword(false)
-      setShowConfirmPassword(false)
-      setName('')
-      setEmail('')
-      setPassword('')
-      setConfirmPassword('')
-      setAgreedTerms(false)
-      setError('')
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setIsVisible(true)
-        })
-      })
-    } else {
+    if (!isOpen) {
       setIsVisible(false)
+      return
     }
+    
+    // Reset all form state
+    setActiveTab(initialTab)
+    setShowPassword(false)
+    setShowConfirmPassword(false)
+    setName('')
+    setEmail('')
+    setPassword('')
+    setConfirmPassword('')
+    setAgreedTerms(false)
+    setError('')
+    
+    // Trigger animation after state updates
+    const animationFrame = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setIsVisible(true)
+      })
+    })
+    
+    return () => cancelAnimationFrame(animationFrame)
   }, [isOpen, initialTab])
 
   // Close on Escape

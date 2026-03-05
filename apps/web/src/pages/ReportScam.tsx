@@ -97,7 +97,7 @@ export default function ReportScam() {
       finalChronology = `[Target Hak milik: Akun ${form.gameType} (${form.accountId})]\n\n${form.chronology}`
     }
 
-    const payload: Record<string, any> = {
+    const payload: Record<string, unknown> = {
       accountType: form.accountType,
       category: form.category,
       chronology: finalChronology,

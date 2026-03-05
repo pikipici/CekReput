@@ -30,11 +30,17 @@ export default function DetailedReports({ perpetratorId }: DetailedReportsProps)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (perpetratorId) {
-      setIsLoading(true)
-      perpetratorsApi.getReports(perpetratorId)
-        .then(({ data }) => {
-          if (data && data.reports) {
+    if (!perpetratorId) {
+      setIsLoading(false)
+      return
+    }
+    
+    let mounted = true
+    setIsLoading(true)
+    
+    perpetratorsApi.getReports(perpetratorId)
+      .then(({ data }) => {
+        if (mounted && data && data.reports) {
             // Map the API Report to our component's ReportData representation
             const mapped = data.reports.map((r: Report, idx: number) => {
               const dateObj = new Date(r.createdAt)
@@ -63,7 +69,12 @@ export default function DetailedReports({ perpetratorId }: DetailedReportsProps)
           }
           setIsLoading(false)
         })
-        .catch(() => setIsLoading(false))
+        .catch(() => {
+          if (mounted) setIsLoading(false)
+        })
+    
+    return () => {
+      mounted = false
     }
   }, [perpetratorId])
 

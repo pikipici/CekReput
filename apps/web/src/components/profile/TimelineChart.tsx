@@ -30,12 +30,16 @@ export default function TimelineChart({ perpetratorId }: TimelineChartProps) {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (!perpetratorId) return
+    if (!perpetratorId) {
+      setLoading(false)
+      return
+    }
     let mounted = true
     setLoading(true)
-    perpetratorsApi.getTimeline(perpetratorId).then((res: any) => {
-      if (mounted && res.data?.timeline) {
-        setTimelineData(res.data.timeline)
+    perpetratorsApi.getTimeline(perpetratorId).then((res) => {
+      const timelineRes = res.data as { timeline?: TimelineItem[] } | undefined
+      if (mounted && timelineRes?.timeline) {
+        setTimelineData(timelineRes.timeline)
       }
       if (mounted) setLoading(false)
     })

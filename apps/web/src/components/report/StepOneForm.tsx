@@ -52,9 +52,9 @@ export default function StepOneForm({ isActive, form, updateForm, onNext }: Step
   // and checking it for `canProceed`. Wait, `updateForm` accepts Partial<ReportFormData>. We can just cast.
 
   const isCustomBank = form.bankName === 'Lainnya'
-  
-  // A hacky safe way to inject customBankName without strictly breaking ts interface in this file if we ignore ts for it or augment it
-  const customBankName = (form as any).customBankName || ''
+
+  // Get custom bank name from form data
+  const customBankName = (form as ReportFormData & { customBankName?: string }).customBankName || ''
 
   const canProceed =
     (form.accountType === 'bank' && form.bankName && (isCustomBank ? customBankName.length > 0 : true) && form.accountNumber) ||
@@ -93,7 +93,7 @@ export default function StepOneForm({ isActive, form, updateForm, onNext }: Step
               <button
                 key={type}
                 type="button"
-                onClick={() => updateForm({ accountType: type, bankName: '', accountNumber: '', phoneNumber: '', ...({ customBankName: '' } as any) })}
+                onClick={() => updateForm({ accountType: type, bankName: '', accountNumber: '', phoneNumber: '', customBankName: '' } as Partial<ReportFormData> & { customBankName: string })}
                 className={`relative flex items-center gap-3 rounded-xl border px-4 py-3.5 text-left transition-all ${
                   isSelected
                     ? 'border-primary bg-primary/10 text-primary ring-1 ring-primary/30'
@@ -150,7 +150,7 @@ export default function StepOneForm({ isActive, form, updateForm, onNext }: Step
                   <input
                     type="text"
                     value={customBankName}
-                    onChange={(e) => updateForm({ customBankName: e.target.value } as any)}
+                    onChange={(e) => updateForm({ customBankName: e.target.value } as Partial<ReportFormData> & { customBankName: string })}
                     className="glass-input w-full rounded-lg pl-4 pr-10 py-3 placeholder:text-slate-500 focus:ring-0 text-slate-100 border-primary/50"
                     placeholder={`Ketik nama ${form.accountType === 'bank' ? 'bank' : 'e-wallet'}...`}
                     autoFocus
