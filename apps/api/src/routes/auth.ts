@@ -86,6 +86,21 @@ auth.post('/google', async (c) => {
     email: string
     name: string
     picture: string
+    aud: string
+    iss: string
+  }
+
+  // Validate token issuer
+  if (googleUser.iss !== 'accounts.google.com' && googleUser.iss !== 'https://accounts.google.com') {
+    console.error('[Google OAuth] Invalid issuer:', googleUser.iss)
+    return c.json({ error: 'Google token issuer tidak valid' }, 401)
+  }
+
+  // Validate audience (client_id) - critical security check
+  const expectedAudience = process.env.GOOGLE_CLIENT_ID
+  if (expectedAudience && googleUser.aud !== expectedAudience) {
+    console.error('[Google OAuth] Audience mismatch. Expected:', expectedAudience, 'Got:', googleUser.aud)
+    return c.json({ error: 'Google token audience tidak cocok - kemungkinan token bukan untuk aplikasi ini' }, 401)
   }
 
   // Find or create user

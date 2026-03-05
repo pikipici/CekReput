@@ -45,7 +45,7 @@ perpetratorsRouter.get('/:id/reports', zValidator('query', paginationSchema), as
   const { page, limit } = c.req.valid('query')
   const offset = (page - 1) * limit
 
-  // Only show verified reports to public
+  // SECURITY FIX: Only show verified reports to public
   const perpReports = await db
     .select({
       id: reports.id,
@@ -56,7 +56,7 @@ perpetratorsRouter.get('/:id/reports', zValidator('query', paginationSchema), as
       createdAt: reports.createdAt,
     })
     .from(reports)
-    .where(eq(reports.perpetratorId, id))
+    .where(and(eq(reports.perpetratorId, id), eq(reports.status, 'verified')))
     .orderBy(desc(reports.createdAt))
     .limit(limit)
     .offset(offset)
@@ -141,6 +141,7 @@ perpetratorsRouter.get('/:id/comments', zValidator('query', paginationSchema), a
 perpetratorsRouter.get('/:id/timeline', async (c) => {
   const id = c.req.param('id')
 
+  // SECURITY FIX: Only show verified reports in public timeline
   const perpReports = await db
     .select({
       id: reports.id,
@@ -150,7 +151,7 @@ perpetratorsRouter.get('/:id/timeline', async (c) => {
       createdAt: reports.createdAt,
     })
     .from(reports)
-    .where(eq(reports.perpetratorId, id))
+    .where(and(eq(reports.perpetratorId, id), eq(reports.status, 'verified')))
     .orderBy(reports.incidentDate)
 
   return c.json({ timeline: perpReports })

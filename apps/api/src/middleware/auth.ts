@@ -10,7 +10,23 @@ export interface JwtPayload {
   role: 'user' | 'moderator' | 'admin'
 }
 
-const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET ?? 'dev-access-secret-cekreput-2024'
+// Validate JWT secrets in production - fail fast if not configured
+const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET
+
+if (!JWT_ACCESS_SECRET && process.env.NODE_ENV === 'production') {
+  throw new Error('JWT_ACCESS_SECRET environment variable is required in production')
+}
+if (!JWT_REFRESH_SECRET && process.env.NODE_ENV === 'production') {
+  throw new Error('JWT_REFRESH_SECRET environment variable is required in production')
+}
+
+// Fallback for development only
+const DEV_ACCESS_SECRET = 'dev-access-secret-cekreput-2024'
+const DEV_REFRESH_SECRET = 'dev-refresh-secret-cekreput-2024'
+
+const getAccessSecret = () => JWT_ACCESS_SECRET || DEV_ACCESS_SECRET
+const getRefreshSecret = () => JWT_REFRESH_SECRET || DEV_REFRESH_SECRET
 
 /**
  * JWT authentication middleware.
@@ -30,7 +46,7 @@ export async function authMiddleware(c: Context, next: Next) {
   const token = authHeader.slice(7)
 
   try {
-    const payload = jwt.verify(token, JWT_ACCESS_SECRET) as JwtPayload
+    const payload = jwt.verify(token, getAccessSecret()) as JwtPayload
     c.set('user', payload)
     await next()
   } catch {
@@ -46,7 +62,7 @@ export async function optionalAuthMiddleware(c: Context, next: Next) {
   if (authHeader?.startsWith('Bearer ')) {
     try {
       const token = authHeader.slice(7)
-      const payload = jwt.verify(token, JWT_ACCESS_SECRET) as JwtPayload
+      const payload = jwt.verify(token, getAccessSecret()) as JwtPayload
       c.set('user', payload)
     } catch {
       // Token invalid, continue without user
@@ -61,13 +77,12 @@ export async function optionalAuthMiddleware(c: Context, next: Next) {
 export function generateTokens(payload: JwtPayload) {
   const tokenPayload = { ...payload }
   const accessExpiresIn = (process.env.JWT_ACCESS_EXPIRES_IN ?? '15m') as string & jwt.SignOptions['expiresIn']
-  const accessToken = jwt.sign(tokenPayload, JWT_ACCESS_SECRET, {
+  const accessToken = jwt.sign(tokenPayload, getAccessSecret(), {
     expiresIn: accessExpiresIn,
   } satisfies SignOptions)
 
-  const refreshSecret = process.env.JWT_REFRESH_SECRET ?? 'dev-refresh-secret-cekreput-2024'
   const refreshExpiresIn = (process.env.JWT_REFRESH_EXPIRES_IN ?? '7d') as string & jwt.SignOptions['expiresIn']
-  const refreshToken = jwt.sign(tokenPayload, refreshSecret, {
+  const refreshToken = jwt.sign(tokenPayload, getRefreshSecret(), {
     expiresIn: refreshExpiresIn,
   } satisfies SignOptions)
 
@@ -78,6 +93,5 @@ export function generateTokens(payload: JwtPayload) {
  * Verify a refresh token and return the payload.
  */
 export function verifyRefreshToken(token: string): JwtPayload {
-  const refreshSecret = process.env.JWT_REFRESH_SECRET ?? 'dev-refresh-secret-cekreput-2024'
-  return jwt.verify(token, refreshSecret) as JwtPayload
+  return jwt.verify(token, getRefreshSecret()) as JwtPayload
 }

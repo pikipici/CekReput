@@ -3,7 +3,7 @@ import { zValidator } from '@hono/zod-validator'
 import { eq, desc, sql, ilike, or, and, inArray } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '../db/index.js'
-import { reports, perpetrators, users, apiKeys, clarifications } from '../db/schema.js'
+import { reports, perpetrators, users, apiKeys, clarifications, evidenceFiles } from '../db/schema.js'
 import { moderateReportSchema, paginationSchema } from '../utils/validators.js'
 import { authMiddleware } from '../middleware/auth.js'
 import { adminMiddleware } from '../middleware/admin.js'
@@ -35,8 +35,8 @@ moderation.get('/pending', zValidator('query', paginationSchema), async (c) => {
   const reportIds = pendingReports.map(r => r.id)
   const perpIds = [...new Set(pendingReports.map(r => r.perpetratorId))]
 
-  let perpetratorsMap: Record<string, any> = {}
-  let evidenceMap: Record<string, any[]> = {}
+  let perpetratorsMap: Record<string, typeof perpetrators.$inferSelect> = {}
+  let evidenceMap: Record<string, typeof evidenceFiles.$inferSelect[]> = {}
 
   if (reportIds.length > 0) {
     const perps = await db.select().from(perpetrators).where(inArray(perpetrators.id, perpIds))
@@ -233,22 +233,95 @@ moderation.get('/stats', async (c) => {
 
 // ─── Proxy Evidences Download ──────────────────────────────────────
 
-moderation.get('/evidence/download', async (c) => {
-  const url = c.req.query('url')
+/**
+ * Checks if an IP address is private/internal
+ */
+function isPrivateIP(ip: string): boolean {
+  // IPv4 private ranges
+  const ipv4Patterns = [
+    /^10\./,                          // 10.0.0.0/8
+    /^172\.(1[6-9]|2[0-9]|3[0-1])\./, // 172.16.0.0/12
+    /^192\.168\./,                    // 192.168.0.0/16
+    /^127\./,                         // 127.0.0.0/8 (loopback)
+    /^0\./,                           // 0.0.0.0/8
+    /^169\.254\./,                    // 169.254.0.0/16 (link-local)
+  ]
+  
+  // IPv6 private patterns
+  const ipv6Patterns = [
+    /^fe80:/i,                        // Link-local
+    /^fc00:/i,                        // Unique local
+    /^fd00:/i,                        // Unique local
+    /^::1$/,                          // Loopback
+    /^::ffff:/i,                      // IPv4-mapped
+  ]
+  
+  return ipv4Patterns.some(p => p.test(ip)) || ipv6Patterns.some(p => p.test(ip))
+}
+
+/**
+ * Validates and fetches a URL with SSRF protection
+ * Only allows HTTPS URLs to public hosts
+ */
+async function safeFetchUrl(url: string): Promise<Response> {
   if (!url) {
-    return c.json({ error: 'URL is required' }, 400)
+    throw new Error('URL is required')
   }
 
+  let parsedUrl: URL
   try {
-    const response = await fetch(url)
-    if (!response.ok) {
-      throw new Error(`Failed to fetch file: ${response.statusText}`)
-    }
+    parsedUrl = new URL(url)
+  } catch {
+    throw new Error('Invalid URL format')
+  }
 
-    const contentType = response.headers.get('content-type') || 'application/octet-stream'
-    const urlObj = new URL(url)
-    const filename = urlObj.pathname.split('/').pop() || 'downloaded-file'
+  // Only allow HTTPS
+  if (parsedUrl.protocol !== 'https:') {
+    throw new Error('Only HTTPS URLs are allowed')
+  }
+
+  // Block private/internal IP addresses
+  const hostname = parsedUrl.hostname
+  if (isPrivateIP(hostname)) {
+    throw new Error('Access to internal/private hosts is not allowed')
+  }
+
+  // Block localhost and common internal hostnames
+  const blockedHosts = [
+    'localhost',
+    'internal',
+    'metadata',
+    'metadata.google.internal',
+    '169.254.169.254', // Cloud metadata service
+  ]
+  if (blockedHosts.some(h => hostname === h || hostname.endsWith(`.${h}`))) {
+    throw new Error('Access to internal hosts is not allowed')
+  }
+
+  const response = await fetch(url, {
+    redirect: 'follow',
+    headers: {
+      'User-Agent': 'CekReput-Evidence-Downloader/1.0',
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch file: ${response.statusText}`)
+  }
+
+  return response
+}
+
+moderation.get('/evidence/download', async (c) => {
+  const url = c.req.query('url')
+  
+  try {
+    const response = await safeFetchUrl(url!)
     
+    const contentType = response.headers.get('content-type') || 'application/octet-stream'
+    const urlObj = new URL(url!)
+    const filename = urlObj.pathname.split('/').pop() || 'downloaded-file'
+
     return new Response(response.body, {
       headers: {
         'Content-Type': contentType,
@@ -257,7 +330,8 @@ moderation.get('/evidence/download', async (c) => {
     })
   } catch(error) {
     console.error('Download Proxy Error:', error)
-    return c.json({ error: 'Failed to proxy download' }, 500)
+    const errorMessage = error instanceof Error ? error.message : 'Failed to proxy download'
+    return c.json({ error: errorMessage }, error instanceof Error && errorMessage.includes('not allowed') ? 403 : 500)
   }
 })
 

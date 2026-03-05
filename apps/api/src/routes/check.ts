@@ -86,17 +86,19 @@ check.get('/', zValidator('query', searchSchema), async (c) => {
     .from(perpetrators)
     .leftJoin(reports, eq(perpetrators.id, reports.perpetratorId))
     .where(condition)
+    // SECURITY FIX: Only return perpetrators with at least one verified report
+    .having(sql`COUNT(CASE WHEN ${reports.status} = 'verified' THEN 1 END) > 0 OR ${perpetrators.verifiedReports} > 0`)
     .groupBy(
-        perpetrators.id, 
-        perpetrators.accountNumber, 
-        perpetrators.phoneNumber, 
-        perpetrators.entityName, 
-        perpetrators.bankName, 
-        perpetrators.accountType, 
-        perpetrators.threatLevel, 
-        perpetrators.totalReports, 
-        perpetrators.verifiedReports, 
-        perpetrators.firstReported, 
+        perpetrators.id,
+        perpetrators.accountNumber,
+        perpetrators.phoneNumber,
+        perpetrators.entityName,
+        perpetrators.bankName,
+        perpetrators.accountType,
+        perpetrators.threatLevel,
+        perpetrators.totalReports,
+        perpetrators.verifiedReports,
+        perpetrators.firstReported,
         perpetrators.lastReported
     )
     .limit(20)
@@ -106,8 +108,9 @@ check.get('/', zValidator('query', searchSchema), async (c) => {
     let matchedGameId = null
     let matchedGameType = null
 
-    if ((p as any).matchedChronology) {
-      const match = (p as any).matchedChronology.match(/^\[Target Hak milik: Akun (.+?) \((.+?)\)\]\s*\n\n([\s\S]*)$/)
+    const matchedChronology = p.matchedChronology as string | null
+    if (matchedChronology) {
+      const match = matchedChronology.match(/^\[Target Hak milik: Akun (.+?) \((.+?)\)\]\s*\n\n([\s\S]*)$/)
       if (match) {
         matchedGameType = match[1]
         matchedGameId = match[2]

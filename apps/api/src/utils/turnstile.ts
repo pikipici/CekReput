@@ -7,9 +7,14 @@
 export async function verifyTurnstile(token: string, ip?: string): Promise<boolean> {
   const secretKey = process.env.TURNSTILE_SECRET_KEY
 
-  // If no secret key is configured (e.g. dev without internet), bypass
+  // Fail securely in production if secret is not configured
   if (!secretKey) {
-    console.warn('[TURNSTILE] No secret key configured, bypassing validation.')
+    if (process.env.NODE_ENV === 'production') {
+      console.error('[TURNSTILE] CRITICAL: Secret key not configured in production!')
+      return false
+    }
+    // Only bypass in non-production environments for development convenience
+    console.warn('[TURNSTILE] No secret key configured, bypassing validation (development only).')
     return true
   }
 
@@ -29,7 +34,7 @@ export async function verifyTurnstile(token: string, ip?: string): Promise<boole
       body: formData,
     })
 
-    const data: any = await res.json()
+    const data = await res.json() as { success: boolean; 'error-codes'?: string[] }
     return data.success === true
   } catch (error) {
     console.error('[TURNSTILE] Error verifying token:', error)
