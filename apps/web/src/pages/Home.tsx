@@ -23,12 +23,14 @@ export default function Home() {
           "https://twitter.com/cekreput",
           "https://facebook.com/cekreput",
           "https://instagram.com/cekreput"
+          // TODO: Update with actual social media URLs
         ],
         "contactPoint": {
           "@type": "ContactPoint",
           "contactType": "customer support",
           "email": "support@cekreput.com",
           "availableLanguage": "Indonesian"
+          // TODO: Update with actual support email
         }
       },
       {

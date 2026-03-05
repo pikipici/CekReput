@@ -1,5 +1,32 @@
 node_modules/
-.env
 dist/
+build/
 .DS_Store
 .cursor
+.vscode/
+
+# Environment Variables
+.env
+.env.local
+.env.*
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Scratch and Test Scripts (Safe to ignore)
+test_api.mjs
+test_proxy.mjs
+apps/api/add_hackback_enum.ts
+apps/api/apply_migration.ts
+apps/api/checkPending.ts
+apps/api/check_ev.ts
+apps/api/check_reports_ev.ts
+apps/api/fix_db_files.ts
+apps/api/insert_dummy_clarification.ts
+apps/api/manual_migrate.ts
+apps/api/migrate-quick.ts
+apps/api/run-migration.ts
