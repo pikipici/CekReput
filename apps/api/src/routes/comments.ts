@@ -45,7 +45,7 @@ commentsRouter.post(
   authMiddleware,
   zValidator('json', voteSchema),
   async (c) => {
-    const id = c.req.param('id')
+    const id: string = c.req.param('id')
     const { type } = c.req.valid('json')
 
     const field = type === 'up' ? comments.upvotes : comments.downvotes
@@ -67,7 +67,7 @@ commentsRouter.post(
 // ─── Delete Comment (owner only) ─────────────────────────────────
 
 commentsRouter.delete('/:id', authMiddleware, async (c) => {
-  const id = c.req.param('id')
+  const id = c.req.param('id')!
   const user = c.get('user') as JwtPayload
 
   const [comment] = await db.select().from(comments).where(eq(comments.id, id)).limit(1)

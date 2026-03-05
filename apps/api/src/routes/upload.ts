@@ -12,7 +12,7 @@ const upload = new Hono()
  * For now, returns a mock URL.
  */
 upload.post('/evidence', authMiddleware, async (c) => {
-  const user = c.get('user') as JwtPayload
+  const _user = c.get('user') as JwtPayload
   const body = await c.req.parseBody()
   const file = body['file']
 

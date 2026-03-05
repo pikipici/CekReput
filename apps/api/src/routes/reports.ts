@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
-import { eq, desc } from 'drizzle-orm'
+import { eq, desc, and } from 'drizzle-orm'
 import { db } from '../db/index.js'
 import { reports, perpetrators, evidenceFiles } from '../db/schema.js'
 import { createReportSchema, paginationSchema } from '../utils/validators.js'
@@ -170,19 +170,33 @@ reportsRouter.get('/my', authMiddleware, zValidator('query', paginationSchema), 
 reportsRouter.get('/:id', async (c) => {
   const id = c.req.param('id')
 
-  const [report] = await db.select().from(reports).where(eq(reports.id, id)).limit(1)
+  // SECURITY FIX: Only show verified reports to public
+  const [report] = await db.select().from(reports).where(and(eq(reports.id, id), eq(reports.status, 'verified'))).limit(1)
 
   if (!report) {
-    return c.json({ error: 'Laporan tidak ditemukan' }, 404)
+    return c.json({ error: 'Laporan tidak ditemukan atau belum diverifikasi' }, 404)
   }
 
-  // Get associated evidence files
+  // Get associated evidence files (only for verified reports)
   const evidence = await db
     .select()
     .from(evidenceFiles)
     .where(eq(evidenceFiles.reportId, id))
 
-  return c.json({ report, evidence })
+  // Mask sensitive reporter information
+  const safeReport = {
+    id: report.id,
+    perpetratorId: report.perpetratorId,
+    category: report.category,
+    chronology: report.chronology,
+    incidentDate: report.incidentDate,
+    lossAmount: report.lossAmount,
+    status: report.status,
+    createdAt: report.createdAt,
+    // Don't expose: reporterId, evidenceLink (use evidence files instead), rejectionReason, moderatedBy, moderatedAt
+  }
+
+  return c.json({ report: safeReport, evidence })
 })
 
 export default reportsRouter

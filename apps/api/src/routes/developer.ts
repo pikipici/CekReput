@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
-import { eq, desc, or, ilike } from 'drizzle-orm'
+import { eq, desc, ilike } from 'drizzle-orm'
 import { db } from '../db/index.js'
 import { apiKeys, perpetrators } from '../db/schema.js'
 import { createApiKeySchema, searchSchema } from '../utils/validators.js'
@@ -117,7 +117,7 @@ developer.get('/keys', authMiddleware, async (c) => {
  * DELETE /api/developer/keys/:id — Revoke API key
  */
 developer.delete('/keys/:id', authMiddleware, async (c) => {
-  const id = c.req.param('id')
+  const id = c.req.param('id')!
   const user = c.get('user') as JwtPayload
 
   const [key] = await db.select().from(apiKeys).where(eq(apiKeys.id, id)).limit(1)

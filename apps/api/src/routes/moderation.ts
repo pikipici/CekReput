@@ -35,8 +35,8 @@ moderation.get('/pending', zValidator('query', paginationSchema), async (c) => {
   const reportIds = pendingReports.map(r => r.id)
   const perpIds = [...new Set(pendingReports.map(r => r.perpetratorId))]
 
-  let perpetratorsMap: Record<string, typeof perpetrators.$inferSelect> = {}
-  let evidenceMap: Record<string, typeof evidenceFiles.$inferSelect[]> = {}
+  const perpetratorsMap: Record<string, typeof perpetrators.$inferSelect> = {}
+  const evidenceMap: Record<string, typeof evidenceFiles.$inferSelect[]> = {}
 
   if (reportIds.length > 0) {
     const perps = await db.select().from(perpetrators).where(inArray(perpetrators.id, perpIds))
@@ -120,7 +120,7 @@ moderation.patch(
       const [reporter] = await db.select().from(users).where(eq(users.id, report.reporterId)).limit(1)
       if (reporter) {
         const newScore = reporter.reputationScore + 10
-        let newBadges = [...(reporter.badges || [])]
+        const newBadges = [...(reporter.badges || [])]
         
         // Example badge logic:
         if (newScore >= 50 && !newBadges.includes('Spam Hunter')) {

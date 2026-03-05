@@ -46,8 +46,8 @@ export default function TimelineChart({ perpetratorId }: TimelineChartProps) {
     if (!timelineData.length) return []
 
     const now = new Date()
-    let groups: Record<string, number> = {}
-    let labels: string[] = []
+    const groups: Record<string, number> = {}
+    const labels: string[] = []
 
     if (timeframe === 'Last 30 Days') {
       // Last 30 days including today

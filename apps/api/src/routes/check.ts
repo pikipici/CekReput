@@ -31,8 +31,6 @@ check.get('/', zValidator('query', searchSchema), async (c) => {
     console.error('Redis Error on GET check:', err)
   }
 
-  let results
-
   let condition = or(
     ilike(perpetrators.accountNumber, `%${q}%`),
     ilike(perpetrators.phoneNumber, `%${q}%`),
@@ -68,7 +66,7 @@ check.get('/', zValidator('query', searchSchema), async (c) => {
     }
   }
 
-  results = await db
+  const results = await db
     .select({
         id: perpetrators.id,
         accountNumber: perpetrators.accountNumber,

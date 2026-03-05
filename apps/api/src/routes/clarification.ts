@@ -37,7 +37,7 @@ clarificationsRouter.post(
 // ─── Get Approved Clarifications for a Perpetrator ────────────────
 
 clarificationsRouter.get('/perpetrator/:id', async (c) => {
-  const id = c.req.param('id')
+  const id: string = c.req.param('id')
 
   const approved = await db
     .select()
@@ -55,7 +55,7 @@ clarificationsRouter.patch(
   authMiddleware,
   adminMiddleware,
   async (c) => {
-    const id = c.req.param('id')
+    const id = c.req.param('id')!
     const user = c.get('user') as JwtPayload
     const { action } = await c.req.json<{ action: 'approve' | 'reject' }>()
 

@@ -26,6 +26,15 @@ const CATEGORY_LABELS: Record<string, string> = {
 }
 
 export default function StepThreeForm({ isActive, form, updateForm, onBack, onSubmit, isSubmitting }: StepThreeFormProps) {
+  const turnstileRef = useRef<TurnstileInstance>(null)
+
+  const identityLabel =
+    form.accountType === 'bank'
+      ? `${form.bankName} — ${form.accountNumber}`
+      : form.accountType === 'ewallet'
+        ? `${form.bankName} — ${form.phoneNumber}`
+        : form.phoneNumber
+
   if (!isActive) {
     return (
       <div className="glass-panel rounded-xl p-6 opacity-50 cursor-not-allowed select-none transition-opacity">
@@ -36,15 +45,6 @@ export default function StepThreeForm({ isActive, form, updateForm, onBack, onSu
       </div>
     )
   }
-
-  const identityLabel =
-    form.accountType === 'bank'
-      ? `${form.bankName} — ${form.accountNumber}`
-      : form.accountType === 'ewallet'
-        ? `${form.bankName} — ${form.phoneNumber}`
-        : form.phoneNumber
-
-  const turnstileRef = useRef<TurnstileInstance>(null)
 
   return (
     <div className="glass-panel rounded-xl p-6 md:p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">

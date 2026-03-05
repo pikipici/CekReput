@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { eq, desc, and } from 'drizzle-orm'
 import { db } from '../db/index.js'
-import { perpetrators, reports, users, apiKeys, clarifications, comments, evidenceFiles } from '../db/schema.js'
+import { perpetrators, reports, users, clarifications, comments, evidenceFiles } from '../db/schema.js'
 import { maskAccountNumber, maskPhoneNumber, maskEntityName } from '../utils/masking.js'
 import { paginationSchema } from '../utils/validators.js'
 import { zValidator } from '@hono/zod-validator'
@@ -83,8 +83,6 @@ perpetratorsRouter.get('/:id/verified-evidence', async (c) => {
     return c.json({ verifiedEvidence: [] })
   }
 
-  const reportIds = verifiedReports.map(r => r.id)
-  
   // To avoid query size limits, just do a simple IN fetch if within limits, or fetch all evidence for the perpetrator via join
   const evidence = await db
     .select({
