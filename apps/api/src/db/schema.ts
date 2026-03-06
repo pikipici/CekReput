@@ -34,6 +34,7 @@ export const users = pgTable('users', {
   reputationScore: integer('reputation_score').notNull().default(0),
   badges: text('badges').array(),
   role: userRoleEnum('role').notNull().default('user'),
+  emailVerified: boolean('email_verified').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 })
@@ -128,5 +129,15 @@ export const clarifications = pgTable('clarifications', {
   relationType: varchar('relation_type', { length: 100 }),
   reviewedBy: uuid('reviewed_by').references(() => users.id),
   reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
+// ─── Verification OTP Codes ──────────────────────────────────────
+
+export const otpCodes = pgTable('otp_codes', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  email: varchar('email', { length: 255 }).notNull(),
+  code: varchar('code', { length: 6 }).notNull(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })

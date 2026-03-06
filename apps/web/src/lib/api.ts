@@ -88,6 +88,8 @@ export interface AuthResponse {
   accessToken: string
   refreshToken: string
   message?: string
+  requiresOtp?: boolean
+  email?: string
 }
 
 export const authApi = {
@@ -105,6 +107,12 @@ export const authApi = {
       method: 'POST',
       body: { refreshToken },
     }),
+
+  verifyEmail: (data: { email: string; code: string }) =>
+    request<AuthResponse>('/api/auth/verify-email', { method: 'POST', body: data }),
+
+  resendOtp: (data: { email: string }) =>
+    request<{ message: string }>('/api/auth/resend-otp', { method: 'POST', body: data }),
 
   me: (token: string) =>
     request<{ user: User }>('/api/auth/me', { token }),

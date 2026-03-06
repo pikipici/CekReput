@@ -57,6 +57,13 @@
       "when": 1772500100000,
       "tag": "0007_add_search_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1772805633853,
+      "tag": "0008_amusing_shen",
+      "breakpoints": true
     }
   ]
 }
