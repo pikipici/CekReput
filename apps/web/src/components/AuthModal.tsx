@@ -97,7 +97,6 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
     }
   }, [isOpen, handleKeyDown])
 
-  if (!isOpen) return null
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) onClose()
@@ -132,39 +131,59 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
     }
   }
 
-  const hiddenGoogleRef = (node: HTMLDivElement | null) => {
-    if (!node) return
+  const initGoogle = useCallback(() => {
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
-    if (!clientId) {
-      console.warn("VITE_GOOGLE_CLIENT_ID is missing. Google Login will be disabled or silenced.")
-      return
+    if (!clientId) return
+
+    const g = (window as any).google
+    if (g && g.accounts) {
+      g.accounts.id.initialize({
+        client_id: clientId,
+        callback: async (response: any) => {
+          setError('')
+          const result = await loginWithGoogle(response.credential)
+          if (result.error) {
+            setError(result.error)
+          } else {
+            onClose()
+          }
+        },
+      })
+      
+      // Render the original google button hidden
+      const hiddenBtn = document.getElementById('hidden-google-btn')
+      if (hiddenBtn) {
+        hiddenBtn.innerHTML = ''
+        g.accounts.id.renderButton(hiddenBtn, {
+          type: 'standard',
+          theme: 'filled_black',
+          size: 'large',
+          width: 400,
+        })
+      }
     }
+  }, [loginWithGoogle, onClose])
 
-    const g = (window as unknown as Record<string, unknown>).google as
-      | { accounts: { id: { initialize: (c: unknown) => void; renderButton: (el: HTMLElement, c: unknown) => void } } }
-      | undefined
-    if (!g) return
-
-    g.accounts.id.initialize({
-      client_id: clientId,
-      callback: async (response: { credential: string }) => {
-        setError('')
-        const result = await loginWithGoogle(response.credential)
-        if (result.error) {
-          setError(result.error)
-        } else {
-          onClose()
-        }
-      },
-    })
-    node.innerHTML = ''
-    g.accounts.id.renderButton(node, {
-      type: 'standard',
-      theme: 'filled_black',
-      size: 'large',
-      width: 400,
-    })
-  }
+  useEffect(() => {
+    if (isOpen) {
+      if ((window as any).google) {
+        initGoogle()
+      } else {
+        let attempts = 0
+        const checkGoogle = setInterval(() => {
+          attempts++
+          if ((window as any).google) {
+            initGoogle()
+            clearInterval(checkGoogle)
+          } else if (attempts > 30) { 
+            // Give up after 15 seconds
+            clearInterval(checkGoogle)
+          }
+        }, 500)
+        return () => clearInterval(checkGoogle)
+      }
+    }
+  }, [isOpen, initGoogle])
 
   const handleGoogleClick = () => {
     setError('') // Clear previous errors
@@ -176,24 +195,38 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
       return
     }
 
-    // Click the hidden Google-rendered button
+    const g = (window as any).google
+    if (!g || !g.accounts) {
+      setError("Skrip Google belum selesai dimuat. Silakan coba lagi sebentar.")
+      return
+    }
+
+    // Click the hidden Google-rendered button or attempt One Tap if fails
     const hiddenBtn = document.getElementById('hidden-google-btn')
-    const iframe = hiddenBtn?.querySelector('iframe')
-    
-    if (iframe) {
-      // Google renders an iframe, we need to click the div wrapper
-      const wrapper = hiddenBtn?.querySelector('[role="button"]') as HTMLElement
-      wrapper?.click()
-    } else {
-      const btn = hiddenBtn?.querySelector('div[role="button"]') as HTMLElement ?? hiddenBtn?.querySelector('div') as HTMLElement
-      if (btn) {
-        btn.click()
+    if (hiddenBtn) {
+      const iframe = hiddenBtn.querySelector('iframe')
+      if (iframe) {
+        const wrapper = hiddenBtn.querySelector('[role="button"]') as HTMLElement
+        wrapper?.click()
+        return
       } else {
-        // The script didn't inject the button
-        setError("Gagal merender tombol Google. Pastikan domain ini diizinkan di setelan Google Cloud Console.")
+        const btn = hiddenBtn.querySelector('div[role="button"]') as HTMLElement ?? hiddenBtn.querySelector('div')
+        if (btn) {
+          btn.click()
+          return
+        }
       }
     }
+    
+    // Fallback: Use google prompt (One Tap UI)
+    g.accounts.id.prompt((notification: any) => {
+      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+        setError("Gagal memunculkan popup Google. Silakan izinkan popup di browser Anda atau muat ulang halaman.")
+      }
+    })
   }
+
+  if (!isOpen) return null
 
   return (
     <div
@@ -261,7 +294,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
           </div>
 
           {/* Hidden Google rendered button */}
-          <div id="hidden-google-btn" ref={hiddenGoogleRef} className="absolute -left-[9999px] opacity-0 pointer-events-none" aria-hidden="true" />
+          <div id="hidden-google-btn" className="absolute -left-[9999px] opacity-0 pointer-events-none" aria-hidden="true" />
 
           {/* Custom styled Google button */}
           <button
