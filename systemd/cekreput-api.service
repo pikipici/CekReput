@@ -1,0 +1,29 @@
+[Unit]
+Description=CekReput API Service
+Documentation=https://cekreput.com
+After=network.target postgresql.service redis.service
+Wants=postgresql.service redis.service
+
+[Service]
+Type=exec
+WorkingDirectory=/home/ubuntu/cekreput/CekReput/apps/api
+Environment=NODE_ENV=production
+Environment=PORT=3001
+EnvironmentFile=/home/ubuntu/cekreput/CekReput/apps/api/.env
+ExecStart=/usr/bin/node dist/index.js
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=cekreput-api
+
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=true
+ReadWritePaths=/home/ubuntu/cekreput/CekReput/apps/api/logs
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

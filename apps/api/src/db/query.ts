@@ -3,7 +3,7 @@ import postgres from 'postgres'
 import { reports } from './schema.js'
 import { eq } from 'drizzle-orm'
 
-const connectionString = 'postgresql://postgres.pkvydjnccbjektstfnly:aqV8m9jQWB0WL8lR@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres'
+const connectionString = 'postgresql://cekreput:tai12345@localhost:5435/cekreput'
 const client = postgres(connectionString, { prepare: false })
 const db = drizzle(client)
 

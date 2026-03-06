@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAuth } from '../context/AuthContext'
 
 interface AuthModalProps {
@@ -69,7 +69,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
     setEmail('')
     setPassword('')
     setConfirmPassword('')
-    setAgreedTerms(false)
+    setAgreedTerms(false);setIsGoogleInitialized(false);isInitializingRef.current=false
     setError('')
     
     // Trigger animation after state updates
@@ -244,7 +244,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
           </div>
 
           {/* Hidden Google rendered button */}
-          <div id="hidden-google-btn" ref={hiddenGoogleRef} className="absolute -left-[9999px] opacity-0 pointer-events-none" aria-hidden="true" />
+          <div id="hidden-google-btn" ref={googleInitRef} className="absolute -left-[9999px] opacity-0 pointer-events-none" aria-hidden="true" />
 
           {/* Custom styled Google button */}
           <button
