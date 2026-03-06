@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../context/AuthContext'
 
 interface AuthModalProps {
@@ -69,9 +69,8 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
     setEmail('')
     setPassword('')
     setConfirmPassword('')
-    setAgreedTerms(false);setIsGoogleInitialized(false);isInitializingRef.current=false
-    setError('')
-    
+    setAgreedTerms(false)
+    setError('')    
     // Trigger animation after state updates
     const animationFrame = requestAnimationFrame(() => {
       requestAnimationFrame(() => {
@@ -136,7 +135,10 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
   const hiddenGoogleRef = (node: HTMLDivElement | null) => {
     if (!node) return
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
-    if (!clientId) return
+    if (!clientId) {
+      console.warn("VITE_GOOGLE_CLIENT_ID is missing. Google Login will be disabled or silenced.")
+      return
+    }
 
     const g = (window as unknown as Record<string, unknown>).google as
       | { accounts: { id: { initialize: (c: unknown) => void; renderButton: (el: HTMLElement, c: unknown) => void } } }
@@ -165,16 +167,31 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
   }
 
   const handleGoogleClick = () => {
+    setError('') // Clear previous errors
+    
+    // Check if Client ID exists
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
+    if (!clientId) {
+      setError("Fitur Google Login tidak tersedia: VITE_GOOGLE_CLIENT_ID belum dikonfigurasi di server.")
+      return
+    }
+
     // Click the hidden Google-rendered button
     const hiddenBtn = document.getElementById('hidden-google-btn')
     const iframe = hiddenBtn?.querySelector('iframe')
+    
     if (iframe) {
       // Google renders an iframe, we need to click the div wrapper
       const wrapper = hiddenBtn?.querySelector('[role="button"]') as HTMLElement
       wrapper?.click()
     } else {
       const btn = hiddenBtn?.querySelector('div[role="button"]') as HTMLElement ?? hiddenBtn?.querySelector('div') as HTMLElement
-      btn?.click()
+      if (btn) {
+        btn.click()
+      } else {
+        // The script didn't inject the button
+        setError("Gagal merender tombol Google. Pastikan domain ini diizinkan di setelan Google Cloud Console.")
+      }
     }
   }
 
@@ -244,7 +261,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
           </div>
 
           {/* Hidden Google rendered button */}
-          <div id="hidden-google-btn" ref={googleInitRef} className="absolute -left-[9999px] opacity-0 pointer-events-none" aria-hidden="true" />
+          <div id="hidden-google-btn" ref={hiddenGoogleRef} className="absolute -left-[9999px] opacity-0 pointer-events-none" aria-hidden="true" />
 
           {/* Custom styled Google button */}
           <button
