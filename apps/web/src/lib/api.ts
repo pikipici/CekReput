@@ -124,6 +124,12 @@ export const authApi = {
   resendOtp: (data: { email: string }) =>
     request<{ message: string }>('/api/auth/resend-otp', { method: 'POST', body: data }),
 
+  forgotPassword: (data: { email: string }) =>
+    request<{ message: string }>('/api/auth/forgot-password', { method: 'POST', body: data }),
+
+  resetPassword: (data: { email: string; code: string; newPassword: string }) =>
+    request<AuthResponse>('/api/auth/reset-password', { method: 'POST', body: data }),
+
   me: (token: string) =>
     request<{ user: User }>('/api/auth/me', { token }),
 }

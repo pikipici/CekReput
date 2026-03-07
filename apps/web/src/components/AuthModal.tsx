@@ -42,8 +42,8 @@ function PasswordStrengthBar({ password }: { password: string }) {
 }
 
 export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: AuthModalProps) {
-  const { login, register, verifyEmail, loginWithGoogle, registerWithGoogle, isLoading } = useAuth()
-  const [activeTab, setActiveTab] = useState<'login' | 'register' | 'google-registration'>(initialTab)
+  const { login, register, verifyEmail, loginWithGoogle, registerWithGoogle, forgotPassword, resetPassword, isLoading } = useAuth()
+  const [activeTab, setActiveTab] = useState<'login' | 'register' | 'google-registration' | 'forgot-password' | 'reset-password'>(initialTab)
   const [googleData, setGoogleData] = useState<{ email: string; name: string; googleId: string; avatarUrl?: string } | null>(null)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -51,6 +51,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
   // OTP State
   const [showOtpModal, setShowOtpModal] = useState(false)
   const [otpEmail, setOtpEmail] = useState('')
+  const [resetOtpCode, setResetOtpCode] = useState('')
 
   // Form fields
   const [name, setName] = useState('')
@@ -79,6 +80,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
     setAgreedTerms(false)
     setError('')
     setGoogleData(null)
+    setResetOtpCode('')
     // Trigger animation after state updates
     const animationFrame = requestAnimationFrame(() => {
       requestAnimationFrame(() => {
@@ -114,6 +116,31 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
     e.preventDefault()
     setError('')
 
+    if (activeTab === 'forgot-password') {
+      const { error } = await forgotPassword(email)
+      if (error) {
+        setError(error)
+      } else {
+        setOtpEmail(email)
+        setShowOtpModal(true)
+      }
+      return
+    }
+
+    if (activeTab === 'reset-password') {
+      if (password !== confirmPassword) {
+        setError('Kata sandi tidak cocok')
+        return
+      }
+      const { error } = await resetPassword(otpEmail, resetOtpCode, password)
+      if (error) {
+        setError(error)
+      } else {
+        onClose()
+      }
+      return
+    }
+
     if (activeTab === 'google-registration') {
       if (password !== confirmPassword) {
         setError('Kata sandi tidak cocok')
@@ -133,7 +160,10 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
       } else {
         onClose()
       }
-    } else if (activeTab === 'register') {
+      return
+    }
+
+    if (activeTab === 'register') {
       if (password !== confirmPassword) {
         setError('Kata sandi tidak cocok')
         return
@@ -153,7 +183,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
       } else {
         onClose()
       }
-    } else {
+    } else if (activeTab === 'login') {
       const result = await login(email, password)
       if (result.requiresOtp && result.email) {
         setOtpEmail(result.email)
@@ -169,6 +199,13 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
   }
 
   const handleVerifyOtp = async (code: string) => {
+    if (activeTab === 'forgot-password') {
+      setResetOtpCode(code)
+      setShowOtpModal(false)
+      setActiveTab('reset-password')
+      return {}
+    }
+
     const result = await verifyEmail(otpEmail, code)
     if (!result.error) {
       setShowOtpModal(false)
@@ -335,11 +372,15 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
               {activeTab === 'login' && 'Masuk ke CekReput'}
               {activeTab === 'register' && 'Daftar di CekReput'}
               {activeTab === 'google-registration' && 'Lengkapi Pendaftaran'}
+              {activeTab === 'forgot-password' && 'Lupa Kata Sandi'}
+              {activeTab === 'reset-password' && 'Buat Kata Sandi Baru'}
             </h2>
             <p className="text-sm text-slate-400 mt-1">
               {activeTab === 'login' && 'Selamat datang kembali!'}
               {activeTab === 'register' && 'Buat akun untuk mulai melaporkan penipu'}
               {activeTab === 'google-registration' && 'Buat kata sandi untuk mengamankan akun Google Anda'}
+              {activeTab === 'forgot-password' && 'Masukkan email Anda untuk mereset kata sandi'}
+              {activeTab === 'reset-password' && 'Silakan buat kata sandi baru untuk akun Anda'}
             </p>
           </div>
 
@@ -433,6 +474,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
             )}
 
             {/* Email */}
+            {activeTab !== 'reset-password' && (
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-1.5">Email</label>
               <div className="relative">
@@ -452,19 +494,23 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
                 />
               </div>
             </div>
+            )}
 
             {/* Password */}
+            {(activeTab === 'login' || activeTab === 'register' || activeTab === 'google-registration' || activeTab === 'reset-password') && (
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1.5">Kata Sandi</label>
+              <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                {activeTab === 'reset-password' ? 'Kata Sandi Baru' : 'Kata Sandi'}
+              </label>
               <div className="relative">
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-[20px]">lock</span>
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Masukkan kata sandi"
+                  placeholder={activeTab === 'reset-password' ? 'Masukkan kata sandi baru' : 'Masukkan kata sandi'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  minLength={activeTab === 'register' || activeTab === 'google-registration' ? 8 : undefined}
+                  minLength={activeTab === 'register' || activeTab === 'google-registration' || activeTab === 'reset-password' ? 8 : undefined}
                   className="w-full h-12 pl-10 pr-12 rounded-xl glass-input text-white placeholder-slate-500 text-sm"
                 />
                 <button
@@ -477,11 +523,12 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
                   </span>
                 </button>
               </div>
-              {(activeTab === 'register' || activeTab === 'google-registration') && <PasswordStrengthBar password={password} />}
+              {(activeTab === 'register' || activeTab === 'google-registration' || activeTab === 'reset-password') && <PasswordStrengthBar password={password} />}
             </div>
+            )}
 
-            {/* Confirm Password (Register only) */}
-            {(activeTab === 'register' || activeTab === 'google-registration') && (
+            {/* Confirm Password */}
+            {(activeTab === 'register' || activeTab === 'google-registration' || activeTab === 'reset-password') && (
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-1.5">Konfirmasi Kata Sandi</label>
                 <div className="relative">
@@ -516,7 +563,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
             {/* Forgot Password (Login only) */}
             {activeTab === 'login' && (
               <div className="text-right">
-                <button type="button" className="text-sm text-primary hover:text-primary-dark transition-colors font-medium">
+                <button type="button" onClick={() => { setActiveTab('forgot-password'); setError(''); }} className="text-sm text-primary hover:text-primary-dark transition-colors font-medium">
                   Lupa kata sandi?
                 </button>
               </div>
@@ -552,13 +599,22 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
               {activeTab === 'login' && 'Masuk'}
               {activeTab === 'register' && 'Daftar Sekarang'}
               {activeTab === 'google-registration' && 'Selesaikan Pendaftaran'}
+              {activeTab === 'forgot-password' && 'Kirim Kode OTP'}
+              {activeTab === 'reset-password' && 'Simpan Kata Sandi'}
             </button>
           </form>
 
           {/* Switch Tab Footer */}
           {activeTab !== 'google-registration' && (
           <p className="text-center text-sm text-slate-400 mt-5">
-            {activeTab === 'login' ? (
+            {activeTab === 'forgot-password' || activeTab === 'reset-password' ? (
+              <button
+                onClick={() => { setActiveTab('login'); setError('') }}
+                className="text-primary font-semibold hover:underline"
+              >
+                Kembali ke Login
+              </button>
+            ) : activeTab === 'login' ? (
               <>
                 Belum punya akun?{' '}
                 <button
