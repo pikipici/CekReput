@@ -33,6 +33,16 @@ export const resendOtpSchema = z.object({
   email: z.string().email('Email tidak valid'),
 })
 
+export const forgotPasswordSchema = z.object({
+  email: z.string().email('Email tidak valid'),
+})
+
+export const resetPasswordSchema = z.object({
+  email: z.string().email('Email tidak valid'),
+  code: z.string().length(6, 'Kode OTP harus 6 digit'),
+  newPassword: z.string().min(8, 'Kata sandi minimal 8 karakter').max(128),
+})
+
 // ─── Report Schemas ──────────────────────────────────────────────
 
 export const createReportSchema = z.object({

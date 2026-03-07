@@ -10,26 +10,44 @@ export const transporter = nodemailer.createTransport({
   },
 });
 
-export const sendVerificationEmail = async (toEmail: string, verificationCode: string) => {
+export const sendVerificationEmail = async (toEmail: string, verificationCode: string, type: 'register' | 'forgot-password' = 'register') => {
+  const isRegister = type === 'register';
+  
+  const subject = isRegister 
+    ? 'Kode Verifikasi Pendaftaran CekReput' 
+    : 'Permintaan Reset Kata Sandi CekReput';
+    
+  const title = isRegister 
+    ? 'Verifikasi Email Anda' 
+    : 'Reset Kata Sandi Anda';
+    
+  const message = isRegister
+    ? 'Terima kasih telah mendaftar di CekReput. Untuk menyelesaikan pendaftaran Anda dan mulai menggunakan layanan kami, masukkan kode verifikasi 6 digit berikut:'
+    : 'Kami menerima permintaan untuk mereset kata sandi akun CekReput Anda. Masukkan kode verifikasi 6 digit berikut untuk mengubah kata sandi:';
+    
+  const note = isRegister
+    ? 'Kode ini berlaku selama 10 menit. Jika Anda tidak merasa mendaftar di CekReput, abaikan email ini.'
+    : 'Kode ini berlaku selama 10 menit. Jika Anda merasa tidak meminta reset kata sandi, abaikan email ini dan akun Anda akan tetap aman.';
+
   const mailOptions = {
     from: `"CekReput" <${process.env.SMTP_USER}>`,
     to: toEmail,
-    subject: 'Kode Verifikasi Pendaftaran CekReput',
+    subject,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
         <div style="background-color: #0f172a; padding: 24px; text-align: center;">
           <h1 style="color: #10b981; margin: 0; font-size: 24px;">CekReput</h1>
         </div>
         <div style="padding: 32px; background-color: #ffffff;">
-          <h2 style="color: #1e293b; font-size: 20px; margin-top: 0;">Verifikasi Email Anda</h2>
+          <h2 style="color: #1e293b; font-size: 20px; margin-top: 0;">${title}</h2>
           <p style="color: #475569; font-size: 16px; line-height: 1.5;">
-            Terima kasih telah mendaftar di CekReput. Untuk menyelesaikan pendaftaran Anda dan mulai menggunakan layanan kami, masukkan kode verifikasi 6 digit berikut:
+            ${message}
           </p>
           <div style="background-color: #f1f5f9; padding: 16px; border-radius: 8px; text-align: center; margin: 24px 0;">
             <span style="font-size: 32px; font-weight: bold; letter-spacing: 4px; color: #0f172a;">${verificationCode}</span>
           </div>
           <p style="color: #64748b; font-size: 14px; margin-bottom: 0;">
-            Kode ini berlaku selama 10 menit. Jika Anda tidak merasa mendaftar di CekReput, abaikan email ini.
+            ${note}
           </p>
         </div>
         <div style="background-color: #f8fafc; padding: 16px; text-align: center; border-top: 1px solid #e2e8f0;">

@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs'
 import { eq, and, gt } from 'drizzle-orm'
 import { db } from '../db/index.js'
 import { users, otpCodes } from '../db/schema.js'
-import { registerSchema, loginSchema, verifyOtpSchema, resendOtpSchema } from '../utils/validators.js'
+import { registerSchema, loginSchema, verifyOtpSchema, resendOtpSchema, forgotPasswordSchema, resetPasswordSchema } from '../utils/validators.js'
 import { sendVerificationEmail } from '../utils/mailer.js'
 import { generateTokens, verifyRefreshToken, authMiddleware } from '../middleware/auth.js'
 import type { JwtPayload } from '../middleware/auth.js'
@@ -135,6 +135,80 @@ auth.post('/resend-otp', zValidator('json', resendOtpSchema), async (c) => {
   sendVerificationEmail(email, otpCode).catch(console.error)
 
   return c.json({ message: 'OTP baru telah dikirim ke email Anda.' })
+})
+
+// ─── Forgot Password ───────────────────────────────────────────────
+
+auth.post('/forgot-password', zValidator('json', forgotPasswordSchema), async (c) => {
+  const { email } = c.req.valid('json')
+
+  const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1)
+  
+  // Always return success even if user not found to prevent email enumeration attacks
+  if (!user || (!user.passwordHash && user.googleId)) {
+    // If no user, or user only uses Google login without password
+    return c.json({ message: 'Jika email terdaftar, instruksi reset kata sandi telah dikirim.' })
+  }
+
+  const otpCode = Math.floor(100000 + Math.random() * 900000).toString()
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000)
+
+  await db.delete(otpCodes).where(eq(otpCodes.email, email))
+  await db.insert(otpCodes).values({
+    email,
+    code: otpCode,
+    expiresAt,
+  })
+
+  // Send email in background
+  sendVerificationEmail(email, otpCode, 'forgot-password').catch(console.error)
+
+  return c.json({ message: 'Jika email terdaftar, instruksi reset kata sandi telah dikirim.' })
+})
+
+// ─── Reset Password ────────────────────────────────────────────────
+
+auth.post('/reset-password', zValidator('json', resetPasswordSchema), async (c) => {
+  const { email, code, newPassword } = c.req.valid('json')
+
+  // Find user
+  const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1)
+  if (!user) {
+    return c.json({ error: 'Permintaan tidak valid' }, 400)
+  }
+
+  // Find OTP
+  const [otp] = await db
+    .select()
+    .from(otpCodes)
+    .where(and(eq(otpCodes.email, email), eq(otpCodes.code, code), gt(otpCodes.expiresAt, new Date())))
+    .limit(1)
+
+  if (!otp) {
+    return c.json({ error: 'Kode OTP tidak valid atau sudah kedaluwarsa' }, 400)
+  }
+
+  // Hash new password
+  const passwordHash = await bcrypt.hash(newPassword, 12)
+
+  // Update password and mark as verified if they weren't before (since email is proven)
+  await db.update(users).set({ 
+    passwordHash,
+    emailVerified: true
+  }).where(eq(users.id, user.id))
+  
+  // Cleanup OTP
+  await db.delete(otpCodes).where(eq(otpCodes.email, email))
+
+  // Auto login them with new token
+  const payload: JwtPayload = { userId: user.id, email: user.email, role: user.role }
+  const tokens = generateTokens(payload)
+
+  return c.json({
+    message: 'Kata sandi berhasil direset',
+    user: { id: user.id, name: user.name, email: user.email, role: user.role, badges: user.badges },
+    ...tokens,
+  })
 })
 
 // ─── Login ───────────────────────────────────────────────────────

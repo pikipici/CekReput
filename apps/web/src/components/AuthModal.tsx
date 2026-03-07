@@ -42,14 +42,15 @@ function PasswordStrengthBar({ password }: { password: string }) {
 }
 
 export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: AuthModalProps) {
-  const { login, register, verifyEmail, loginWithGoogle, isLoading } = useAuth()
-  const [activeTab, setActiveTab] = useState<'login' | 'register'>(initialTab)
+  const { login, register, verifyEmail, loginWithGoogle, forgotPassword, resetPassword, isLoading } = useAuth()
+  const [activeTab, setActiveTab] = useState<'login' | 'register' | 'forgot-password' | 'reset-password'>(initialTab)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   
   // OTP State
   const [showOtpModal, setShowOtpModal] = useState(false)
   const [otpEmail, setOtpEmail] = useState('')
+  const [resetOtpCode, setResetOtpCode] = useState('')
 
   // Form fields
   const [name, setName] = useState('')
@@ -77,6 +78,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
     setConfirmPassword('')
     setAgreedTerms(false)
     setError('')    
+    setResetOtpCode('')
     // Trigger animation after state updates
     const animationFrame = requestAnimationFrame(() => {
       requestAnimationFrame(() => {
@@ -112,6 +114,31 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
     e.preventDefault()
     setError('')
 
+    if (activeTab === 'forgot-password') {
+      const { error } = await forgotPassword(email)
+      if (error) {
+        setError(error)
+      } else {
+        setOtpEmail(email)
+        setShowOtpModal(true)
+      }
+      return
+    }
+
+    if (activeTab === 'reset-password') {
+      if (password !== confirmPassword) {
+        setError('Kata sandi tidak cocok')
+        return
+      }
+      const { error } = await resetPassword(otpEmail, resetOtpCode, password)
+      if (error) {
+        setError(error)
+      } else {
+        onClose()
+      }
+      return
+    }
+
     if (activeTab === 'register') {
       if (password !== confirmPassword) {
         setError('Kata sandi tidak cocok')
@@ -132,7 +159,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
       } else {
         onClose()
       }
-    } else {
+    } else if (activeTab === 'login') {
       const result = await login(email, password)
       if (result.requiresOtp && result.email) {
         setOtpEmail(result.email)
@@ -148,6 +175,13 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
   }
 
   const handleVerifyOtp = async (code: string) => {
+    if (activeTab === 'forgot-password') {
+      setResetOtpCode(code)
+      setShowOtpModal(false)
+      setActiveTab('reset-password')
+      return {}
+    }
+
     const result = await verifyEmail(otpEmail, code)
     if (!result.error) {
       setShowOtpModal(false)
@@ -305,16 +339,21 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
               <span className="material-symbols-outlined text-white text-2xl">shield_lock</span>
             </div>
             <h2 className="text-xl font-bold text-white">
-              {activeTab === 'login' ? 'Masuk ke CekReput' : 'Daftar di CekReput'}
+              {activeTab === 'login' && 'Masuk ke CekReput'}
+              {activeTab === 'register' && 'Daftar di CekReput'}
+              {activeTab === 'forgot-password' && 'Lupa Kata Sandi'}
+              {activeTab === 'reset-password' && 'Buat Kata Sandi Baru'}
             </h2>
             <p className="text-sm text-slate-400 mt-1">
-              {activeTab === 'login'
-                ? 'Selamat datang kembali!'
-                : 'Buat akun untuk mulai melaporkan penipu'}
+              {activeTab === 'login' && 'Selamat datang kembali!'}
+              {activeTab === 'register' && 'Buat akun untuk mulai melaporkan penipu'}
+              {activeTab === 'forgot-password' && 'Masukkan email Anda untuk mereset kata sandi'}
+              {activeTab === 'reset-password' && 'Silakan buat kata sandi baru untuk akun Anda'}
             </p>
           </div>
 
           {/* Tab Switcher */}
+          {(activeTab === 'login' || activeTab === 'register') && (
           <div className="flex rounded-xl bg-slate-800/60 p-1 mb-6">
             <button
               onClick={() => { setActiveTab('login'); setError('') }}
@@ -337,11 +376,14 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
               Daftar
             </button>
           </div>
+          )}
 
           {/* Hidden Google rendered button */}
           <div id="hidden-google-btn" className="absolute -left-[9999px] opacity-0 pointer-events-none" aria-hidden="true" />
 
           {/* Custom styled Google button */}
+          {(activeTab === 'login' || activeTab === 'register') && (
+            <>
           <button
             type="button"
             onClick={handleGoogleClick}
@@ -363,6 +405,8 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
             <span className="text-xs text-slate-500 uppercase tracking-wider font-medium">atau</span>
             <div className="flex-1 h-px bg-slate-700" />
           </div>
+            </>
+          )}
 
           {/* Error Message */}
           {error && (
@@ -393,6 +437,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
             )}
 
             {/* Email */}
+            {activeTab !== 'reset-password' && (
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-1.5">Email</label>
               <div className="relative">
@@ -407,19 +452,23 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
                 />
               </div>
             </div>
+            )}
 
             {/* Password */}
+            {(activeTab === 'login' || activeTab === 'register' || activeTab === 'reset-password') && (
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1.5">Kata Sandi</label>
+              <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                {activeTab === 'reset-password' ? 'Kata Sandi Baru' : 'Kata Sandi'}
+              </label>
               <div className="relative">
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-[20px]">lock</span>
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Masukkan kata sandi"
+                  placeholder={activeTab === 'reset-password' ? 'Masukkan kata sandi baru' : 'Masukkan kata sandi'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  minLength={activeTab === 'register' ? 8 : undefined}
+                  minLength={activeTab === 'register' || activeTab === 'reset-password' ? 8 : undefined}
                   className="w-full h-12 pl-10 pr-12 rounded-xl glass-input text-white placeholder-slate-500 text-sm"
                 />
                 <button
@@ -432,11 +481,12 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
                   </span>
                 </button>
               </div>
-              {activeTab === 'register' && <PasswordStrengthBar password={password} />}
+              {(activeTab === 'register' || activeTab === 'reset-password') && <PasswordStrengthBar password={password} />}
             </div>
+            )}
 
-            {/* Confirm Password (Register only) */}
-            {activeTab === 'register' && (
+            {/* Confirm Password */}
+            {(activeTab === 'register' || activeTab === 'reset-password') && (
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-1.5">Konfirmasi Kata Sandi</label>
                 <div className="relative">
@@ -471,7 +521,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
             {/* Forgot Password (Login only) */}
             {activeTab === 'login' && (
               <div className="text-right">
-                <button type="button" className="text-sm text-primary hover:text-primary-dark transition-colors font-medium">
+                <button type="button" onClick={() => { setActiveTab('forgot-password'); setError(''); }} className="text-sm text-primary hover:text-primary-dark transition-colors font-medium">
                   Lupa kata sandi?
                 </button>
               </div>
@@ -504,13 +554,23 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
               {isLoading && (
                 <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
               )}
-              {activeTab === 'login' ? 'Masuk' : 'Daftar Sekarang'}
+              {activeTab === 'login' && 'Masuk'}
+              {activeTab === 'register' && 'Daftar Sekarang'}
+              {activeTab === 'forgot-password' && 'Kirim Kode OTP'}
+              {activeTab === 'reset-password' && 'Simpan Kata Sandi'}
             </button>
           </form>
 
           {/* Switch Tab Footer */}
           <p className="text-center text-sm text-slate-400 mt-5">
-            {activeTab === 'login' ? (
+            {activeTab === 'forgot-password' || activeTab === 'reset-password' ? (
+              <button
+                onClick={() => { setActiveTab('login'); setError('') }}
+                className="text-primary font-semibold hover:underline"
+              >
+                Kembali ke Login
+              </button>
+            ) : activeTab === 'login' ? (
               <>
                 Belum punya akun?{' '}
                 <button

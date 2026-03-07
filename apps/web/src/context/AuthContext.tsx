@@ -10,6 +10,8 @@ interface AuthContextType {
   register: (name: string, email: string, password: string) => Promise<{ error?: string; requiresOtp?: boolean; email?: string }>
   verifyEmail: (email: string, code: string) => Promise<{ error?: string }>
   loginWithGoogle: (idToken: string) => Promise<{ error?: string }>
+  forgotPassword: (email: string) => Promise<{ error?: string; message?: string }>
+  resetPassword: (email: string, code: string, newPassword: string) => Promise<{ error?: string; message?: string }>
   logout: () => void
 }
 
@@ -148,6 +150,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return {}
   }
 
+  const forgotPassword = async (email: string) => {
+    setIsLoading(true)
+    const { data, error } = await authApi.forgotPassword({ email })
+    setIsLoading(false)
+
+    if (error || !data) {
+      return { error: error ?? 'Permintaan gagal' }
+    }
+
+    return { message: data.message }
+  }
+
+  const resetPassword = async (email: string, code: string, newPassword: string) => {
+    setIsLoading(true)
+    const { data, error } = await authApi.resetPassword({ email, code, newPassword })
+    setIsLoading(false)
+
+    if (error || !data) {
+      return { error: error ?? 'Gagal mereset kata sandi' }
+    }
+
+    saveAuth(data.user, data.accessToken, data.refreshToken)
+    return { message: data.message }
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -159,6 +186,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         verifyEmail,
         loginWithGoogle,
+        forgotPassword,
+        resetPassword,
         logout,
       }}
     >

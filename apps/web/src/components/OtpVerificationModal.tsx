@@ -81,9 +81,9 @@ export function OtpVerificationModal({ isOpen, onClose, email, onVerify, onResen
       const result = await onVerify(codeToVerify)
       if (result?.error) {
         setError(result.error)
-      } else {
-        onClose()
       }
+      // Note: We intentionally do not call onClose() here on success.
+      // The parent component should handle setting isOpen to false.
     } finally {
       setIsLoading(false)
     }
