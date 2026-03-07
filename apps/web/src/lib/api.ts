@@ -88,6 +88,13 @@ export interface AuthResponse {
   accessToken: string
   refreshToken: string
   message?: string
+  requiresRegistration?: boolean
+  googleData?: {
+    email: string
+    name: string
+    googleId: string
+    avatarUrl: string
+  }
 }
 
 export const authApi = {
@@ -99,6 +106,9 @@ export const authApi = {
 
   googleLogin: (idToken: string) =>
     request<AuthResponse>('/api/auth/google', { method: 'POST', body: { idToken } }),
+
+  googleRegister: (data: { name: string; email: string; password: string; googleId: string; avatarUrl?: string }) =>
+    request<AuthResponse>('/api/auth/google-register', { method: 'POST', body: data }),
 
   refresh: (refreshToken: string) =>
     request<{ accessToken: string; refreshToken: string }>('/api/auth/refresh', {

@@ -8,7 +8,8 @@ interface AuthContextType {
   isLoggedIn: boolean
   login: (email: string, password: string) => Promise<{ error?: string }>
   register: (name: string, email: string, password: string) => Promise<{ error?: string }>
-  loginWithGoogle: (idToken: string) => Promise<{ error?: string }>
+  loginWithGoogle: (idToken: string) => Promise<{ error?: string; requiresRegistration?: boolean; googleData?: any }>
+  registerWithGoogle: (name: string, email: string, password: string, googleId: string, avatarUrl?: string) => Promise<{ error?: string }>
   logout: () => void
 }
 
@@ -117,6 +118,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error: error ?? 'Login Google gagal' }
     }
 
+    if (data.requiresRegistration) {
+      return { requiresRegistration: true, googleData: data.googleData }
+    }
+
+    saveAuth(data.user, data.accessToken, data.refreshToken)
+    return {}
+  }
+
+  const registerWithGoogle = async (name: string, email: string, password: string, googleId: string, avatarUrl?: string) => {
+    setIsLoading(true)
+    const { data, error } = await authApi.googleRegister({ name, email, password, googleId, avatarUrl })
+    setIsLoading(false)
+
+    if (error || !data) {
+      return { error: error ?? 'Registrasi Google gagal' }
+    }
+
     saveAuth(data.user, data.accessToken, data.refreshToken)
     return {}
   }
@@ -131,6 +149,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         register,
         loginWithGoogle,
+        registerWithGoogle,
         logout,
       }}
     >

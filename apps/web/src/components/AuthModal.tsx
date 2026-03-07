@@ -40,8 +40,9 @@ function PasswordStrengthBar({ password }: { password: string }) {
 }
 
 export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: AuthModalProps) {
-  const { login, register, loginWithGoogle, isLoading } = useAuth()
-  const [activeTab, setActiveTab] = useState<'login' | 'register'>(initialTab)
+  const { login, register, loginWithGoogle, registerWithGoogle, isLoading } = useAuth()
+  const [activeTab, setActiveTab] = useState<'login' | 'register' | 'google-registration'>(initialTab)
+  const [googleData, setGoogleData] = useState<{ email: string; name: string; googleId: string; avatarUrl?: string } | null>(null)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
@@ -70,7 +71,8 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
     setPassword('')
     setConfirmPassword('')
     setAgreedTerms(false)
-    setError('')    
+    setError('')
+    setGoogleData(null)
     // Trigger animation after state updates
     const animationFrame = requestAnimationFrame(() => {
       requestAnimationFrame(() => {
@@ -106,7 +108,26 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
     e.preventDefault()
     setError('')
 
-    if (activeTab === 'register') {
+    if (activeTab === 'google-registration') {
+      if (password !== confirmPassword) {
+        setError('Kata sandi tidak cocok')
+        return
+      }
+      if (!agreedTerms) {
+        setError('Anda harus menyetujui Syarat & Ketentuan')
+        return
+      }
+      if (!googleData) {
+        setError('Data Google tidak valid. Silakan muat ulang halaman.')
+        return
+      }
+      const result = await registerWithGoogle(name, email, password, googleData.googleId, googleData.avatarUrl)
+      if (result.error) {
+        setError(result.error)
+      } else {
+        onClose()
+      }
+    } else if (activeTab === 'register') {
       if (password !== confirmPassword) {
         setError('Kata sandi tidak cocok')
         return
@@ -142,7 +163,13 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
         callback: async (response: { credential: string }) => {
           setError('')
           const result = await loginWithGoogle(response.credential)
-          if (result.error) {
+          if (result.requiresRegistration && result.googleData) {
+            setGoogleData(result.googleData)
+            setName(result.googleData.name)
+            setEmail(result.googleData.email)
+            setActiveTab('google-registration')
+            setError('Tampaknya email Anda belum terdaftar. Selesaikan pendaftaran Anda dengan membuat kata sandi.')
+          } else if (result.error) {
             setError(result.error)
           } else {
             onClose()
@@ -260,16 +287,19 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
               <span className="material-symbols-outlined text-white text-2xl">shield_lock</span>
             </div>
             <h2 className="text-xl font-bold text-white">
-              {activeTab === 'login' ? 'Masuk ke CekReput' : 'Daftar di CekReput'}
+              {activeTab === 'login' && 'Masuk ke CekReput'}
+              {activeTab === 'register' && 'Daftar di CekReput'}
+              {activeTab === 'google-registration' && 'Lengkapi Pendaftaran'}
             </h2>
             <p className="text-sm text-slate-400 mt-1">
-              {activeTab === 'login'
-                ? 'Selamat datang kembali!'
-                : 'Buat akun untuk mulai melaporkan penipu'}
+              {activeTab === 'login' && 'Selamat datang kembali!'}
+              {activeTab === 'register' && 'Buat akun untuk mulai melaporkan penipu'}
+              {activeTab === 'google-registration' && 'Buat kata sandi untuk mengamankan akun Google Anda'}
             </p>
           </div>
 
           {/* Tab Switcher */}
+          {(activeTab === 'login' || activeTab === 'register') && (
           <div className="flex rounded-xl bg-slate-800/60 p-1 mb-6">
             <button
               onClick={() => { setActiveTab('login'); setError('') }}
@@ -292,11 +322,14 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
               Daftar
             </button>
           </div>
+          )}
 
           {/* Hidden Google rendered button */}
           <div id="hidden-google-btn" className="absolute -left-[9999px] opacity-0 pointer-events-none" aria-hidden="true" />
 
           {/* Custom styled Google button */}
+          {(activeTab === 'login' || activeTab === 'register') && (
+            <>
           <button
             type="button"
             onClick={handleGoogleClick}
@@ -318,6 +351,8 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
             <span className="text-xs text-slate-500 uppercase tracking-wider font-medium">atau</span>
             <div className="flex-1 h-px bg-slate-700" />
           </div>
+            </>
+          )}
 
           {/* Error Message */}
           {error && (
@@ -330,7 +365,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Full Name (Register only) */}
-            {activeTab === 'register' && (
+            {(activeTab === 'register' || activeTab === 'google-registration') && (
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-1.5">Nama Lengkap</label>
                 <div className="relative">
@@ -339,9 +374,14 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
                     type="text"
                     placeholder="Nama lengkap Anda"
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => activeTab === 'google-registration' ? null : setName(e.target.value)}
+                    readOnly={activeTab === 'google-registration'}
                     required
-                    className="w-full h-12 pl-10 pr-4 rounded-xl glass-input text-white placeholder-slate-500 text-sm"
+                    className={`w-full h-12 pl-10 pr-4 rounded-xl text-sm ${
+                      activeTab === 'google-registration' 
+                        ? 'bg-slate-800/50 border border-slate-700 text-slate-400 cursor-not-allowed' 
+                        : 'glass-input text-white placeholder-slate-500'
+                    }`}
                   />
                 </div>
               </div>
@@ -356,9 +396,14 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
                   type="email"
                   placeholder="email@contoh.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => activeTab === 'google-registration' ? null : setEmail(e.target.value)}
+                  readOnly={activeTab === 'google-registration'}
                   required
-                  className="w-full h-12 pl-10 pr-4 rounded-xl glass-input text-white placeholder-slate-500 text-sm"
+                  className={`w-full h-12 pl-10 pr-4 rounded-xl text-sm ${
+                    activeTab === 'google-registration' 
+                      ? 'bg-slate-800/50 border border-slate-700 text-slate-400 cursor-not-allowed' 
+                      : 'glass-input text-white placeholder-slate-500'
+                  }`}
                 />
               </div>
             </div>
@@ -374,7 +419,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  minLength={activeTab === 'register' ? 8 : undefined}
+                  minLength={activeTab === 'register' || activeTab === 'google-registration' ? 8 : undefined}
                   className="w-full h-12 pl-10 pr-12 rounded-xl glass-input text-white placeholder-slate-500 text-sm"
                 />
                 <button
@@ -387,11 +432,11 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
                   </span>
                 </button>
               </div>
-              {activeTab === 'register' && <PasswordStrengthBar password={password} />}
+              {(activeTab === 'register' || activeTab === 'google-registration') && <PasswordStrengthBar password={password} />}
             </div>
 
             {/* Confirm Password (Register only) */}
-            {activeTab === 'register' && (
+            {(activeTab === 'register' || activeTab === 'google-registration') && (
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-1.5">Konfirmasi Kata Sandi</label>
                 <div className="relative">
@@ -433,7 +478,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
             )}
 
             {/* Terms & Conditions (Register only) */}
-            {activeTab === 'register' && (
+            {(activeTab === 'register' || activeTab === 'google-registration') && (
               <label className="flex items-start gap-3 cursor-pointer group">
                 <input
                   type="checkbox"
@@ -459,11 +504,14 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
               {isLoading && (
                 <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
               )}
-              {activeTab === 'login' ? 'Masuk' : 'Daftar Sekarang'}
+              {activeTab === 'login' && 'Masuk'}
+              {activeTab === 'register' && 'Daftar Sekarang'}
+              {activeTab === 'google-registration' && 'Selesaikan Pendaftaran'}
             </button>
           </form>
 
           {/* Switch Tab Footer */}
+          {activeTab !== 'google-registration' && (
           <p className="text-center text-sm text-slate-400 mt-5">
             {activeTab === 'login' ? (
               <>
@@ -487,6 +535,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
               </>
             )}
           </p>
+          )}
         </div>
       </div>
     </div>

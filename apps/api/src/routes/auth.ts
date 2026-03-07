@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs'
 import { eq } from 'drizzle-orm'
 import { db } from '../db/index.js'
 import { users } from '../db/schema.js'
-import { registerSchema, loginSchema } from '../utils/validators.js'
+import { registerSchema, loginSchema, googleRegisterSchema } from '../utils/validators.js'
 import { generateTokens, verifyRefreshToken, authMiddleware } from '../middleware/auth.js'
 import type { JwtPayload } from '../middleware/auth.js'
 import { authRateLimit } from '../middleware/rate-limit.js'
@@ -118,14 +118,17 @@ auth.post('/google', async (c) => {
         updatedAt: new Date(),
       }).where(eq(users.id, user.id))
     } else {
-      // Create new user
-      const [newUser] = await db.insert(users).values({
-        name: googleUser.name,
-        email: googleUser.email,
-        googleId: googleUser.sub,
-        avatarUrl: googleUser.picture,
-      }).returning()
-      user = newUser
+      // User doesn't exist at all, force registration
+      return c.json({
+        requiresRegistration: true,
+        message: 'Email belum terdaftar. Selesaikan pendaftaran akun Anda.',
+        googleData: {
+          email: googleUser.email,
+          name: googleUser.name,
+          googleId: googleUser.sub,
+          avatarUrl: googleUser.picture,
+        }
+      }, 200)
     }
   }
 
@@ -136,6 +139,39 @@ auth.post('/google', async (c) => {
     user: { id: user.id, name: user.name, email: user.email, role: user.role, avatarUrl: user.avatarUrl, badges: user.badges },
     ...tokens,
   })
+})
+
+// ─── Google Register ─────────────────────────────────────────────
+
+auth.post('/google-register', zValidator('json', googleRegisterSchema), async (c) => {
+  const { name, email, password, googleId, avatarUrl } = c.req.valid('json')
+
+  // Check if email already exists
+  const [existing] = await db.select().from(users).where(eq(users.email, email)).limit(1)
+  if (existing) {
+    return c.json({ error: 'Email sudah terdaftar. Silakan login langsung.' }, 409)
+  }
+
+  // Hash password
+  const passwordHash = await bcrypt.hash(password, 12)
+
+  // Create new user linked to Google
+  const [user] = await db.insert(users).values({
+    name,
+    email,
+    passwordHash,
+    googleId,
+    avatarUrl,
+  }).returning()
+
+  const payload: JwtPayload = { userId: user.id, email: user.email, role: user.role }
+  const tokens = generateTokens(payload)
+
+  return c.json({
+    message: 'Registrasi berhasil',
+    user: { id: user.id, name: user.name, email: user.email, role: user.role, avatarUrl: user.avatarUrl, badges: user.badges },
+    ...tokens,
+  }, 201)
 })
 
 // ─── Refresh Token ───────────────────────────────────────────────

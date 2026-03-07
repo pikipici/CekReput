@@ -18,6 +18,14 @@ export const googleAuthSchema = z.object({
   idToken: z.string().min(1, 'Google ID token required'),
 })
 
+export const googleRegisterSchema = z.object({
+  name: z.string().min(2, 'Nama minimal 2 karakter').max(255),
+  email: z.string().email('Email tidak valid'),
+  password: z.string().min(8, 'Kata sandi minimal 8 karakter').max(128),
+  googleId: z.string().min(1, 'Google ID required'),
+  avatarUrl: z.string().url('URL avatar tidak valid').optional().or(z.literal('')),
+})
+
 export const updateProfileSchema = z.object({
   name: z.string().min(2, 'Nama minimal 2 karakter').max(255).optional(),
   avatarUrl: z.string().url('URL avatar tidak valid').optional().or(z.literal('')),
