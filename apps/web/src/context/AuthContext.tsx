@@ -6,8 +6,9 @@ interface AuthContextType {
   token: string | null
   isLoading: boolean
   isLoggedIn: boolean
-  login: (email: string, password: string) => Promise<{ error?: string }>
-  register: (name: string, email: string, password: string) => Promise<{ error?: string }>
+  login: (email: string, password: string) => Promise<{ error?: string; requiresOtp?: boolean; email?: string }>
+  register: (name: string, email: string, password: string) => Promise<{ error?: string; requiresOtp?: boolean; email?: string }>
+  verifyEmail: (email: string, code: string) => Promise<{ error?: string }>
   loginWithGoogle: (idToken: string) => Promise<{ error?: string; requiresRegistration?: boolean; googleData?: any }>
   registerWithGoogle: (name: string, email: string, password: string, googleId: string, avatarUrl?: string) => Promise<{ error?: string }>
   logout: () => void
@@ -81,11 +82,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     setIsLoading(true)
-    const { data, error } = await authApi.login({ email, password })
+    const { data, error, status } = await authApi.login({ email, password })
     setIsLoading(false)
+
+    // Check for requiresOtp from 403 Forbidden payload
+    if (status === 403 && error === 'Email belum diverifikasi') {
+       return { requiresOtp: true, email }
+    }
 
     if (error || !data) {
       return { error: error ?? 'Login gagal' }
+    }
+
+    if (data.requiresOtp) {
+      return { requiresOtp: true, email: data.email ?? email }
     }
 
     saveAuth(data.user, data.accessToken, data.refreshToken)
@@ -99,6 +109,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (error || !data) {
       return { error: error ?? 'Registrasi gagal' }
+    }
+
+    if (data.requiresOtp) {
+      return { requiresOtp: true, email: data.email ?? email }
+    }
+
+    saveAuth(data.user, data.accessToken, data.refreshToken)
+    return {}
+  }
+
+  const verifyEmail = async (email: string, code: string) => {
+    setIsLoading(true)
+    const { data, error } = await authApi.verifyEmail({ email, code })
+    setIsLoading(false)
+
+    if (error || !data) {
+      return { error: error ?? 'Verifikasi gagal' }
     }
 
     saveAuth(data.user, data.accessToken, data.refreshToken)
@@ -148,6 +175,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoggedIn: !!user,
         login,
         register,
+        verifyEmail,
         loginWithGoogle,
         registerWithGoogle,
         logout,

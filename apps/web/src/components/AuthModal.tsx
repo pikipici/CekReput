@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { authApi } from '../lib/api'
+import { OtpVerificationModal } from './OtpVerificationModal'
 
 interface AuthModalProps {
   isOpen: boolean
@@ -40,11 +42,15 @@ function PasswordStrengthBar({ password }: { password: string }) {
 }
 
 export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: AuthModalProps) {
-  const { login, register, loginWithGoogle, registerWithGoogle, isLoading } = useAuth()
+  const { login, register, verifyEmail, loginWithGoogle, registerWithGoogle, isLoading } = useAuth()
   const [activeTab, setActiveTab] = useState<'login' | 'register' | 'google-registration'>(initialTab)
   const [googleData, setGoogleData] = useState<{ email: string; name: string; googleId: string; avatarUrl?: string } | null>(null)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  
+  // OTP State
+  const [showOtpModal, setShowOtpModal] = useState(false)
+  const [otpEmail, setOtpEmail] = useState('')
 
   // Form fields
   const [name, setName] = useState('')
@@ -137,6 +143,11 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
         return
       }
       const result = await register(name, email, password)
+      if (result.requiresOtp && result.email) {
+        setOtpEmail(result.email)
+        setShowOtpModal(true)
+        return
+      }
       if (result.error) {
         setError(result.error)
       } else {
@@ -144,12 +155,31 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
       }
     } else {
       const result = await login(email, password)
+      if (result.requiresOtp && result.email) {
+        setOtpEmail(result.email)
+        setShowOtpModal(true)
+        return
+      }
       if (result.error) {
         setError(result.error)
       } else {
         onClose()
       }
     }
+  }
+
+  const handleVerifyOtp = async (code: string) => {
+    const result = await verifyEmail(otpEmail, code)
+    if (!result.error) {
+      setShowOtpModal(false)
+      onClose()
+    }
+    return result
+  }
+
+  const handleResendOtp = async () => {
+    const { error, data } = await authApi.resendOtp({ email: otpEmail })
+    return { error: error ?? undefined, message: data?.message }
   }
 
   const initGoogle = useCallback(() => {
@@ -254,6 +284,21 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
   }
 
   if (!isOpen) return null
+
+  if (showOtpModal) {
+    return (
+      <OtpVerificationModal
+        isOpen={showOtpModal}
+        onClose={() => {
+          setShowOtpModal(false)
+          onClose() // Also close main modal if user bails out of OTP
+        }}
+        email={otpEmail}
+        onVerify={handleVerifyOtp}
+        onResend={handleResendOtp}
+      />
+    )
+  }
 
   return (
     <div
