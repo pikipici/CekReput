@@ -42,7 +42,7 @@ function PasswordStrengthBar({ password }: { password: string }) {
 }
 
 export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: AuthModalProps) {
-  const { login, register, verifyEmail, loginWithGoogle, registerWithGoogle, forgotPassword, resetPassword, isLoading } = useAuth()
+  const { login, register, verifyEmail, loginWithGoogle, registerWithGoogle, forgotPassword, checkResetOtp, resetPassword, isLoading } = useAuth()
   const [activeTab, setActiveTab] = useState<'login' | 'register' | 'google-registration' | 'forgot-password' | 'reset-password'>(initialTab)
   const [googleData, setGoogleData] = useState<{ email: string; name: string; googleId: string; avatarUrl?: string } | null>(null)
   const [showPassword, setShowPassword] = useState(false)
@@ -200,6 +200,10 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
 
   const handleVerifyOtp = async (code: string) => {
     if (activeTab === 'forgot-password') {
+      const result = await checkResetOtp(otpEmail, code)
+      if (result.error) {
+        return result
+      }
       setResetOtpCode(code)
       setShowOtpModal(false)
       setActiveTab('reset-password')

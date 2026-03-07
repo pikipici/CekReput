@@ -12,6 +12,7 @@ interface AuthContextType {
   loginWithGoogle: (idToken: string) => Promise<{ error?: string; requiresRegistration?: boolean; googleData?: any }>
   registerWithGoogle: (name: string, email: string, password: string, googleId: string, avatarUrl?: string) => Promise<{ error?: string }>
   forgotPassword: (email: string) => Promise<{ error?: string; message?: string }>
+  checkResetOtp: (email: string, code: string) => Promise<{ error?: string; message?: string }>
   resetPassword: (email: string, code: string, newPassword: string) => Promise<{ error?: string; message?: string }>
   logout: () => void
 }
@@ -180,6 +181,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { message: data.message }
   }
 
+  const checkResetOtp = async (email: string, code: string) => {
+    setIsLoading(true)
+    const { data, error } = await authApi.checkResetOtp({ email, code })
+    setIsLoading(false)
+
+    if (error || !data) {
+      return { error: error ?? 'Kode OTP tidak valid' }
+    }
+
+    return { message: data.message }
+  }
+
   const resetPassword = async (email: string, code: string, newPassword: string) => {
     setIsLoading(true)
     const { data, error } = await authApi.resetPassword({ email, code, newPassword })
@@ -206,6 +219,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loginWithGoogle,
         registerWithGoogle,
         forgotPassword,
+        checkResetOtp,
         resetPassword,
         logout,
       }}

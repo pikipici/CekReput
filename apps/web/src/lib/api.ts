@@ -127,6 +127,9 @@ export const authApi = {
   forgotPassword: (data: { email: string }) =>
     request<{ message: string }>('/api/auth/forgot-password', { method: 'POST', body: data }),
 
+  checkResetOtp: (data: { email: string; code: string }) =>
+    request<{ message: string }>('/api/auth/check-reset-otp', { method: 'POST', body: data }),
+
   resetPassword: (data: { email: string; code: string; newPassword: string }) =>
     request<AuthResponse>('/api/auth/reset-password', { method: 'POST', body: data }),
 

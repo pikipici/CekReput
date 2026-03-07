@@ -166,6 +166,25 @@ auth.post('/forgot-password', zValidator('json', forgotPasswordSchema), async (c
   return c.json({ message: 'Jika email terdaftar, instruksi reset kata sandi telah dikirim.' })
 })
 
+// ─── Check Reset OTP ─────────────────────────────────────────────
+
+auth.post('/check-reset-otp', zValidator('json', verifyOtpSchema), async (c) => {
+  const { email, code } = c.req.valid('json')
+
+  // Find OTP
+  const [otp] = await db
+    .select()
+    .from(otpCodes)
+    .where(and(eq(otpCodes.email, email), eq(otpCodes.code, code), gt(otpCodes.expiresAt, new Date())))
+    .limit(1)
+
+  if (!otp) {
+    return c.json({ error: 'Kode OTP tidak valid atau sudah kedaluwarsa' }, 400)
+  }
+
+  return c.json({ message: 'Kode OTP valid' })
+})
+
 // ─── Reset Password ────────────────────────────────────────────────
 
 auth.post('/reset-password', zValidator('json', resetPasswordSchema), async (c) => {
