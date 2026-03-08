@@ -1,8 +1,5 @@
 import type { ReportFormData } from '../../pages/ReportScam'
 import FileUploader from './FileUploader'
-import { Turnstile } from '@marsidev/react-turnstile'
-import type { TurnstileInstance } from '@marsidev/react-turnstile'
-import { useRef } from 'react'
 
 interface StepThreeFormProps {
   isActive: boolean
@@ -26,7 +23,6 @@ const CATEGORY_LABELS: Record<string, string> = {
 }
 
 export default function StepThreeForm({ isActive, form, updateForm, onBack, onSubmit, isSubmitting }: StepThreeFormProps) {
-  const turnstileRef = useRef<TurnstileInstance>(null)
 
   const identityLabel =
     form.accountType === 'bank'
@@ -143,13 +139,6 @@ export default function StepThreeForm({ isActive, form, updateForm, onBack, onSu
 
       {/* Legal & Submit */}
       <div className="pt-6 border-t border-white/5">
-        <div className="sm:hidden mb-6 flex justify-center">
-            <Turnstile
-               siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
-               onSuccess={(t) => updateForm({ turnstileToken: t })}
-               options={{ size: 'normal', theme: 'dark' }}
-             />
-        </div>
         <label className="flex items-start gap-3 cursor-pointer group mb-8">
           <input
             type="checkbox"
@@ -173,19 +162,10 @@ export default function StepThreeForm({ isActive, form, updateForm, onBack, onSu
             Kembali ke Langkah 2
           </button>
           
-          <div className="hidden sm:block">
-            <Turnstile
-               siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
-               onSuccess={(t) => updateForm({ turnstileToken: t })}
-               ref={turnstileRef}
-               options={{ size: 'normal', theme: 'dark' }}
-             />
-          </div>
-
           <button
             type="button"
             onClick={onSubmit}
-            disabled={!form.agreedTerms || isSubmitting || !form.turnstileToken}
+            disabled={!form.agreedTerms || isSubmitting}
             className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-navy-dark font-bold py-3 px-8 rounded-xl shadow-lg shadow-primary/25 transition-all transform active:scale-95 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (

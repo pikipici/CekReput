@@ -5,11 +5,17 @@
  * @returns boolean indicating success or failure
  */
 export async function verifyTurnstile(token: string, ip?: string): Promise<boolean> {
-  const secretKey = process.env.TURNSTILE_SECRET_KEY
+  const isDev = process.env.NODE_ENV !== 'production'
+  
+  // If we are in development mode, the frontend is likely using the testing sitekey ('1x00000000000000000000AA').
+  // Therefore, we MUST use the corresponding testing secret key here to pass Cloudflare's validation.
+  const secretKey = isDev 
+    ? '1x0000000000000000000000000000000AA' 
+    : process.env.TURNSTILE_SECRET_KEY
 
   // Fail securely in production if secret is not configured
   if (!secretKey) {
-    if (process.env.NODE_ENV === 'production') {
+    if (!isDev) {
       console.error('[TURNSTILE] CRITICAL: Secret key not configured in production!')
       return false
     }
@@ -35,6 +41,11 @@ export async function verifyTurnstile(token: string, ip?: string): Promise<boole
     })
 
     const data = await res.json() as { success: boolean; 'error-codes'?: string[] }
+    
+    if (!data.success) {
+      console.error('[TURNSTILE] Failed verification:', data)
+    }
+    
     return data.success === true
   } catch (error) {
     console.error('[TURNSTILE] Error verifying token:', error)

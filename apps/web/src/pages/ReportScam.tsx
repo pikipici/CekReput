@@ -7,6 +7,7 @@ import ProgressSidebar from '../components/report/ProgressSidebar'
 import StepOneForm from '../components/report/StepOneForm'
 import StepTwoForm from '../components/report/StepTwoForm'
 import StepThreeForm from '../components/report/StepThreeForm'
+import TurnstileModal from '../components/report/TurnstileModal'
 import ReportFooter from '../components/report/ReportFooter'
 import SEO from '../components/SEO'
 
@@ -66,6 +67,7 @@ export default function ReportScam() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const [submitSuccess, setSubmitSuccess] = useState(false)
+  const [showTurnstileModal, setShowTurnstileModal] = useState(false)
 
   const updateForm = (updates: Partial<ReportFormData>) => {
     setForm((prev) => ({ ...prev, ...updates }))
@@ -85,10 +87,25 @@ export default function ReportScam() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const handleSubmit = async () => {
+  const handlePreSubmit = () => {
+    // Only pre-validate, don't submit to API yet
+    if (!token) return
+    setSubmitError('')
+    
+    // Validasi singkat data
+    if (!form.agreedTerms) {
+      setSubmitError('Anda harus menyetujui syarat & ketentuan.')
+      return
+    }
+    
+    // Tampilkan modal turnstile
+    setShowTurnstileModal(true)
+  }
+
+  const submitReportApi = async (turnstileToken: string) => {
     if (!token) return
     setIsSubmitting(true)
-    setSubmitError('')
+    setShowTurnstileModal(false)
 
     let finalChronology = form.chronology
     if (form.category === 'other' && form.customCategory) {
@@ -106,7 +123,7 @@ export default function ReportScam() {
       socialMedia: form.socialMedia.filter(s => s.trim().length > 0),
       evidenceFiles: form.evidenceFiles,
       evidenceLink: form.evidenceLink,
-      turnstileToken: form.turnstileToken || '',
+      turnstileToken: turnstileToken,
     }
 
     if (form.accountType === 'bank') {
@@ -126,6 +143,8 @@ export default function ReportScam() {
 
     if (error) {
       setSubmitError(error)
+      // Gulung ke atas untuk melihat error
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     } else {
       setSubmitSuccess(true)
     }
@@ -229,7 +248,7 @@ export default function ReportScam() {
             )}
 
             {currentStep === 3 && (
-              <StepThreeForm isActive={true} form={form} updateForm={updateForm} onBack={handleBack} onSubmit={handleSubmit} isSubmitting={isSubmitting} />
+              <StepThreeForm isActive={true} form={form} updateForm={updateForm} onBack={handleBack} onSubmit={handlePreSubmit} isSubmitting={isSubmitting} />
             )}
 
             {/* Visual placeholders for inactive steps */}
@@ -255,6 +274,12 @@ export default function ReportScam() {
 
       <ReportFooter />
     </div>
+
+    <TurnstileModal 
+      isOpen={showTurnstileModal}
+      onClose={() => setShowTurnstileModal(false)}
+      onVerify={submitReportApi}
+    />
     </>
   )
 }
