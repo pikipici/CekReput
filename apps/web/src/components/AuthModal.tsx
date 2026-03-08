@@ -254,7 +254,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
         visibleBtn.innerHTML = ''
         g.accounts.id.renderButton(visibleBtn, {
           type: 'standard',
-          theme: 'outline',
+          theme: 'filled_black',
           size: 'large',
           width: 400,
         })
@@ -378,8 +378,8 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
           {/* Native Google rendered button */}
           {(activeTab === 'login' || activeTab === 'register') && (
             <>
-              <div className="w-full flex justify-center bg-white rounded-xl overflow-hidden hover:opacity-90 transition-opacity">
-                <div id="visible-google-btn" className="w-full flex justify-center" />
+              <div className="w-full flex justify-center rounded-xl overflow-hidden hover:opacity-90 transition-opacity">
+                <div id="visible-google-btn" className="w-full flex justify-center scale-105 origin-center" />
               </div>
 
           {/* Divider */}
