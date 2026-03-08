@@ -4,13 +4,14 @@ import { useNavigate } from 'react-router-dom'
 interface UserDropdownProps {
   userName: string
   userEmail?: string
+  userAvatarUrl?: string | null
   userBadges?: string[] | null
   onLogout: () => void
 }
 
 import UserBadge from './profile/UserBadge'
 
-export default function UserDropdown({ userName, userEmail, userBadges, onLogout }: UserDropdownProps) {
+export default function UserDropdown({ userName, userEmail, userAvatarUrl, userBadges, onLogout }: UserDropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
@@ -40,8 +41,12 @@ export default function UserDropdown({ userName, userEmail, userBadges, onLogout
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 rounded-xl py-1.5 px-2 hover:bg-slate-700/40 transition-all group"
       >
-        <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-emerald-600 flex items-center justify-center text-xs font-bold text-white shadow-md shadow-primary/20">
-          {initials}
+        <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-emerald-600 flex items-center justify-center text-xs font-bold text-white shadow-md shadow-primary/20 overflow-hidden">
+          {userAvatarUrl ? (
+            <img src={userAvatarUrl} alt={userName} className="w-full h-full object-cover" />
+          ) : (
+            initials
+          )}
         </div>
         <span className="hidden sm:block text-sm font-medium text-slate-300 group-hover:text-white transition-colors max-w-[100px] truncate">
           {userName}

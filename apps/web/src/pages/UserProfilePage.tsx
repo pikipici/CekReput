@@ -42,7 +42,7 @@ interface UploadedAvatar {
 }
 
 export default function UserProfilePage() {
-  const { token, isLoggedIn } = useAuth()
+  const { token, isLoggedIn, updateUser } = useAuth()
   const navigate = useNavigate()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -201,6 +201,8 @@ export default function UserProfilePage() {
         setProfile((prev) => prev ? { ...prev, name: editName, bio: editBio, avatarUrl: finalAvatarUrl || null } : null)
         setUploadedAvatar(null)
         setIsEditing(false)
+        // Update user context to reflect new avatar immediately
+        updateUser({ avatarUrl: finalAvatarUrl ?? null })
       }
     } catch (err: unknown) {
       setError((err as Error).message || 'Gagal menyimpan profil')

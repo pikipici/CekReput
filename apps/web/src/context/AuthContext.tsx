@@ -15,6 +15,7 @@ interface AuthContextType {
   checkResetOtp: (email: string, code: string) => Promise<{ error?: string; message?: string }>
   resetPassword: (email: string, code: string, newPassword: string) => Promise<{ error?: string; message?: string }>
   logout: () => void
+  updateUser: (updatedUser: Partial<User>) => void
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -206,6 +207,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { message: data.message }
   }
 
+  const updateUser = (updatedUser: Partial<User>) => {
+    if (!user) return
+    const newUser = { ...user, ...updatedUser }
+    setUser(newUser)
+    localStorage.setItem(USER_KEY, JSON.stringify(newUser))
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -222,6 +230,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         checkResetOtp,
         resetPassword,
         logout,
+        updateUser,
       }}
     >
       {children}

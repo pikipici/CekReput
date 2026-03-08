@@ -37,6 +37,8 @@ export default function Header() {
                 <UserDropdown
                   userName={user.name}
                   userEmail={user.email}
+                  userAvatarUrl={user.avatarUrl}
+                  userBadges={user.badges}
                   onLogout={logout}
                 />
               ) : (

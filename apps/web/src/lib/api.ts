@@ -79,7 +79,7 @@ export interface User {
   name: string
   email: string
   role: 'user' | 'moderator' | 'admin'
-  avatarUrl?: string
+  avatarUrl?: string | null
   badges?: string[] | null
 }
 
