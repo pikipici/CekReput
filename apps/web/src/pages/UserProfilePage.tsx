@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
@@ -36,15 +36,21 @@ interface UserComment {
   }
 }
 
+interface UploadedAvatar {
+  url: string
+  preview: string
+}
+
 export default function UserProfilePage() {
   const { token, isLoggedIn } = useAuth()
   const navigate = useNavigate()
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [stats, setStats] = useState<UserStats | null>(null)
-  
+
   // Comments fetching
   const [comments, setComments] = useState<UserComment[]>([])
   const [commentsLoading, setCommentsLoading] = useState(false)
@@ -56,6 +62,8 @@ export default function UserProfilePage() {
   const [editName, setEditName] = useState('')
   const [editBio, setEditBio] = useState('')
   const [editAvatarUrl, setEditAvatarUrl] = useState('')
+  const [uploadedAvatar, setUploadedAvatar] = useState<UploadedAvatar | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [activeTab, setActiveTab] = useState<'profile' | 'discussions'>('profile')
 
@@ -113,20 +121,85 @@ export default function UserProfilePage() {
     }
   }, [activeTab])
 
+  const handleAvatarFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !token) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError('File harus berupa gambar (JPG/PNG)')
+      return
+    }
+
+    // Validate file size (max 2MB)
+    const maxSize = 2 * 1024 * 1024
+    if (file.size > maxSize) {
+      setError('Ukuran file maksimal 2MB')
+      return
+    }
+
+    // Create preview
+    const previewUrl = URL.createObjectURL(file)
+    setUploadedAvatar({ url: '', preview: previewUrl })
+
+    // Upload to R2
+    setIsUploading(true)
+    setError('')
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3001'
+      const res = await fetch(`${API_BASE}/api/upload/evidence`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Gagal mengunggah foto profil')
+      }
+
+      setUploadedAvatar({
+        url: data.file.url,
+        preview: previewUrl,
+      })
+    } catch (err: unknown) {
+      console.error('Avatar upload error:', err)
+      setError((err as Error).message || 'Gagal mengunggah foto profil')
+      setUploadedAvatar(null)
+    } finally {
+      setIsUploading(false)
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+  }
+
   const handleSaveProfile = async () => {
     if (!token) return
     setIsSaving(true)
     try {
+      // Use uploaded avatar URL if available, otherwise use existing editAvatarUrl
+      const finalAvatarUrl = uploadedAvatar?.url || editAvatarUrl || undefined
+
       const res = await usersApi.updateProfile({
         name: editName,
         bio: editBio,
-        avatarUrl: editAvatarUrl || undefined // Only send if not empty, otherwise API allows clear
+        avatarUrl: finalAvatarUrl,
       }, token)
-      
+
       if (res.error) {
         setError(res.error)
       } else if (res.data) {
-        setProfile((prev) => prev ? { ...prev, name: editName, bio: editBio, avatarUrl: editAvatarUrl || null } : null)
+        setProfile((prev) => prev ? { ...prev, name: editName, bio: editBio, avatarUrl: finalAvatarUrl || null } : null)
+        setUploadedAvatar(null)
         setIsEditing(false)
       }
     } catch (err: unknown) {
@@ -192,13 +265,51 @@ export default function UserProfilePage() {
             {/* Main Profile Info */}
             <div className="glass-panel p-6 rounded-2xl animate-in flip-in-y duration-700">
               <div className="flex flex-col items-center justify-center text-center">
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-emerald-600 flex items-center justify-center text-3xl font-bold text-white shadow-xl shadow-primary/20 mb-4 overflow-hidden ring-4 ring-slate-800">
-                  {profile?.avatarUrl ? (
-                    <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-                  ) : (
-                    initials
+                <div className="relative">
+                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-emerald-600 flex items-center justify-center text-3xl font-bold text-white shadow-xl shadow-primary/20 mb-4 overflow-hidden ring-4 ring-slate-800">
+                    {uploadedAvatar?.preview ? (
+                      <img src={uploadedAvatar.preview} alt="Avatar Preview" className="w-full h-full object-cover" />
+                    ) : profile?.avatarUrl ? (
+                      <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      initials
+                    )}
+                  </div>
+
+                  {/* Upload Avatar Button - Only show when editing */}
+                  {isEditing && (
+                    <>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png"
+                        onChange={handleAvatarFileSelect}
+                        className="hidden"
+                        disabled={isUploading}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploading}
+                        className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-primary hover:bg-primary-hover border-4 border-slate-900 flex items-center justify-center text-white shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Ganti foto profil"
+                      >
+                        {isUploading ? (
+                          <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+                        ) : (
+                          <span className="material-symbols-outlined text-[16px]">camera_alt</span>
+                        )}
+                      </button>
+                    </>
                   )}
                 </div>
+
+                {uploadedAvatar && (
+                  <p className="text-xs text-emerald-400 flex items-center gap-1 mb-2">
+                    <span className="material-symbols-outlined text-[14px]">check_circle</span>
+                    Foto profil baru dipilih
+                  </p>
+                )}
                 
                 <h2 className="text-xl font-bold text-white leading-tight">{profile?.name}</h2>
                 <p className="text-slate-400 text-sm mb-3">{profile?.email}</p>
@@ -316,7 +427,7 @@ export default function UserProfilePage() {
                       <div>
                         <label className="block text-sm font-medium text-slate-300 mb-2">Biografi Singkat</label>
                         {isEditing ? (
-                          <textarea 
+                          <textarea
                             value={editBio}
                             onChange={(e) => setEditBio(e.target.value)}
                             className="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors min-h-[100px] resize-y"
@@ -329,17 +440,16 @@ export default function UserProfilePage() {
                         )}
                       </div>
 
-                      {/* Avatar URL */}
+                      {/* Avatar Upload Info */}
                       {isEditing && (
                         <div>
-                          <label className="block text-sm font-medium text-slate-300 mb-2">URL Foto Profil (Opsional)</label>
-                          <input 
-                            type="url" 
-                            value={editAvatarUrl}
-                            onChange={(e) => setEditAvatarUrl(e.target.value)}
-                            className="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-                            placeholder="https://example.com/photo.jpg"
-                          />
+                          <label className="block text-sm font-medium text-slate-300 mb-2">Foto Profil</label>
+                          <div className="bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-3 flex items-center gap-3">
+                            <span className="material-symbols-outlined text-primary text-[20px]">info</span>
+                            <p className="text-sm text-slate-400">
+                              Klik tombol <span className="material-symbols-outlined text-[16px] align-middle">camera_alt</span> di pojok kanan bawah foto profil untuk mengganti foto
+                            </p>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -353,6 +463,7 @@ export default function UserProfilePage() {
                             setEditName(profile?.name || '')
                             setEditBio(profile?.bio || '')
                             setEditAvatarUrl(profile?.avatarUrl || '')
+                            setUploadedAvatar(null)
                           }}
                           className="px-6 py-2.5 rounded-xl text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
                         >
@@ -360,7 +471,7 @@ export default function UserProfilePage() {
                         </button>
                         <button
                           type="submit"
-                          disabled={isSaving}
+                          disabled={isSaving || isUploading}
                           className="px-6 py-2.5 bg-primary hover:bg-primary-hover active:scale-95 disabled:hover:scale-100 disabled:opacity-70 text-white rounded-xl text-sm font-semibold shadow-lg shadow-primary/20 transition-all flex items-center gap-2"
                         >
                           {isSaving ? (
