@@ -264,34 +264,62 @@ auth.post('/login', zValidator('json', loginSchema), async (c) => {
 auth.post('/google', async (c) => {
   const { idToken } = await c.req.json()
 
-  // Verify Google ID token
-  const googleApiUrl = `https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`
-  const response = await fetch(googleApiUrl)
+  let googleUser: any
 
-  if (!response.ok) {
-    return c.json({ error: 'Google token tidak valid' }, 401)
-  }
+  // Detect if idToken is actually an access_token (JWTs have exactly 3 parts separated by docs)
+  const isJwt = idToken && idToken.split('.').length === 3
+  const isAccessToken = !isJwt
 
-  const googleUser = (await response.json()) as {
-    sub: string
-    email: string
-    name: string
-    picture: string
-    aud: string
-    iss: string
-  }
+  if (isAccessToken) {
+    // 1. Verify Audience
+    const tokenInfoRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?access_token=${idToken}`)
+    if (!tokenInfoRes.ok) {
+      const errorText = await tokenInfoRes.text()
+      console.error('[Google OAuth] Token Info Error:', errorText, idToken)
+      return c.json({ error: 'Google access token tidak valid' }, 401)
+    }
+    const tokenInfo = (await tokenInfoRes.json()) as any
+    console.log('[Google OAuth] Access Token Info:', tokenInfo)
 
-  // Validate token issuer
-  if (googleUser.iss !== 'accounts.google.com' && googleUser.iss !== 'https://accounts.google.com') {
-    console.error('[Google OAuth] Invalid issuer:', googleUser.iss)
-    return c.json({ error: 'Google token issuer tidak valid' }, 401)
-  }
+    const expectedAudience = process.env.GOOGLE_CLIENT_ID
+    const tokenAudience = tokenInfo.aud || tokenInfo.azp || tokenInfo.client_id
+    if (expectedAudience && tokenAudience !== expectedAudience) {
+      console.error('[Google OAuth] Audience mismatch. Expected:', expectedAudience, 'Got:', tokenAudience, tokenInfo)
+      return c.json({ error: 'Google token audience tidak cocok' }, 401)
+    }
 
-  // Validate audience (client_id) - critical security check
-  const expectedAudience = process.env.GOOGLE_CLIENT_ID
-  if (expectedAudience && googleUser.aud !== expectedAudience) {
-    console.error('[Google OAuth] Audience mismatch. Expected:', expectedAudience, 'Got:', googleUser.aud)
-    return c.json({ error: 'Google token audience tidak cocok - kemungkinan token bukan untuk aplikasi ini' }, 401)
+    // 2. Get User Info
+    const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { Authorization: `Bearer ${idToken}` }
+    })
+    if (!userInfoRes.ok) return c.json({ error: 'Gagal mengambil data profil Google' }, 401)
+    
+    googleUser = await userInfoRes.json()
+    // Align properties with idToken response
+  } else {
+    // Verify Google ID token
+    const googleApiUrl = `https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`
+    const response = await fetch(googleApiUrl)
+
+    if (!response.ok) {
+      console.error('[Google OAuth] ID Token Info Error:', await response.text())
+      return c.json({ error: 'Google token tidak valid' }, 401)
+    }
+
+    googleUser = await response.json()
+
+    // Validate token issuer
+    if (googleUser.iss !== 'accounts.google.com' && googleUser.iss !== 'https://accounts.google.com') {
+      console.error('[Google OAuth] Invalid issuer:', googleUser.iss)
+      return c.json({ error: 'Google token issuer tidak valid' }, 401)
+    }
+
+    // Validate audience (client_id) - critical security check
+    const expectedAudience = process.env.GOOGLE_CLIENT_ID
+    if (expectedAudience && googleUser.aud !== expectedAudience) {
+      console.error('[Google OAuth] Audience mismatch. Expected:', expectedAudience, 'Got:', googleUser.aud)
+      return c.json({ error: 'Google token audience tidak cocok - kemungkinan token bukan untuk aplikasi ini' }, 401)
+    }
   }
 
   // Find or create user
