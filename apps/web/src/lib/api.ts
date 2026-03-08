@@ -300,6 +300,7 @@ export const usersApi = {
 // ─── Clarifications API ──────────────────────────────────────────
 
 export interface CreateClarificationData {
+  perpetratorId: string
   statement: string
   evidenceUrls?: string[]
   identityPhotoUrl?: string

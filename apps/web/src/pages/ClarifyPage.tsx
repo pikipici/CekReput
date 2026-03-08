@@ -79,6 +79,7 @@ export default function ClarifyPage() {
 
       // 2. Submit clarification
       const res = await clarificationsApi.create({
+        perpetratorId: id!,
         identityName: formData.identityName ?? undefined,
         identityNik: formData.identityNik ?? undefined,
         statement: formData.statement,
