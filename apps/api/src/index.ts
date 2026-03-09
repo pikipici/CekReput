@@ -18,6 +18,7 @@ import moderation from './routes/moderation.js'
 import clarificationsRouter from './routes/clarifications.js'
 import developer, { developerApiV1 } from './routes/developer.js'
 import upload from './routes/upload.js'
+import game from './routes/game.js'
 
 const app = new Hono()
 
@@ -169,6 +170,7 @@ app.route('/api/clarifications', clarificationsRouter)
 app.route('/api/developer', developer)
 app.route('/api/upload', upload)
 app.route('/api/v1', developerApiV1)
+app.route('/api/game', game)
 
 // ─── API Documentation Endpoint ─────────────────────────────────
 

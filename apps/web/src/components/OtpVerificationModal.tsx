@@ -175,7 +175,7 @@ export function OtpVerificationModal({ isOpen, onClose, email, onVerify, onResen
             {otp.map((digit, index) => (
               <input
                 key={index}
-                // @ts-ignore
+                // @ts-expect-error - React ref type mismatch
                 ref={el => inputRefs.current[index] = el}
                 type="text"
                 inputMode="numeric"

@@ -4,6 +4,7 @@ import { LanguageProvider } from './context/LanguageContext'
 import Home from './pages/Home'
 import SearchResults from './pages/SearchResults'
 import ProfileDetail from './pages/ProfileDetail'
+import GameDetail from './pages/GameDetail'
 import ReportScam from './pages/ReportScam'
 import ClarifyPage from './pages/ClarifyPage'
 import MyReportsPage from './pages/MyReportsPage'
@@ -31,6 +32,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/results" element={<SearchResults />} />
             <Route path="/profile/:id" element={<ProfileDetail />} />
+            <Route path="/game/:platform/:gameId" element={<GameDetail />} />
             <Route path="/report" element={<ReportScam />} />
             <Route path="/clarify/:id" element={<ClarifyPage />} />
             <Route path="/my-reports" element={<MyReportsPage />} />

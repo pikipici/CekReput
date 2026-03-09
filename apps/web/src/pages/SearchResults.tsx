@@ -177,83 +177,170 @@ export default function SearchResults() {
 
           {/* Results List */}
           {!loading && results.length > 0 && (
-            <div className="space-y-4">
-              {results.map((item) => {
-                const threat = threatConfig[item.threatLevel] ?? threatConfig.safe
+            <div className="space-y-8">
+              {/* Group results: ID Game section first, then other results */}
+              {(() => {
+                const gameResults = results.filter(r => r.matchedGameId && r.matchedGameType)
+                const otherResults = results.filter(r => !r.matchedGameId)
+
                 return (
-                  <Link
-                    key={item.id}
-                    to={`/profile/${item.id}${item.matchedGameId ? `?gameId=${encodeURIComponent(item.matchedGameId)}&gameType=${encodeURIComponent(item.matchedGameType || '')}` : ''}`}
-                    className="block rounded-2xl border border-white/5 bg-white/[0.02] p-5 hover:bg-white/[0.04] hover:border-white/10 transition-all group"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-start gap-4">
-                        {/* Threat Icon */}
-                        <div className={`shrink-0 w-12 h-12 rounded-xl ${threat.bg} border ${threat.border} flex items-center justify-center`}>
-                          <span className={`material-symbols-outlined text-[24px] ${threat.color}`}>{threat.icon}</span>
+                  <>
+                    {/* Section 1: ID Game */}
+                    {gameResults.length > 0 && (
+                      <section className="space-y-4">
+                        <div className="flex items-center gap-2 pb-2 border-b border-white/10">
+                          <span className="material-symbols-outlined text-primary text-[22px]">sports_esports</span>
+                          <h2 className="text-lg font-bold text-white">ID Game</h2>
+                          <span className="text-sm text-slate-400">({gameResults.length})</span>
                         </div>
+                        {gameResults.map((item) => {
+                          const threat = threatConfig[item.threatLevel] ?? threatConfig.safe
+                          const linkTo = `/game/${encodeURIComponent(item.matchedGameType!)}/${encodeURIComponent(item.matchedGameId!)}`
 
-                        {/* Info */}
-                        <div className="space-y-1.5">
-                          {/* Identity */}
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-mono text-base font-bold text-white">
-                              {item.matchedGameId ? item.matchedGameId : (item.accountNumber ?? item.phoneNumber ?? item.entityName ?? '—')}
-                            </span>
-                            <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-md border ${threat.bg} ${threat.border} ${threat.color}`}>
-                              {threat.label}
-                            </span>
-                          </div>
+                          return (
+                            <Link
+                              key={item.id}
+                              to={linkTo}
+                              className="block rounded-2xl border border-white/5 bg-white/[0.02] p-5 hover:bg-white/[0.04] hover:border-white/10 transition-all group"
+                            >
+                              <div className="flex items-start justify-between gap-4">
+                                <div className="flex items-start gap-4">
+                                  {/* Threat Icon */}
+                                  <div className={`shrink-0 w-12 h-12 rounded-xl ${threat.bg} border ${threat.border} flex items-center justify-center`}>
+                                    <span className={`material-symbols-outlined text-[24px] ${threat.color}`}>{threat.icon}</span>
+                                  </div>
 
-                          {/* Meta */}
-                          <div className="flex items-center gap-4 text-xs text-slate-500">
-                            {item.matchedGameId ? (
-                              <span className="flex items-center gap-1">
-                                <span className="material-symbols-outlined text-[14px]">sports_esports</span>
-                                {item.matchedGameType}
-                              </span>
-                            ) : item.bankName ? (
-                              <span className="flex items-center gap-1">
-                                <span className="material-symbols-outlined text-[14px]">account_balance</span>
-                                {item.bankName}
-                              </span>
-                            ) : (
-                              <span className="flex items-center gap-1 capitalize">
-                                <span className="material-symbols-outlined text-[14px]">{item.accountType === 'phone' ? 'smartphone' : 'storefront'}</span>
-                                {item.accountType}
-                              </span>
-                            )}
-                            <span className="flex items-center gap-1">
-                              <span className="material-symbols-outlined text-[14px]">description</span>
-                              {item.totalReports} laporan
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <span className="material-symbols-outlined text-[14px]">check_circle</span>
-                              {item.verifiedReports} terverifikasi
-                            </span>
-                            <span className="capitalize">{item.accountType}</span>
-                          </div>
+                                  {/* Info */}
+                                  <div className="space-y-1.5">
+                                    {/* Identity */}
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <span className="font-mono text-base font-bold text-white">
+                                        {item.matchedGameId}
+                                      </span>
+                                      <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-md border ${threat.bg} ${threat.border} ${threat.color}`}>
+                                        {threat.label}
+                                      </span>
+                                    </div>
 
-                          {/* Date Range */}
-                          {item.firstReported && (
-                            <p className="text-xs text-slate-500">
-                              Dilaporkan: {new Date(item.firstReported).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })}
-                              {item.lastReported && item.lastReported !== item.firstReported && (
-                                <> — {new Date(item.lastReported).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })}</>
-                              )}
-                            </p>
-                          )}
-                        </div>
-                      </div>
+                                    {/* Meta */}
+                                    <div className="flex items-center gap-4 text-xs text-slate-500">
+                                      <span className="flex items-center gap-1">
+                                        <span className="material-symbols-outlined text-[14px]">sports_esports</span>
+                                        {item.matchedGameType}
+                                      </span>
+                                      <span className="flex items-center gap-1">
+                                        <span className="material-symbols-outlined text-[14px]">description</span>
+                                        {item.totalReports} laporan
+                                      </span>
+                                      <span className="flex items-center gap-1">
+                                        <span className="material-symbols-outlined text-[14px]">check_circle</span>
+                                        {item.verifiedReports} terverifikasi
+                                      </span>
+                                    </div>
 
-                      {/* Arrow */}
-                      <span className="material-symbols-outlined text-slate-600 group-hover:text-primary transition-colors text-[20px] mt-3">
-                        arrow_forward
-                      </span>
-                    </div>
-                  </Link>
+                                    {/* Date Range */}
+                                    {item.firstReported && (
+                                      <p className="text-xs text-slate-500">
+                                        Dilaporkan: {new Date(item.firstReported).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })}
+                                        {item.lastReported && item.lastReported !== item.firstReported && (
+                                          <> — {new Date(item.lastReported).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })}</>
+                                        )}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Arrow */}
+                                <span className="material-symbols-outlined text-slate-600 group-hover:text-primary transition-colors text-[20px] mt-3">
+                                  arrow_forward
+                                </span>
+                              </div>
+                            </Link>
+                          )
+                        })}
+                      </section>
+                    )}
+
+                    {/* Section 2: Other Results */}
+                    {otherResults.length > 0 && (
+                      <section className="space-y-4">
+                        {otherResults.map((item) => {
+                          const threat = threatConfig[item.threatLevel] ?? threatConfig.safe
+                          const linkTo = `/profile/${item.id}`
+
+                          return (
+                            <Link
+                              key={item.id}
+                              to={linkTo}
+                              className="block rounded-2xl border border-white/5 bg-white/[0.02] p-5 hover:bg-white/[0.04] hover:border-white/10 transition-all group"
+                            >
+                              <div className="flex items-start justify-between gap-4">
+                                <div className="flex items-start gap-4">
+                                  {/* Threat Icon */}
+                                  <div className={`shrink-0 w-12 h-12 rounded-xl ${threat.bg} border ${threat.border} flex items-center justify-center`}>
+                                    <span className={`material-symbols-outlined text-[24px] ${threat.color}`}>{threat.icon}</span>
+                                  </div>
+
+                                  {/* Info */}
+                                  <div className="space-y-1.5">
+                                    {/* Identity */}
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <span className="font-mono text-base font-bold text-white">
+                                        {item.accountNumber ?? item.phoneNumber ?? item.entityName ?? '—'}
+                                      </span>
+                                      <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-md border ${threat.bg} ${threat.border} ${threat.color}`}>
+                                        {threat.label}
+                                      </span>
+                                    </div>
+
+                                    {/* Meta */}
+                                    <div className="flex items-center gap-4 text-xs text-slate-500">
+                                      {item.bankName ? (
+                                        <span className="flex items-center gap-1">
+                                          <span className="material-symbols-outlined text-[14px]">account_balance</span>
+                                          {item.bankName}
+                                        </span>
+                                      ) : (
+                                        <span className="flex items-center gap-1 capitalize">
+                                          <span className="material-symbols-outlined text-[14px]">{item.accountType === 'phone' ? 'smartphone' : 'storefront'}</span>
+                                          {item.accountType}
+                                        </span>
+                                      )}
+                                      <span className="flex items-center gap-1">
+                                        <span className="material-symbols-outlined text-[14px]">description</span>
+                                        {item.totalReports} laporan
+                                      </span>
+                                      <span className="flex items-center gap-1">
+                                        <span className="material-symbols-outlined text-[14px]">check_circle</span>
+                                        {item.verifiedReports} terverifikasi
+                                      </span>
+                                    </div>
+
+                                    {/* Date Range */}
+                                    {item.firstReported && (
+                                      <p className="text-xs text-slate-500">
+                                        Dilaporkan: {new Date(item.firstReported).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })}
+                                        {item.lastReported && item.lastReported !== item.firstReported && (
+                                          <> — {new Date(item.lastReported).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })}</>
+                                        )}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Arrow */}
+                                <span className="material-symbols-outlined text-slate-600 group-hover:text-primary transition-colors text-[20px] mt-3">
+                                  arrow_forward
+                                </span>
+                              </div>
+                            </Link>
+                          )
+                        })}
+                      </section>
+                    )}
+                  </>
                 )
-              })}
+              })()}
             </div>
           )}
         </div>
