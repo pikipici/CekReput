@@ -266,7 +266,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex items-center justify-center px-4 transition-all duration-300 ${
+      className={`fixed inset-0 z-[100] flex items-center justify-center px-3 sm:px-4 transition-all duration-300 ${
         isVisible ? 'bg-black/60 backdrop-blur-sm' : 'bg-black/0'
       }`}
       onClick={handleBackdropClick}
@@ -280,29 +280,29 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
         <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-emerald-500/10 to-primary/20 rounded-3xl blur-lg opacity-60" />
 
         {/* Modal Card */}
-        <div className="relative glass-panel rounded-2xl p-6 sm:p-8 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
+        <div className="relative glass-panel rounded-2xl p-4 sm:p-6 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all z-10"
+            className="absolute top-3 right-3 sm:top-4 sm:right-4 p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all z-10"
             aria-label="Tutup"
           >
             <span className="material-symbols-outlined text-[20px]">close</span>
           </button>
 
           {/* Header */}
-          <div className="text-center mb-6">
+          <div className="text-center mb-4 sm:mb-6">
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-emerald-600 shadow-lg shadow-primary/30 mb-4">
               <span className="material-symbols-outlined text-white text-2xl">shield_lock</span>
             </div>
-            <h2 className="text-xl font-bold text-white">
+            <h2 className="text-lg sm:text-xl font-bold text-white">
               {activeTab === 'login' && 'Masuk ke CekReput'}
               {activeTab === 'register' && 'Daftar di CekReput'}
               {activeTab === 'google-registration' && 'Lengkapi Pendaftaran'}
               {activeTab === 'forgot-password' && 'Lupa Kata Sandi'}
               {activeTab === 'reset-password' && 'Buat Kata Sandi Baru'}
             </h2>
-            <p className="text-sm text-slate-400 mt-1">
+            <p className="text-xs sm:text-sm text-slate-400 mt-1">
               {activeTab === 'login' && 'Selamat datang kembali!'}
               {activeTab === 'register' && 'Buat akun untuk mulai melaporkan penipu'}
               {activeTab === 'google-registration' && 'Buat kata sandi untuk mengamankan akun Google Anda'}
@@ -313,10 +313,10 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
 
           {/* Tab Switcher */}
           {(activeTab === 'login' || activeTab === 'register') && (
-          <div className="flex rounded-xl bg-slate-800/60 p-1 mb-6">
+          <div className="flex rounded-xl bg-slate-800/60 p-1 mb-4 sm:mb-6">
             <button
               onClick={() => { setActiveTab('login'); setError('') }}
-              className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${
+              className={`flex-1 py-3 sm:py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${
                 activeTab === 'login'
                   ? 'bg-primary text-background-dark shadow-lg shadow-primary/20'
                   : 'text-slate-400 hover:text-white'
@@ -326,7 +326,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
             </button>
             <button
               onClick={() => { setActiveTab('register'); setError('') }}
-              className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${
+              className={`flex-1 py-3 sm:py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${
                 activeTab === 'register'
                   ? 'bg-primary text-background-dark shadow-lg shadow-primary/20'
                   : 'text-slate-400 hover:text-white'
@@ -344,7 +344,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
             type="button"
             onClick={() => googleLogin()}
             disabled={isLoading}
-            className="w-full flex items-center justify-center gap-3 py-3.5 px-4 rounded-xl border border-slate-600 bg-slate-800/40 text-white text-sm font-semibold hover:bg-slate-700/60 hover:border-slate-500 transition-all group disabled:opacity-50 active:scale-[0.98]"
+            className="w-full flex items-center justify-center gap-3 py-3.5 sm:py-3 px-4 rounded-xl border border-slate-600 bg-slate-800/40 text-white text-sm font-semibold hover:bg-slate-700/60 hover:border-slate-500 transition-all group disabled:opacity-50 active:scale-[0.98]"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
@@ -356,7 +356,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
           </button>
 
           {/* Divider */}
-          <div className="flex items-center gap-3 my-5">
+          <div className="flex items-center gap-3 my-4 sm:my-5">
             <div className="flex-1 h-px bg-slate-700" />
             <span className="text-xs text-slate-500 uppercase tracking-wider font-medium">atau</span>
             <div className="flex-1 h-px bg-slate-700" />
@@ -366,18 +366,18 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
 
           {/* Error Message */}
           {error && (
-            <div className="mb-4 p-3 rounded-xl bg-danger/10 border border-danger/20 text-danger text-sm flex items-center gap-2">
-              <span className="material-symbols-outlined text-[18px]">error</span>
-              {error}
+            <div className="mb-3 sm:mb-4 p-3 rounded-xl bg-danger/10 border border-danger/20 text-danger text-xs sm:text-sm flex items-center gap-2">
+              <span className="material-symbols-outlined text-[18px] flex-shrink-0">error</span>
+              <span className="break-words">{error}</span>
             </div>
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
             {/* Full Name (Register only) */}
             {(activeTab === 'register' || activeTab === 'google-registration') && (
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Nama Lengkap</label>
+                <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-1.5">Nama Lengkap</label>
                 <div className="relative">
                   <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-[20px]">person</span>
                   <input
@@ -387,10 +387,10 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
                     onChange={(e) => activeTab === 'google-registration' ? null : setName(e.target.value)}
                     readOnly={activeTab === 'google-registration'}
                     required
-                    className={`w-full h-12 pl-10 pr-4 rounded-xl text-sm ${
-                      activeTab === 'google-registration' 
-                        ? 'bg-slate-800/50 border border-slate-700 text-slate-400 cursor-not-allowed' 
-                        : 'glass-input text-white placeholder-slate-500'
+                    className={`w-full h-14 rounded-xl text-sm ${
+                      activeTab === 'google-registration'
+                        ? 'bg-slate-800/50 border border-slate-700 text-slate-400 cursor-not-allowed'
+                        : 'glass-input text-white placeholder-slate-500 pl-10 pr-4'
                     }`}
                   />
                 </div>
@@ -400,7 +400,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
             {/* Email */}
             {activeTab !== 'reset-password' && (
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1.5">Email</label>
+              <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-1.5">Email</label>
               <div className="relative">
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-[20px]">mail</span>
                 <input
@@ -410,10 +410,10 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
                   onChange={(e) => activeTab === 'google-registration' ? null : setEmail(e.target.value)}
                   readOnly={activeTab === 'google-registration'}
                   required
-                  className={`w-full h-12 pl-10 pr-4 rounded-xl text-sm ${
-                    activeTab === 'google-registration' 
-                      ? 'bg-slate-800/50 border border-slate-700 text-slate-400 cursor-not-allowed' 
-                      : 'glass-input text-white placeholder-slate-500'
+                  className={`w-full h-14 rounded-xl text-sm ${
+                    activeTab === 'google-registration'
+                      ? 'bg-slate-800/50 border border-slate-700 text-slate-400 cursor-not-allowed'
+                      : 'glass-input text-white placeholder-slate-500 pl-10 pr-4'
                   }`}
                 />
               </div>
@@ -423,7 +423,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
             {/* Password */}
             {(activeTab === 'login' || activeTab === 'register' || activeTab === 'google-registration' || activeTab === 'reset-password') && (
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1.5">
+              <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-1.5">
                 {activeTab === 'reset-password' ? 'Kata Sandi Baru' : 'Kata Sandi'}
               </label>
               <div className="relative">
@@ -435,7 +435,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={activeTab === 'register' || activeTab === 'google-registration' || activeTab === 'reset-password' ? 8 : undefined}
-                  className="w-full h-12 pl-10 pr-12 rounded-xl glass-input text-white placeholder-slate-500 text-sm"
+                  className="w-full h-14 pl-10 pr-12 rounded-xl glass-input text-white placeholder-slate-500 text-sm"
                 />
                 <button
                   type="button"
@@ -454,7 +454,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
             {/* Confirm Password */}
             {(activeTab === 'register' || activeTab === 'google-registration' || activeTab === 'reset-password') && (
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Konfirmasi Kata Sandi</label>
+                <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-1.5">Konfirmasi Kata Sandi</label>
                 <div className="relative">
                   <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-[20px]">lock</span>
                   <input
@@ -463,7 +463,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
-                    className="w-full h-12 pl-10 pr-12 rounded-xl glass-input text-white placeholder-slate-500 text-sm"
+                    className="w-full h-14 pl-10 pr-12 rounded-xl glass-input text-white placeholder-slate-500 text-sm"
                   />
                   <button
                     type="button"
@@ -487,7 +487,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
             {/* Forgot Password (Login only) */}
             {activeTab === 'login' && (
               <div className="text-right">
-                <button type="button" onClick={() => { setActiveTab('forgot-password'); setError(''); }} className="text-sm text-primary hover:text-primary-dark transition-colors font-medium">
+                <button type="button" onClick={() => { setActiveTab('forgot-password'); setError(''); }} className="text-xs sm:text-sm text-primary hover:text-primary-dark transition-colors font-medium">
                   Lupa kata sandi?
                 </button>
               </div>
@@ -495,14 +495,14 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
 
             {/* Terms & Conditions (Register only) */}
             {(activeTab === 'register' || activeTab === 'google-registration') && (
-              <label className="flex items-start gap-3 cursor-pointer group">
+              <label className="flex items-start gap-2 sm:gap-3 cursor-pointer group">
                 <input
                   type="checkbox"
                   checked={agreedTerms}
                   onChange={(e) => setAgreedTerms(e.target.checked)}
-                  className="mt-0.5 w-4 h-4 rounded border-slate-600 bg-slate-800/50 text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer"
+                  className="mt-0.5 w-4 h-4 rounded border-slate-600 bg-slate-800/50 text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer flex-shrink-0"
                 />
-                <span className="text-xs text-slate-400 leading-relaxed group-hover:text-slate-300 transition-colors">
+                <span className="text-[11px] sm:text-xs text-slate-400 leading-relaxed group-hover:text-slate-300 transition-colors">
                   Saya setuju dengan{' '}
                   <a href="#" className="text-primary hover:underline">Syarat & Ketentuan</a>
                   {' '}serta{' '}
@@ -515,7 +515,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 rounded-xl bg-primary hover:bg-primary-dark text-background-dark font-bold text-sm transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-3 sm:py-3.5 rounded-xl bg-primary hover:bg-primary-dark text-background-dark font-bold text-sm transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isLoading && (
                 <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
@@ -530,7 +530,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }: Aut
 
           {/* Switch Tab Footer */}
           {activeTab !== 'google-registration' && (
-          <p className="text-center text-sm text-slate-400 mt-5">
+          <p className="text-center text-xs sm:text-sm text-slate-400 mt-4 sm:mt-5">
             {activeTab === 'forgot-password' || activeTab === 'reset-password' ? (
               <button
                 onClick={() => { setActiveTab('login'); setError('') }}

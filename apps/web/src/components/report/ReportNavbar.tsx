@@ -45,6 +45,7 @@ export default function ReportNavbar() {
             <UserDropdown
               userName={user.name}
               userEmail={user.email}
+              userAvatarUrl={user.avatarUrl}
               userBadges={user.badges}
               onLogout={logout}
             />

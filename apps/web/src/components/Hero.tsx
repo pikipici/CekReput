@@ -48,15 +48,15 @@ export default function Hero() {
         {/* Search Glow */}
         <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-emerald-500/20 to-primary/20 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
         <div className="relative glass-panel rounded-2xl p-2 sm:p-3 shadow-2xl">
-          <form className="flex flex-col sm:flex-row gap-2" onSubmit={handleSubmit} role="search" aria-label="Cari data penipuan">
+          <form className="flex flex-col gap-2" onSubmit={handleSubmit} role="search" aria-label="Cari data penipuan">
             {/* Type Selector  */}
-            <div className="relative min-w-[140px]">
+            <div className="relative min-w-[120px] sm:min-w-[140px]">
               <label htmlFor="search-type" className="sr-only">Tipe Pencarian</label>
               <select
                 id="search-type"
                 value={searchType}
                 onChange={(e) => setSearchType(e.target.value)}
-                className="w-full h-12 sm:h-14 pl-10 pr-8 bg-background-dark/50 border border-slate-700 text-slate-200 text-sm rounded-xl focus:ring-primary focus:border-primary appearance-none cursor-pointer"
+                className="w-full h-14 pl-10 pr-8 bg-background-dark/50 border border-slate-700 text-slate-200 text-sm rounded-xl focus:ring-primary focus:border-primary appearance-none cursor-pointer"
                 aria-label="Pilih tipe pencarian"
               >
                 <option value="all">{t('home.searchTypes.all')}</option>
@@ -75,7 +75,7 @@ export default function Hero() {
               <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-primary text-[24px]" aria-hidden="true">search</span>
               <input
                 id="search-query"
-                className="w-full h-12 sm:h-14 pl-12 pr-4 bg-background-dark/50 border border-slate-700 text-white placeholder-slate-500 text-base rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                className="w-full h-14 pl-12 pr-4 bg-background-dark/50 border border-slate-700 text-white placeholder-slate-500 text-base rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
                 placeholder={getPlaceholder()}
                 type="text"
                 value={query}
@@ -86,21 +86,24 @@ export default function Hero() {
 
             {/* Action Button */}
             <button
-              className="h-12 sm:h-14 px-8 bg-primary hover:bg-primary-dark text-background-dark font-bold text-base rounded-xl transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 flex items-center justify-center gap-2 whitespace-nowrap disabled:opacity-50"
+              className="h-14 px-4 sm:px-8 bg-primary hover:bg-primary-dark text-background-dark font-bold text-sm sm:text-base rounded-xl transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 flex items-center justify-center gap-2 whitespace-nowrap disabled:opacity-50"
               type="submit"
               disabled={!query.trim()}
               aria-label="Cari data"
             >
+              <span className="material-symbols-outlined text-[20px] font-bold sm:hidden" aria-hidden="true">search</span>
               <span>{t('home.searchButton')}</span>
-              <span className="material-symbols-outlined text-[20px] font-bold" aria-hidden="true">arrow_forward</span>
+              <span className="material-symbols-outlined text-[20px] font-bold hidden sm:inline" aria-hidden="true">arrow_forward</span>
             </button>
           </form>
         </div>
 
         {/* Helper Text */}
-        <ul id="search-help" className="flex justify-center flex-wrap items-center gap-4 sm:gap-6 mt-4 text-xs text-slate-500 font-medium" role="list">
+        <ul id="search-help" className="flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-4 sm:gap-6 mt-4 text-xs text-slate-500 font-medium" role="list">
           <li className="flex items-center gap-1.5"><span className="material-symbols-outlined text-[15px] text-emerald-500" aria-hidden="true">check_circle</span> {t('home.verifiedData')}</li>
+          <li className="flex items-center gap-1.5 sm:hidden"><span className="material-symbols-outlined text-[15px] text-emerald-500" aria-hidden="true">lock</span> {t('home.privacySecure')}</li>
           <li className="hidden sm:flex items-center gap-1.5"><span className="material-symbols-outlined text-[15px] text-emerald-500" aria-hidden="true">lock</span> {t('home.privacySecure')}</li>
+          <li className="flex items-center gap-1.5 sm:hidden"><span className="material-symbols-outlined text-[15px] text-emerald-500" aria-hidden="true">update</span> {t('home.realtimeUpdate')}</li>
           <li className="hidden sm:flex items-center gap-1.5"><span className="material-symbols-outlined text-[15px] text-emerald-500" aria-hidden="true">update</span> {t('home.realtimeUpdate')}</li>
         </ul>
 

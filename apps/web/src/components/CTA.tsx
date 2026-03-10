@@ -36,13 +36,13 @@ export default function CTA() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
               onClick={() => setShowGuide(true)}
-              className="w-full sm:w-auto px-8 h-11 rounded-xl bg-slate-700/50 hover:bg-slate-700 text-slate-300 hover:text-white text-sm font-medium transition-all border border-slate-600/50 hover:border-slate-500"
+              className="w-full sm:w-auto px-6 sm:px-8 h-12 sm:h-11 rounded-xl bg-slate-700/50 hover:bg-slate-700 text-slate-300 hover:text-white text-sm font-medium transition-all border border-slate-600/50 hover:border-slate-500"
             >
               {t('cta.learnButton')}
             </button>
             <button
               onClick={handleReport}
-              className="w-full sm:w-auto px-8 h-12 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold transition-all shadow-lg shadow-rose-600/30 hover:shadow-rose-600/50 hover:scale-105 flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-6 sm:px-8 h-12 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold transition-all shadow-lg shadow-rose-600/30 hover:shadow-rose-600/50 hover:scale-105 flex items-center justify-center gap-2"
             >
               <span className="material-symbols-outlined text-[20px]">warning</span>
               {t('cta.reportButton')}

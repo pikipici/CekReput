@@ -70,13 +70,13 @@ export default function StepOneForm({ isActive, form, updateForm, onNext }: Step
   }
 
   return (
-    <div className="glass-panel rounded-xl p-6 md:p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="border-b border-white/5 pb-6 mb-6">
-        <h2 className="text-xl font-bold text-white flex items-center gap-2">
+    <div className="glass-panel rounded-xl p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="border-b border-white/5 pb-4 sm:pb-6 mb-4 sm:mb-6">
+        <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
           <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary text-sm">1</span>
           Data Pelaku
         </h2>
-        <p className="text-slate-400 text-sm mt-2 ml-10">Masukkan informasi rekening, e-wallet, atau nomor telepon pelaku penipuan.</p>
+        <p className="text-slate-400 text-xs sm:text-sm mt-2 ml-10">Masukkan informasi rekening, e-wallet, atau nomor telepon pelaku penipuan.</p>
       </div>
 
       {/* Account Type Selector */}
@@ -94,7 +94,7 @@ export default function StepOneForm({ isActive, form, updateForm, onNext }: Step
                 key={type}
                 type="button"
                 onClick={() => updateForm({ accountType: type, bankName: '', accountNumber: '', phoneNumber: '', customBankName: '' } as Partial<ReportFormData> & { customBankName: string })}
-                className={`relative flex items-center gap-3 rounded-xl border px-4 py-3.5 text-left transition-all ${
+                className={`relative flex items-center gap-3 rounded-xl border px-4 py-4 sm:py-3.5 text-left transition-all ${
                   isSelected
                     ? 'border-primary bg-primary/10 text-primary ring-1 ring-primary/30'
                     : 'border-slate-600 bg-slate-800/50 text-slate-400 hover:bg-slate-700/50 hover:border-slate-500'
@@ -115,10 +115,10 @@ export default function StepOneForm({ isActive, form, updateForm, onNext }: Step
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         {/* Bank/E-Wallet Selector */}
         {(form.accountType === 'bank' || form.accountType === 'ewallet') && (
-          <div className="col-span-1 space-y-4">
+          <div className="col-span-1 space-y-3 sm:space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
                 {form.accountType === 'bank' ? 'Nama Bank' : 'Nama E-Wallet'}
@@ -127,7 +127,7 @@ export default function StepOneForm({ isActive, form, updateForm, onNext }: Step
                 <select
                   value={form.bankName}
                   onChange={(e) => updateForm({ bankName: e.target.value })}
-                  className="glass-input w-full rounded-lg px-4 py-3 appearance-none cursor-pointer focus:ring-0 text-slate-100"
+                  className="glass-input w-full h-14 rounded-lg px-4 py-3 appearance-none cursor-pointer focus:ring-0 text-slate-100"
                 >
                   <option value="" disabled>Pilih {form.accountType === 'bank' ? 'Bank' : 'E-Wallet'}</option>
                   {(form.accountType === 'bank' ? BANKS : EWALLETS).map((item) => (
@@ -151,7 +151,7 @@ export default function StepOneForm({ isActive, form, updateForm, onNext }: Step
                     type="text"
                     value={customBankName}
                     onChange={(e) => updateForm({ customBankName: e.target.value } as Partial<ReportFormData> & { customBankName: string })}
-                    className="glass-input w-full rounded-lg pl-4 pr-10 py-3 placeholder:text-slate-500 focus:ring-0 text-slate-100 border-primary/50"
+                    className="glass-input w-full h-14 rounded-lg pl-4 pr-10 py-3 placeholder:text-slate-500 focus:ring-0 text-slate-100 border-primary/50"
                     placeholder={`Ketik nama ${form.accountType === 'bank' ? 'bank' : 'e-wallet'}...`}
                     autoFocus
                   />
@@ -173,7 +173,7 @@ export default function StepOneForm({ isActive, form, updateForm, onNext }: Step
                 type="text"
                 value={form.accountNumber}
                 onChange={(e) => updateForm({ accountNumber: e.target.value })}
-                className="glass-input w-full rounded-lg pl-4 pr-10 py-3 placeholder:text-slate-500 focus:ring-0 text-slate-100"
+                className="glass-input w-full h-14 rounded-lg pl-4 pr-10 py-3 placeholder:text-slate-500 focus:ring-0 text-slate-100"
                 placeholder="Contoh: 1234567890"
               />
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
@@ -192,7 +192,7 @@ export default function StepOneForm({ isActive, form, updateForm, onNext }: Step
                 type="text"
                 value={form.phoneNumber}
                 onChange={(e) => updateForm({ phoneNumber: e.target.value })}
-                className="glass-input w-full rounded-lg pl-4 pr-10 py-3 placeholder:text-slate-500 focus:ring-0 text-slate-100"
+                className="glass-input w-full h-14 rounded-lg pl-4 pr-10 py-3 placeholder:text-slate-500 focus:ring-0 text-slate-100"
                 placeholder="Contoh: 081234567890"
               />
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
@@ -212,7 +212,7 @@ export default function StepOneForm({ isActive, form, updateForm, onNext }: Step
               type="text"
               value={form.entityName}
               onChange={(e) => updateForm({ entityName: e.target.value })}
-              className="glass-input w-full rounded-lg pl-4 pr-10 py-3 placeholder:text-slate-500 focus:ring-0 text-slate-100"
+              className="glass-input w-full h-14 rounded-lg pl-4 pr-10 py-3 placeholder:text-slate-500 focus:ring-0 text-slate-100"
               placeholder={form.accountType === 'phone' ? 'Kosongkan jika tidak tahu atau tidak ada' : 'Nama yang tertera di rekening'}
             />
             <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
@@ -220,13 +220,13 @@ export default function StepOneForm({ isActive, form, updateForm, onNext }: Step
             </div>
           </div>
         </div>
-        
+
         {/* Social Media (optional) */}
         <div className="col-span-1 md:col-span-2 space-y-3">
           <label className="block text-sm font-medium text-slate-300 mb-1">
             Akun Sosial Media Pelaku <span className="text-slate-500">(opsional)</span>
           </label>
-          
+
           {(form.socialMedia || []).map((sm, index) => (
             <div key={index} className="flex gap-2 relative animate-in fade-in slide-in-from-top-2 duration-300">
               <div className="relative flex-1">
@@ -238,7 +238,7 @@ export default function StepOneForm({ isActive, form, updateForm, onNext }: Step
                     newSm[index] = e.target.value
                     updateForm({ socialMedia: newSm })
                   }}
-                  className="glass-input w-full rounded-lg pl-4 pr-10 py-3 placeholder:text-slate-500 focus:ring-0 text-slate-100"
+                  className="glass-input w-full h-14 rounded-lg pl-4 pr-10 py-3 placeholder:text-slate-500 focus:ring-0 text-slate-100"
                   placeholder="Contoh: instagram.com/penipu atau @penipu"
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
@@ -251,14 +251,14 @@ export default function StepOneForm({ isActive, form, updateForm, onNext }: Step
                   const newSm = form.socialMedia.filter((_, i) => i !== index)
                   updateForm({ socialMedia: newSm })
                 }}
-                className="w-12 h-12 flex items-center justify-center rounded-lg border border-slate-600/50 text-slate-400 hover:text-danger hover:border-danger/50 hover:bg-danger/10 transition-colors"
+                className="w-14 h-14 flex items-center justify-center rounded-lg border border-slate-600/50 text-slate-400 hover:text-danger hover:border-danger/50 hover:bg-danger/10 transition-colors"
                 title="Hapus baris ini"
               >
-                <span className="material-symbols-outlined text-xl">delete</span>
+                <span className="material-symbols-outlined text-[22px]">delete</span>
               </button>
             </div>
           ))}
-          
+
           <button
             type="button"
             onClick={() => updateForm({ socialMedia: [...(form.socialMedia || []), ''] })}
@@ -275,7 +275,7 @@ export default function StepOneForm({ isActive, form, updateForm, onNext }: Step
           type="button"
           onClick={handleNext}
           disabled={!canProceed}
-          className="group flex items-center justify-center gap-2 px-8 py-2.5 rounded-lg bg-primary text-navy-dark font-bold text-sm hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-40 disabled:cursor-not-allowed"
+          className="group flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-2.5 rounded-lg bg-primary text-navy-dark font-bold text-sm hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           Langkah Berikutnya
           <span className="material-symbols-outlined text-lg group-hover:translate-x-1 transition-transform">arrow_forward</span>

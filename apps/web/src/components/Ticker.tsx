@@ -51,7 +51,7 @@ export default function Ticker() {
 
   return (
     <section className="border-t border-slate-800 bg-background-dark/50 backdrop-blur-sm py-3 relative z-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-4">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex items-center gap-3 sm:gap-4">
         <div className="flex items-center gap-2 flex-shrink-0 pl-2">
           <span className="relative flex h-2.5 w-2.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-500 opacity-75"></span>
@@ -60,17 +60,17 @@ export default function Ticker() {
           <span className="text-xs font-bold text-white uppercase tracking-wider">Live Reports</span>
         </div>
         <div className="ticker-wrap relative flex-1 h-6 items-center overflow-hidden">
-          <div className="animate-ticker flex gap-8 items-center absolute whitespace-nowrap">
+          <div className="animate-ticker flex gap-6 sm:gap-8 items-center absolute whitespace-nowrap">
             {tickerItems.map((item, i) => {
               const cat = categoryLabels[item.category] ?? categoryLabels.other
               return (
-                <div key={`${item.id}-${i}`} className="flex items-center gap-2 text-sm text-slate-300">
-                  <span className="material-symbols-outlined text-[16px] text-slate-500">{item.icon}</span>
-                  <span className="font-mono text-white">{item.identity}</span>
-                  <span className={`px-1.5 py-0.5 rounded ${cat.bg} ${cat.color} text-[10px] font-bold border ${cat.border}`}>
+                <div key={`${item.id}-${i}`} className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-slate-300">
+                  <span className="material-symbols-outlined text-[14px] sm:text-[16px] text-slate-500">{item.icon}</span>
+                  <span className="font-mono text-white text-xs sm:text-sm">{item.identity}</span>
+                  <span className={`px-2 py-1 rounded ${cat.bg} ${cat.color} text-[10px] sm:text-[11px] font-bold border ${cat.border}`}>
                     {cat.label}
                   </span>
-                  <span className="text-slate-500 text-xs">• {timeAgo(item.createdAt)}</span>
+                  <span className="text-slate-400 text-xs">• {timeAgo(item.createdAt)}</span>
                 </div>
               )
             })}

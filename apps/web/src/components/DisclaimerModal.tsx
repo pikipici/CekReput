@@ -26,7 +26,7 @@ export default function DisclaimerModal() {
     <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center px-3 sm:px-4 pb-3 sm:pb-0 bg-black/70 backdrop-blur-md">
       <div className="w-full max-w-lg bg-gradient-to-b from-slate-800 to-slate-900 border border-slate-700/60 rounded-2xl shadow-2xl shadow-black/50 overflow-hidden animate-in fade-in zoom-in-95 duration-300 max-h-[95vh] flex flex-col">
         {/* Header */}
-        <div className="relative px-4 sm:px-6 pt-5 sm:pt-8 pb-3 sm:pb-4 text-center shrink-0">
+        <div className="relative px-5 sm:px-6 pt-5 sm:pt-8 pb-3 sm:pb-4 text-center shrink-0">
           <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto rounded-xl sm:rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-3 sm:mb-4">
             <span className="material-symbols-outlined text-primary text-2xl sm:text-3xl">gavel</span>
           </div>
@@ -35,7 +35,7 @@ export default function DisclaimerModal() {
         </div>
 
         {/* Content */}
-        <div className="px-4 sm:px-6 pb-2 space-y-2.5 sm:space-y-4 overflow-y-auto custom-scrollbar flex-1 min-h-0">
+        <div className="px-5 sm:px-6 pb-2 space-y-3 sm:space-y-4 overflow-y-auto custom-scrollbar flex-1 min-h-0">
           {[
             {
               icon: 'database',
@@ -68,7 +68,7 @@ export default function DisclaimerModal() {
           ].map((item) => (
             <div key={item.title} className={`flex gap-3 p-3 sm:p-3.5 rounded-xl ${item.bg} border border-white/5`}>
               <div className="shrink-0 mt-0.5">
-                <span className={`material-symbols-outlined text-lg sm:text-xl ${item.color}`}>{item.icon}</span>
+                <span className={`material-symbols-outlined text-xl sm:text-2xl ${item.color}`}>{item.icon}</span>
               </div>
               <div>
                 <h3 className={`text-xs sm:text-sm font-semibold ${item.color} mb-0.5`}>{item.title}</h3>
@@ -79,14 +79,14 @@ export default function DisclaimerModal() {
         </div>
 
         {/* Footer */}
-        <div className="px-4 sm:px-6 pt-3 sm:pt-4 pb-4 sm:pb-6 shrink-0">
+        <div className="px-5 sm:px-6 pt-3 sm:pt-4 pb-4 sm:pb-6 shrink-0">
           <p className="text-[11px] sm:text-xs text-slate-500 text-center mb-3 sm:mb-4 leading-relaxed">
             Dengan mengklik tombol di bawah, Anda menyatakan telah membaca, memahami, dan menyetujui seluruh{' '}
             <a href="#" className="text-primary hover:underline">Syarat &amp; Ketentuan</a> kami.
           </p>
           <button
             onClick={handleAccept}
-            className="w-full py-3 sm:py-3.5 rounded-xl bg-primary text-navy-dark font-bold text-xs sm:text-sm tracking-wide hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 active:scale-[0.98]"
+            className="w-full py-3 sm:py-3.5 rounded-xl bg-primary text-navy-dark font-bold text-sm tracking-wide hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 active:scale-[0.98]"
           >
             SAYA MENGERTI &amp; SETUJU
           </button>

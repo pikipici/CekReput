@@ -82,12 +82,12 @@ export default function SearchResults() {
         <Header />
 
         <main className="flex-grow">
-        <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-5xl px-3 sm:px-4 lg:px-8 py-6 sm:py-8">
           {/* Search Bar */}
-          <form onSubmit={handleSearch} className="mb-8">
-            <div className="flex flex-col sm:flex-row gap-2">
-              <div className="relative min-w-[140px] shrink-0">
-                <select 
+          <form onSubmit={handleSearch} className="mb-6 sm:mb-8">
+            <div className="flex flex-col gap-2">
+              <div className="relative min-w-[120px] sm:min-w-[140px] shrink-0">
+                <select
                   value={searchFilter}
                   onChange={(e) => setSearchFilter(e.target.value)}
                   className="w-full h-12 pl-10 pr-8 bg-slate-800/50 border border-slate-700 text-slate-200 text-sm rounded-xl focus:ring-primary focus:border-primary appearance-none cursor-pointer"
@@ -118,7 +118,7 @@ export default function SearchResults() {
               </div>
               <button
                 type="submit"
-                className="h-12 px-6 bg-primary hover:bg-primary-dark text-background-dark font-bold text-sm rounded-xl transition-all flex items-center gap-2"
+                className="w-full sm:w-auto h-12 px-4 sm:px-6 bg-primary hover:bg-primary-dark text-background-dark font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2"
               >
                 <span className="material-symbols-outlined text-[18px]">search</span>
                 Cari
