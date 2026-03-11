@@ -86,18 +86,18 @@ export default function ProfileHero({ perpetrator, matchedGameId, matchedGameTyp
 
   return (
     <>
-      <section className="glass-panel rounded-2xl p-6 lg:p-8 relative overflow-hidden group">
+      <section className="glass-panel rounded-2xl p-5 sm:p-6 lg:p-8 relative overflow-hidden group">
         {/* Decorative Background Element */}
-        <div className={`absolute top-0 right-0 w-64 h-64 ${isDanger ? 'bg-danger/10' : 'bg-primary/10'} rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none`}></div>
-        
-        <div className="flex flex-col lg:flex-row gap-8 items-start relative z-10">
+        <div className={`absolute top-0 right-0 w-48 h-48 sm:w-64 sm:h-64 ${isDanger ? 'bg-danger/10' : 'bg-primary/10'} rounded-full blur-3xl -mr-12 -mt-12 sm:-mr-16 sm:-mt-16 pointer-events-none`}></div>
+
+        <div className="flex flex-col lg:flex-row gap-6 sm:gap-8 items-start relative z-10">
           {/* Entity Image / Icon */}
           <div className="shrink-0 relative">
-            <div className={`h-32 w-32 rounded-2xl flex items-center justify-center border border-white/10 shadow-xl ${isDanger ? 'bg-danger/10' : 'bg-[#214a42]'}`}>
-              <span className="material-symbols-outlined text-6xl text-slate-300">{iconName}</span>
+            <div className={`h-20 w-20 sm:h-24 sm:w-24 rounded-xl flex items-center justify-center border border-white/10 shadow-xl ${isDanger ? 'bg-danger/10' : 'bg-[#214a42]'}`}>
+              <span className="material-symbols-outlined text-4xl sm:text-5xl text-slate-300">{iconName}</span>
             </div>
-            <div className={`absolute -bottom-3 -right-3 ${riskBadgeBg} text-white text-xs font-bold px-3 py-1 rounded-full border-4 border-background-dark shadow-sm flex items-center gap-1`}>
-              <span className="material-symbols-outlined text-[16px]">
+            <div className={`absolute -bottom-2 -right-2 ${riskBadgeBg} text-white text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full border-2 sm:border-4 border-background-dark shadow-sm flex items-center gap-0.5 sm:gap-1`}>
+              <span className="material-symbols-outlined text-[12px] sm:text-[14px]">
                 {isDanger ? 'warning' : 'check_circle'}
               </span>
               {perpetrator.threatLevel.toUpperCase()}
@@ -109,143 +109,144 @@ export default function ProfileHero({ perpetrator, matchedGameId, matchedGameTyp
             <div className="flex flex-col xl:flex-row justify-between items-start gap-4 mb-4">
               {/* Left Side: Identifiers */}
               <div>
-                <div className="flex flex-wrap items-center gap-3 mb-2">
-                  <h1 className="text-3xl font-bold text-white tracking-tight flex items-center gap-2">
-                    <span className="material-symbols-outlined text-3xl text-slate-400">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+                  <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-1.5 sm:gap-2">
+                    <span className="material-symbols-outlined text-2xl sm:text-3xl text-slate-400">
                       {matchedGameId ? 'sports_esports' : isPhone ? 'call' : 'tag'}
                     </span>
                     {identifier}
                   </h1>
-                  <span className={`text-xs font-bold px-2 py-1 rounded uppercase tracking-wider ${riskColor}`}>
+                  <span className={`text-[10px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded uppercase tracking-wider ${riskColor}`}>
                     {matchedGameId ? 'ID Game' : perpetrator.accountType}
                   </span>
-                  {!matchedGameId && <span className="text-[10px] sm:text-xs text-slate-500 bg-slate-800/80 border border-slate-700 px-2 py-0.5 rounded font-mono">MASKED FOR PRIVACY</span>}
+                  {!matchedGameId && <span className="text-[9px] sm:text-xs text-slate-500 bg-slate-800/80 border border-slate-700 px-1.5 sm:px-2 py-0.5 rounded font-mono">MASKED</span>}
                 </div>
-                
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="material-symbols-outlined text-slate-500 text-[20px]">
+
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                  <span className="material-symbols-outlined text-slate-500 text-[18px] sm:text-[20px]">
                     {isBank ? 'account_balance' : isPhone ? 'smartphone' : 'storefront'}
                   </span>
-                  <p className="text-lg text-slate-300 font-medium">
+                  <p className="text-sm sm:text-base text-slate-300 font-medium">
                     {displayBankName}
                   </p>
                   {allNames.length > 0 && (
-                    <button 
+                    <button
                       onClick={() => setShowAllNames(!showAllNames)}
-                      className="text-xs text-primary hover:text-primary-light bg-primary/10 hover:bg-primary/20 px-2.5 py-1.5 rounded-lg ml-2 transition-colors flex items-center gap-1"
+                      className="text-[10px] sm:text-xs text-primary hover:text-primary-light bg-primary/10 hover:bg-primary/20 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg ml-2 transition-colors flex items-center gap-1"
                     >
-                      {showAllNames ? 'Tutup Daftar' : `+${allNames.length} Nama Terduga Pelaku`}
-                      <span className="material-symbols-outlined text-[14px]">
+                      {showAllNames ? 'Tutup' : `+${allNames.length} Nama`}
+                      <span className="material-symbols-outlined text-[12px] sm:text-[14px]">
                         {showAllNames ? 'expand_less' : 'expand_more'}
                       </span>
                     </button>
                   )}
                 </div>
               </div>
-              
+
               {/* Right Side: Action & Clarifications */}
               {(isDanger || isWarning) && (
                 <div className="shrink-0 w-full xl:w-auto mt-2 xl:mt-0">
                   <Link
                     to={`/clarify/${perpetrator.id}`}
-                    className="flex justify-center xl:justify-start items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors border border-slate-700 text-sm font-medium"
+                    className="flex justify-center items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors border border-slate-700 text-xs sm:text-sm font-medium"
                   >
-                    <span className="material-symbols-outlined text-[18px]">gavel</span>
-                    Saya Pemilik Data Ini / Ajukan Klarifikasi
+                    <span className="material-symbols-outlined text-[16px] sm:text-[18px]">gavel</span>
+                    <span className="hidden sm:inline">Ajukan Klarifikasi</span>
+                    <span className="sm:hidden">Klarifikasi</span>
                   </Link>
                 </div>
               )}
             </div>
-              
-              {showAllNames && allNames.length > 0 && (
-                <div className="mt-3 p-3 bg-white/5 border border-white/10 rounded-xl space-y-1">
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Teridentifikasi Menggunakan Nama:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {allNames.map((name, idx) => (
-                      <span key={idx} className="text-sm bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700">
-                        {name}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
 
-            {/* Key Stats Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
-              <div className="bg-background-dark/50 rounded-lg p-3 border border-white/5">
-                <p className="text-slate-400 text-xs uppercase font-semibold">Total Laporan</p>
-                <p className="text-2xl font-bold text-white mt-1">{perpetrator.totalReports}</p>
-                <p className="text-slate-400 text-xs flex items-center gap-1 mt-1 truncate">
-                  <span className="material-symbols-outlined text-[14px]">
-                    calendar_today
-                  </span> 
-                  {perpetrator.lastReported ? `Terakhir ${new Date(perpetrator.lastReported).toLocaleDateString('id-ID')}` : 'Belum ada'}
+            {showAllNames && allNames.length > 0 && (
+              <div className="mt-2 sm:mt-3 p-2 sm:p-3 bg-white/5 border border-white/10 rounded-lg sm:rounded-xl space-y-1">
+                <p className="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">Nama Lainnya:</p>
+                <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                  {allNames.map((name, idx) => (
+                    <span key={idx} className="text-[10px] sm:text-sm bg-slate-800 text-slate-300 px-2 sm:px-3 py-1 rounded border border-slate-700">
+                      {name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Compact Stats Grid - Opsi A */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mt-4 sm:mt-6">
+              {/* Total Laporan */}
+              <div className="bg-background-dark/50 rounded-lg sm:rounded-xl p-2 sm:p-3 border border-white/5">
+                <div className="flex items-center gap-1 sm:gap-1.5 mb-1">
+                  <span className="material-symbols-outlined text-primary text-[16px] sm:text-[18px]">description</span>
+                  <p className="text-[10px] sm:text-xs text-slate-400 font-semibold uppercase">Laporan</p>
+                </div>
+                <p className="text-lg sm:text-2xl font-bold text-white">{perpetrator.totalReports}</p>
+                <p className="text-[9px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1">
+                  Total kasus
                 </p>
               </div>
-              <div className="bg-background-dark/50 rounded-lg p-3 border border-white/5 min-w-0">
-                <p className="text-slate-400 text-xs uppercase font-semibold truncate" title="Estimasi Kerugian">Estimasi Kerugian</p>
-                <div className="flex items-baseline gap-1 mt-1 truncate">
-                  <span className="text-xs sm:text-sm font-bold text-slate-400">Rp</span>
-                  <span className="text-lg sm:text-xl font-bold text-white tracking-tight" title={estLoss}>{estLoss}</span>
+
+              {/* Estimasi Kerugian */}
+              <div className="bg-background-dark/50 rounded-lg sm:rounded-xl p-2 sm:p-3 border border-white/5 min-w-0">
+                <div className="flex items-center gap-1 sm:gap-1.5 mb-1">
+                  <span className="material-symbols-outlined text-amber-500 text-[16px] sm:text-[18px]">payments</span>
+                  <p className="text-[10px] sm:text-xs text-slate-400 font-semibold uppercase truncate">Kerugian</p>
                 </div>
+                <div className="flex items-baseline gap-0.5 sm:gap-1">
+                  <span className="text-[10px] sm:text-xs font-bold text-slate-400">Rp</span>
+                  <p className="text-sm sm:text-lg font-bold text-white tracking-tight truncate" title={estLoss}>{estLoss}</p>
+                </div>
+                <p className="text-[9px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1">
+                  Estimasi total
+                </p>
               </div>
-              <div className="bg-background-dark/50 rounded-lg p-3 border border-white/5 overflow-hidden flex flex-col justify-between">
-                <p className="text-slate-400 text-xs uppercase font-semibold leading-tight mb-2">Social Media Terindikasi</p>
-                <div>
-                  {perpetrator.socialMedia && perpetrator.socialMedia.trim().length > 0 ? (
-                    <button 
-                      onClick={() => setShowSocialModal(true)}
-                      className="w-full text-xs font-medium text-white bg-primary/20 hover:bg-primary/30 border border-primary/30 py-1.5 rounded-md transition-colors flex items-center justify-center gap-1"
-                    >
-                      Lihat {perpetrator.socialMedia.split(',').filter(s => s.trim().length > 0).length} Akun
-                      <span className="material-symbols-outlined text-[14px]">visibility</span>
-                    </button>
-                  ) : (
-                    <span className="text-sm font-medium text-slate-500 italic block mt-1">Tidak ada data</span>
-                  )}
+
+              {/* Social Media */}
+              <div className="bg-background-dark/50 rounded-lg sm:rounded-xl p-2 sm:p-3 border border-white/5">
+                <div className="flex items-center gap-1 sm:gap-1.5 mb-1">
+                  <span className="material-symbols-outlined text-emerald-500 text-[16px] sm:text-[18px]">link</span>
+                  <p className="text-[10px] sm:text-xs text-slate-400 font-semibold uppercase truncate">Sosmed</p>
                 </div>
+                {perpetrator.socialMedia && perpetrator.socialMedia.trim().length > 0 ? (
+                  <button
+                    onClick={() => setShowSocialModal(true)}
+                    className="w-full text-[10px] sm:text-xs font-medium text-white bg-primary/20 hover:bg-primary/30 border border-primary/30 py-0.5 sm:py-1 rounded transition-colors flex items-center justify-center gap-0.5 sm:gap-1"
+                  >
+                    <span className="material-symbols-outlined text-[12px] sm:text-[14px]">visibility</span>
+                    <span className="truncate">{perpetrator.socialMedia.split(',').filter(s => s.trim().length > 0).length} Akun</span>
+                  </button>
+                ) : (
+                  <span className="text-[9px] sm:text-xs font-medium text-slate-500 italic">-</span>
+                )}
               </div>
-              <div className="bg-background-dark/50 rounded-lg p-3 border border-white/5 flex flex-col justify-between">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-slate-400 text-xs uppercase font-semibold">Verifikasi Laporan</p>
-                  <span className={`${isDanger ? 'text-danger' : 'text-primary'} font-bold text-lg leading-none`}>
-                    {perpetrator.verifiedReports}
-                  </span>
+
+              {/* Verified Reports */}
+              <div className="bg-background-dark/50 rounded-lg sm:rounded-xl p-2 sm:p-3 border border-white/5">
+                <div className="flex items-center gap-1 sm:gap-1.5 mb-1">
+                  <span className={`material-symbols-outlined text-[16px] sm:text-[18px] ${isDanger ? 'text-danger' : 'text-primary'}`}>verified</span>
+                  <p className="text-[10px] sm:text-xs text-slate-400 font-semibold uppercase">Verified</p>
                 </div>
-                
-                <div>
-                  {verifiedEvidence.length > 0 ? (
-                    <button 
-                      onClick={() => setShowEvidenceListModal(true)}
-                      className="w-full text-xs font-medium text-white bg-[#214a42] hover:bg-[#2a5c52] border border-[#2a5c52]/50 py-1.5 rounded-md transition-colors flex items-center justify-center gap-1 shadow-sm"
-                    >
-                      Lihat Bukti ({verifiedEvidence.length})
-                      <span className="material-symbols-outlined text-[14px]">collections</span>
-                    </button>
-                  ) : (
-                    <div className="w-full text-xs font-medium text-slate-500 bg-slate-800/50 py-1.5 rounded-md text-center italic">
-                      Belum Ada Bukti
-                    </div>
-                  )}
-                </div>
+                <p className={`text-lg sm:text-2xl font-bold ${isDanger ? 'text-danger' : 'text-primary'}`}>{perpetrator.verifiedReports}</p>
+                <p className="text-[9px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1">
+                  Kasus valid
+                </p>
               </div>
             </div>
 
             {clarifications.length > 0 && (
-              <div className="mt-6 space-y-4">
-                <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                  <span className="material-symbols-outlined text-emerald-500 text-[18px]">verified_user</span>
-                  Klarifikasi Resmi (Terverifikasi Admin)
+              <div className="mt-4 sm:mt-6 space-y-3 sm:space-y-4">
+                <h3 className="text-xs sm:text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5 sm:gap-2">
+                  <span className="material-symbols-outlined text-emerald-500 text-[16px] sm:text-[18px]">verified_user</span>
+                  Klarifikasi Resmi
                 </h3>
                 {clarifications.map((c) => (
-                  <div key={c.id} className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="px-2 py-0.5 bg-emerald-500 text-white rounded text-[10px] font-bold uppercase">{c.relationType || 'Pemilik Sah'}</span>
-                      <span className="text-xs text-slate-400">
-                        {new Date(c.createdAt).toLocaleDateString('id-ID')}
+                  <div key={c.id} className="p-3 sm:p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg sm:rounded-xl">
+                    <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+                      <span className="px-1.5 sm:px-2 py-0.5 bg-emerald-500 text-white rounded text-[9px] sm:text-[10px] font-bold uppercase">{c.relationType || 'Pemilik Sah'}</span>
+                      <span className="text-[9px] sm:text-xs text-slate-400">
+                        {new Date(c.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </span>
                     </div>
-                    <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">{c.statement}</p>
+                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">{c.statement}</p>
                   </div>
                 ))}
               </div>
