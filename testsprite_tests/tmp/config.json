@@ -1,0 +1,19 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "diff",
+  "localEndpoint": "http://localhost:5173",
+  "loginUser": "demo@cekreput.com",
+  "loginPassword": "DemoPassword123!",
+  "executionArgs": {
+    "projectName": "web-app-cekreput",
+    "projectPath": "c:\\Users\\pikip\\Documents\\program\\typescript\\cek-reput\\web-app-cekreput",
+    "testIds": [],
+    "additionalInstruction": "We added auto-saving functionality to /report (ReportScam.tsx) and token proactive refreshing to AuthContext.tsx. Make sure to test those.",
+    "serverMode": "development",
+    "envs": {
+      "API_KEY": "sk-user-0pdnfIjim5vUjEKB9FgCBfnF8W0ytVovugrrVF3PhuskxLvFbYdBUo_f9PlVFyv7Dh8hSzW8JMTKnKxf9H70GMddGMhc3mchPVFUqXglYumxhV-dteMBtW5e_GZndZH-QB4"
+    }
+  },
+  "serverPort": 59508
+}

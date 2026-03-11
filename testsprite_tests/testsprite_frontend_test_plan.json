@@ -1,0 +1,109 @@
+[
+  {
+    "id": "TC001",
+    "title": "Auto-save after entering text and restore draft on return within 24 hours",
+    "description": "Verifies that entering text triggers draft persistence and that the draft is restored on returning to /report within the same session window.",
+    "category": "Auto-Save Report Draft",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /report"
+      },
+      {
+        "type": "action",
+        "description": "Fill \"autosave check\" into a text field"
+      },
+      {
+        "type": "action",
+        "description": "Click a navigation link to leave the report page"
+      },
+      {
+        "type": "action",
+        "description": "Click the navigation link/menu to return to the report page"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text visible \"autosave check\""
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "Successful submission clears the saved draft and shows success confirmation",
+    "description": "Verifies that after a successful report submission, the user sees a success confirmation and the draft is cleared (not restored on revisit).",
+    "category": "Auto-Save Report Draft",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /report"
+      },
+      {
+        "type": "action",
+        "description": "Fill required fields"
+      },
+      {
+        "type": "action",
+        "description": "Click agreedTerms checkbox"
+      },
+      {
+        "type": "action",
+        "description": "Click Submit"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text visible \"success\""
+      },
+      {
+        "type": "action",
+        "description": "Click the navigation link/menu to return to the report page"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element visible \"empty form\""
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "Submission error keeps draft for retry and shows error message",
+    "description": "Verifies that when submission fails, an error is shown and the draft remains available (restores on returning to /report).",
+    "category": "Auto-Save Report Draft",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /report"
+      },
+      {
+        "type": "action",
+        "description": "Fill required fields"
+      },
+      {
+        "type": "action",
+        "description": "Click agreedTerms checkbox"
+      },
+      {
+        "type": "action",
+        "description": "Click Submit"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text visible \"error\""
+      },
+      {
+        "type": "action",
+        "description": "Click a navigation link to leave the report page"
+      },
+      {
+        "type": "action",
+        "description": "Click the navigation link/menu to return to the report page"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element visible \"previously entered draft values restored\""
+      }
+    ]
+  }
+]

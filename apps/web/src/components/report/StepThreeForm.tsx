@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react'
 import type { ReportFormData } from '../../pages/ReportScam'
 import FileUploader from './FileUploader'
+import { useAuth } from '../../context/AuthContext'
 
 interface StepThreeFormProps {
   isActive: boolean
@@ -22,7 +24,12 @@ const CATEGORY_LABELS: Record<string, string> = {
   other: 'Lainnya',
 }
 
+// Draft storage
+const DRAFT_KEY = 'cekreput_report_draft'
+
 export default function StepThreeForm({ isActive, form, updateForm, onBack, onSubmit, isSubmitting }: StepThreeFormProps) {
+  const { isTokenExpiring, refreshToken } = useAuth()
+  const [showExpiryWarning, setShowExpiryWarning] = useState(false)
 
   const identityLabel =
     form.accountType === 'bank'
@@ -30,6 +37,61 @@ export default function StepThreeForm({ isActive, form, updateForm, onBack, onSu
       : form.accountType === 'ewallet'
         ? `${form.bankName} — ${form.phoneNumber}`
         : form.phoneNumber
+
+  // ─── Auto-Save Draft ───────────────────────────────────────────
+
+  useEffect(() => {
+    if (!isActive) return
+
+    // Save draft whenever form changes
+    const draftData = {
+      accountType: form.accountType,
+      bankName: form.bankName,
+      accountNumber: form.accountNumber,
+      phoneNumber: form.phoneNumber,
+      entityName: form.entityName,
+      category: form.category,
+      chronology: form.chronology,
+      incidentDate: form.incidentDate,
+      socialMedia: form.socialMedia,
+      evidenceFiles: form.evidenceFiles,
+      evidenceLink: form.evidenceLink,
+      lossAmount: form.lossAmount,
+      savedAt: new Date().toISOString(),
+    }
+
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(draftData))
+  }, [form, isActive])
+
+  // ─── Session Monitoring & Warning ──────────────────────────────
+
+  useEffect(() => {
+    if (!isActive) return
+
+    const checkSession = () => {
+      if (isTokenExpiring(5)) {
+        setShowExpiryWarning(true)
+      } else {
+        setShowExpiryWarning(false)
+      }
+    }
+
+    checkSession()
+    const interval = setInterval(checkSession, 30 * 1000) // Check every 30 seconds
+
+    return () => {
+      clearInterval(interval)
+      setShowExpiryWarning(false)
+    }
+  }, [isActive, isTokenExpiring])
+
+  // ─── Clear Draft on Success ────────────────────────────────────
+
+  useEffect(() => {
+    if (!isSubmitting && form.agreedTerms) {
+      // Draft will be cleared after successful submit from parent
+    }
+  }, [isSubmitting, form.agreedTerms])
 
   if (!isActive) {
     return (
@@ -52,16 +114,52 @@ export default function StepThreeForm({ isActive, form, updateForm, onBack, onSu
         <p className="text-slate-400 text-sm mt-2 ml-10">Periksa kembali data laporan Anda sebelum mengirim.</p>
       </div>
 
+      {/* Session Expiry Warning */}
+      {showExpiryWarning && (
+        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-start gap-3">
+          <span className="material-symbols-outlined text-amber-500 text-[22px] flex-shrink-0 mt-0.5">warning</span>
+          <div className="flex-1">
+            <p className="text-sm text-amber-400 font-medium mb-1">
+              Session Anda Akan Segera Berakhir
+            </p>
+            <p className="text-xs text-slate-400">
+              Token autentikasi akan segera kadaluarsa. Sistem akan refresh otomatis saat Anda upload bukti. Atau klik tombol di bawah untuk refresh manual.
+            </p>
+            <button
+              onClick={async () => {
+                const result = await refreshToken()
+                if (result.success) {
+                  setShowExpiryWarning(false)
+                }
+              }}
+              className="mt-2 text-xs text-amber-400 hover:text-amber-300 font-medium underline"
+            >
+              Refresh Session Sekarang
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Evidence Upload */}
       <div className="space-y-4">
         <h3 className="text-sm font-semibold text-primary uppercase tracking-wider flex items-center gap-2">
           <span className="material-symbols-outlined text-[18px]">upload_file</span>
           Lampirkan Bukti Penipuan
         </h3>
-        <FileUploader 
-          files={form.evidenceFiles} 
-          onChange={(files) => updateForm({ evidenceFiles: files })} 
+        <FileUploader
+          files={form.evidenceFiles}
+          onChange={(files) => updateForm({ evidenceFiles: files })}
           maxFiles={5}
+          onBeforeUpload={async () => {
+            // Check token expiry before upload
+            if (isTokenExpiring(5)) {
+              const result = await refreshToken()
+              if (!result.success) {
+                return { success: false, error: 'Session expired. Silakan login ulang.' }
+              }
+            }
+            return { success: true }
+          }}
         />
         
         <div className="mt-6 pt-4 border-t border-slate-700/50">

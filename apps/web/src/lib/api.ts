@@ -113,7 +113,7 @@ export const authApi = {
     request<AuthResponse>('/api/auth/google-register', { method: 'POST', body: data }),
 
   refresh: (refreshToken: string) =>
-    request<{ accessToken: string; refreshToken: string }>('/api/auth/refresh', {
+    request<{ accessToken: string; refreshToken: string; user?: User }>('/api/auth/refresh', {
       method: 'POST',
       body: { refreshToken },
     }),
