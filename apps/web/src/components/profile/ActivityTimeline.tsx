@@ -130,13 +130,13 @@ export default function ActivityTimeline({ perpetratorId, onReportClick }: Activ
   }
 
   return (
-    <section className="glass-panel rounded-2xl p-6">
-      <h3 className="text-lg font-bold text-white flex items-center gap-2 mb-6">
-        <span className="material-symbols-outlined text-primary">history</span>
+    <section className="glass-panel rounded-2xl p-4 sm:p-6">
+      <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2 mb-4 sm:mb-6">
+        <span className="material-symbols-outlined text-primary text-[20px] sm:text-[22px]">history</span>
         Riwayat Aktivitas Laporan
       </h3>
 
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {timelineData.map((item, index) => {
           const categoryClass = categoryColors[item.category] || categoryColors.other
           const status = statusConfig[item.status]
@@ -145,42 +145,42 @@ export default function ActivityTimeline({ perpetratorId, onReportClick }: Activ
           return (
             <div
               key={item.id}
-              className={`relative pl-8 pb-6 ${index !== timelineData.length - 1 ? 'border-l-2 border-slate-700' : 'border-l-2 border-slate-700'} last:pb-0`}
+              className={`relative pl-6 sm:pl-8 pb-4 sm:pb-6 ${index !== timelineData.length - 1 ? 'border-l-2 border-slate-700' : 'border-l-2 border-slate-700'} last:pb-0`}
             >
-              {/* Timeline Dot */}
-              <div className="absolute left-[-9px] top-0 w-4 h-4 rounded-full bg-primary border-4 border-background-dark"></div>
+              {/* Timeline Dot - Larger */}
+              <div className="absolute left-[-6px] sm:left-[-7px] top-0 w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-primary border-4 border-background-dark"></div>
 
-              {/* Date */}
-              <div className="text-xs text-slate-400 mb-2 flex items-center gap-2">
-                <span className="material-symbols-outlined text-[14px]">calendar_today</span>
+              {/* Date - Larger Text */}
+              <div className="text-[11px] sm:text-xs text-slate-400 mb-1.5 sm:mb-2 flex items-center gap-1.5 sm:gap-2">
+                <span className="material-symbols-outlined text-[13px] sm:text-[14px]">calendar_today</span>
                 {formatDate(item.createdAt)}
               </div>
 
-              {/* Content Card - Clickable */}
+              {/* Content Card - Clickable - Better Padding */}
               <div
-                className="glass-panel rounded-xl p-4 hover:bg-slate-800/50 transition-colors cursor-pointer"
+                className="glass-panel rounded-lg sm:rounded-xl p-3 sm:p-4 hover:bg-slate-800/50 transition-colors cursor-pointer"
                 onClick={() => onReportClick?.(item)}
               >
-                {/* Badges */}
-                <div className="flex flex-wrap items-center gap-2 mb-3">
-                  <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${categoryClass}`}>
+                {/* Badges - Larger Text */}
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2.5 sm:mb-3">
+                  <span className={`px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold border ${categoryClass}`}>
                     {categoryLabel}
                   </span>
-                  <span className={`flex items-center gap-1 text-xs font-medium ${status.color}`}>
-                    <span className="material-symbols-outlined text-[14px]">{status.icon}</span>
+                  <span className={`flex items-center gap-1 text-[10px] sm:text-xs font-medium ${status.color}`}>
+                    <span className="material-symbols-outlined text-[13px] sm:text-[14px]">{status.icon}</span>
                     {status.label}
                   </span>
                 </div>
 
-                {/* Chronology Preview */}
-                <p className="text-sm text-slate-300 leading-relaxed mb-3 line-clamp-2">
+                {/* Chronology Preview - Larger Text */}
+                <p className="text-[11px] sm:text-sm text-slate-300 leading-relaxed mb-2.5 sm:mb-3 line-clamp-2">
                   {item.chronology}
                 </p>
 
-                {/* Loss Amount (if exists) */}
+                {/* Loss Amount (if exists) - Larger Text */}
                 {item.lossAmount && (
-                  <div className="flex items-center gap-2 text-xs text-slate-400">
-                    <span className="material-symbols-outlined text-[14px]">payments</span>
+                  <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-slate-400">
+                    <span className="material-symbols-outlined text-[13px] sm:text-[14px]">payments</span>
                     <span className="font-medium text-slate-300">
                       Kerugian: {formatCurrency(item.lossAmount)}
                     </span>
