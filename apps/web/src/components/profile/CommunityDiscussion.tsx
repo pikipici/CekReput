@@ -53,12 +53,6 @@ export default function CommunityDiscussion() {
     const timer = setInterval(() => setNowTick(prev => prev + 1), 60000) // Update every minute
     return () => clearInterval(timer)
   }, [])
-  
-  const bottomRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [comments])
 
   useEffect(() => {
     const fetchComments = async () => {
@@ -201,7 +195,6 @@ export default function CommunityDiscussion() {
               )
             })
           )}
-          <div ref={bottomRef} className="h-1 text-transparent" />
         </div>
 
         {/* Comment Input */}
