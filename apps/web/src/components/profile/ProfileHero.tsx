@@ -86,9 +86,9 @@ export default function ProfileHero({ perpetrator, matchedGameId, matchedGameTyp
         {/* Decorative Background Element */}
         <div className={`absolute top-0 right-0 w-40 h-40 sm:w-64 sm:h-64 ${isDanger ? 'bg-danger/10' : 'bg-primary/10'} rounded-full blur-3xl -mr-10 -mt-10 sm:-mr-16 sm:-mt-16 pointer-events-none`}></div>
 
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-center lg:items-start relative z-10">
-          {/* Entity Image / Icon */}
-          <div className="relative mb-4 lg:mb-0">
+        <div className="flex flex-col items-center text-center relative z-10">
+          {/* Entity Image / Icon - Centered & Larger */}
+          <div className="relative mb-4">
             <div className={`h-24 w-24 sm:h-28 sm:w-28 rounded-xl flex items-center justify-center border border-white/10 shadow-xl ${isDanger ? 'bg-danger/10' : 'bg-[#214a42]'}`}>
               <span className="material-symbols-outlined text-5xl sm:text-6xl text-slate-300">{iconName}</span>
             </div>
@@ -100,46 +100,41 @@ export default function ProfileHero({ perpetrator, matchedGameId, matchedGameTyp
             </div>
           </div>
 
-          {/* Entity Details */}
-          <div className="w-full lg:flex-1 lg:min-w-0">
-            <div className="flex flex-col lg:flex-wrap lg:flex-row lg:items-center lg:justify-between gap-3 mb-3 lg:mb-4">
-              {/* Left Side - Centered on mobile, left on desktop */}
-              <div className="text-center lg:text-left">
-                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 sm:gap-3 mb-2">
-                  <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-1.5 sm:gap-2">
-                    <span className="material-symbols-outlined text-2xl sm:text-3xl text-slate-400">
-                      {matchedGameId ? 'sports_esports' : isPhone ? 'call' : 'tag'}
-                    </span>
-                    {identifier}
-                  </h1>
-                  <span className={`text-[10px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded uppercase tracking-wider ${riskColor}`}>
-                    {matchedGameId ? 'ID Game' : perpetrator.accountType}
-                  </span>
-                </div>
-
-                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-1.5 sm:gap-2">
-                  <span className="material-symbols-outlined text-slate-500 text-[18px] sm:text-[20px]">
-                    {isBank ? 'account_balance' : isPhone ? 'smartphone' : 'storefront'}
-                  </span>
-                  <p className="text-sm sm:text-base text-slate-300 font-medium">
-                    {displayBankName}
-                  </p>
-                </div>
-              </div>
-
-              {/* Right Side - Action Button */}
-              {(isDanger || isWarning) && (
-                <div className="lg:mt-0">
-                  <Link
-                    to={`/clarify/${perpetrator.id}`}
-                    className="inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors border border-slate-700 text-xs sm:text-sm font-medium w-full sm:w-auto"
-                  >
-                    <span className="material-symbols-outlined text-[16px] sm:text-[18px]">gavel</span>
-                    Ajukan Klarifikasi
-                  </Link>
-                </div>
-              )}
+          {/* Entity Details - Centered */}
+          <div className="w-full">
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mb-3">
+              <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-1.5 sm:gap-2">
+                <span className="material-symbols-outlined text-2xl sm:text-3xl text-slate-400">
+                  {matchedGameId ? 'sports_esports' : isPhone ? 'call' : 'tag'}
+                </span>
+                {identifier}
+              </h1>
+              <span className={`text-[10px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded uppercase tracking-wider ${riskColor}`}>
+                {matchedGameId ? 'ID Game' : perpetrator.accountType}
+              </span>
             </div>
+
+            <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 mb-4">
+              <span className="material-symbols-outlined text-slate-500 text-[18px] sm:text-[20px]">
+                {isBank ? 'account_balance' : isPhone ? 'smartphone' : 'storefront'}
+              </span>
+              <p className="text-sm sm:text-base text-slate-300 font-medium">
+                {displayBankName}
+              </p>
+            </div>
+
+            {/* Action Button - Centered & Full Width Mobile */}
+            {(isDanger || isWarning) && (
+              <div className="mb-4">
+                <Link
+                  to={`/clarify/${perpetrator.id}`}
+                  className="inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors border border-slate-700 text-xs sm:text-sm font-medium w-full sm:w-auto"
+                >
+                  <span className="material-symbols-outlined text-[16px] sm:text-[18px]">gavel</span>
+                  Ajukan Klarifikasi
+                </Link>
+              </div>
+            )}
 
             {/* Compact Stats Grid - 2 Cols Mobile, 4 Cols Desktop */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mt-4 sm:mt-6">
