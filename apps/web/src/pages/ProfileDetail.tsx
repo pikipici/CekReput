@@ -134,40 +134,40 @@ export default function ProfileDetail() {
         {/* Report Detail Modal - Root Level */}
         {selectedReport && (
           <div
-            className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/90 backdrop-blur-sm overflow-y-auto"
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-2 sm:p-4 bg-black/90 backdrop-blur-sm"
             onClick={() => setSelectedReport(null)}
           >
             <div
-              className="bg-navy-dark border border-slate-700 rounded-xl sm:rounded-2xl p-4 sm:p-6 w-full max-w-3xl my-8 mx-auto shadow-2xl animate-in fade-in zoom-in-95 duration-200 relative"
+              className="bg-navy-dark border border-slate-700 rounded-2xl p-4 sm:p-6 w-full max-w-3xl max-h-[85vh] overflow-y-auto shadow-2xl animate-in fade-in zoom-in-95 duration-200 relative"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
-              <div className="flex items-center justify-between mb-4 sm:mb-6">
-                <h3 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
-                  <span className="material-symbols-outlined text-primary text-[20px] sm:text-[22px]">description</span>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <span className="material-symbols-outlined text-primary">description</span>
                   Detail Laporan
                 </h3>
                 <button
                   onClick={() => setSelectedReport(null)}
-                  className="text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-700/50 h-8 w-8 sm:h-9 sm:w-9 rounded-lg flex items-center justify-center transition-colors"
+                  className="text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-700/50 h-9 w-9 rounded-lg flex items-center justify-center transition-colors"
                   title="Tutup Modal"
                 >
-                  <span className="material-symbols-outlined text-[18px] sm:text-[20px]">close</span>
+                  <span className="material-symbols-outlined text-[20px]">close</span>
                 </button>
               </div>
 
               {/* Report Info */}
-              <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
+              <div className="space-y-4 mb-6">
                 {/* Badges */}
-                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                  <span className="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-sm font-semibold border border-rose-500/20 bg-rose-500/10 text-rose-400">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="px-3 py-1.5 rounded-full text-sm font-semibold border border-rose-500/20 bg-rose-500/10 text-rose-400">
                     {selectedReport.category}
                   </span>
-                  <span className={`flex items-center gap-1 text-[10px] sm:text-sm font-medium ${
+                  <span className={`flex items-center gap-1 text-sm font-medium ${
                     selectedReport.status === 'verified' ? 'text-emerald-400' :
                     selectedReport.status === 'pending' ? 'text-amber-400' : 'text-rose-400'
                   }`}>
-                    <span className="material-symbols-outlined text-[14px] sm:text-[16px]">
+                    <span className="material-symbols-outlined text-[16px]">
                       {selectedReport.status === 'verified' ? 'check_circle' :
                        selectedReport.status === 'pending' ? 'pending' : 'cancel'}
                     </span>
@@ -177,23 +177,23 @@ export default function ProfileDetail() {
                 </div>
 
                 {/* Date */}
-                <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-sm text-slate-400">
-                  <span className="material-symbols-outlined text-[16px] sm:text-[18px]">calendar_today</span>
+                <div className="flex items-center gap-2 text-sm text-slate-400">
+                  <span className="material-symbols-outlined text-[18px]">calendar_today</span>
                   <span>Dilaporkan: {formatDate(selectedReport.createdAt)}</span>
                 </div>
 
                 {/* Chronology */}
-                <div className="glass-panel rounded-lg sm:rounded-xl p-3 sm:p-4">
-                  <h4 className="text-[11px] sm:text-sm font-semibold text-slate-300 mb-1.5 sm:mb-2">Kronologi:</h4>
-                  <p className="text-[11px] sm:text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">
+                <div className="glass-panel rounded-xl p-4">
+                  <h4 className="text-sm font-semibold text-slate-300 mb-2">Kronologi:</h4>
+                  <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">
                     {selectedReport.chronology}
                   </p>
                 </div>
 
                 {/* Loss Amount */}
                 {selectedReport.lossAmount && (
-                  <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-sm">
-                    <span className="material-symbols-outlined text-amber-500 text-[16px] sm:text-[18px]">payments</span>
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="material-symbols-outlined text-amber-500 text-[18px]">payments</span>
                     <span className="text-slate-400">Kerugian:</span>
                     <span className="font-bold text-white">{formatCurrency(selectedReport.lossAmount)}</span>
                   </div>
@@ -202,19 +202,19 @@ export default function ProfileDetail() {
 
               {/* Evidence Section */}
               <div>
-                <h4 className="text-[11px] sm:text-sm font-semibold text-slate-300 mb-2.5 sm:mb-3 flex items-center gap-1.5 sm:gap-2">
-                  <span className="material-symbols-outlined text-primary text-[16px] sm:text-[18px]">collections</span>
+                <h4 className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-primary text-[18px]">collections</span>
                   Bukti Terverifikasi ({evidence.length})
                 </h4>
 
                 {evidenceLoading ? (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                     {[1, 2, 3, 4].map((i) => (
                       <div key={i} className="aspect-square bg-slate-800 rounded-lg animate-pulse"></div>
                     ))}
                   </div>
                 ) : evidence.length > 0 ? (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                     {evidence.map((file, idx) => (
                       <div
                         key={file.id || idx}
@@ -229,15 +229,15 @@ export default function ProfileDetail() {
                           />
                         ) : file.mimeType.startsWith('video/') ? (
                           <div className="w-full h-full bg-slate-800 flex items-center justify-center">
-                            <span className="material-symbols-outlined text-3xl sm:text-4xl text-slate-400">movie</span>
+                            <span className="material-symbols-outlined text-4xl text-slate-400">movie</span>
                           </div>
                         ) : (
                           <div className="w-full h-full bg-slate-800 flex items-center justify-center">
-                            <span className="material-symbols-outlined text-3xl sm:text-4xl text-slate-400">description</span>
+                            <span className="material-symbols-outlined text-4xl text-slate-400">description</span>
                           </div>
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                          <div className="absolute bottom-1.5 sm:bottom-2 left-1.5 sm:left-2 text-white text-[9px] sm:text-xs font-medium">
+                          <div className="absolute bottom-2 left-2 text-white text-xs font-medium">
                             {file.mimeType.startsWith('image/') ? 'Foto' : file.mimeType.startsWith('video/') ? 'Video' : 'Dokumen'}
                           </div>
                         </div>
@@ -245,9 +245,9 @@ export default function ProfileDetail() {
                     ))}
                   </div>
                 ) : (
-                  <div className="glass-panel rounded-lg sm:rounded-xl p-6 sm:p-8 text-center text-slate-500">
-                    <span className="material-symbols-outlined text-3xl sm:text-4xl mb-2 opacity-50">folder_off</span>
-                    <p className="text-[11px] sm:text-sm">Belum ada bukti terverifikasi</p>
+                  <div className="glass-panel rounded-xl p-8 text-center text-slate-500">
+                    <span className="material-symbols-outlined text-4xl mb-2 opacity-50">folder_off</span>
+                    <p className="text-sm">Belum ada bukti terverifikasi</p>
                   </div>
                 )}
               </div>
