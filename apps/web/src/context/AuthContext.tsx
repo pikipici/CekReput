@@ -1,6 +1,13 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
 import { authApi, type User } from '../lib/api'
 
+interface GoogleUserData {
+  email: string
+  name: string
+  googleId: string
+  avatarUrl?: string
+}
+
 interface AuthContextType {
   user: User | null
   token: string | null
@@ -9,13 +16,15 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<{ error?: string; requiresOtp?: boolean; email?: string }>
   register: (name: string, email: string, password: string) => Promise<{ error?: string; requiresOtp?: boolean; email?: string }>
   verifyEmail: (email: string, code: string) => Promise<{ error?: string }>
-  loginWithGoogle: (idToken: string) => Promise<{ error?: string; requiresRegistration?: boolean; googleData?: any }>
+  loginWithGoogle: (idToken: string) => Promise<{ error?: string; requiresRegistration?: boolean; googleData?: GoogleUserData }>
   registerWithGoogle: (name: string, email: string, password: string, googleId: string, avatarUrl?: string) => Promise<{ error?: string }>
   forgotPassword: (email: string) => Promise<{ error?: string; message?: string }>
   checkResetOtp: (email: string, code: string) => Promise<{ error?: string; message?: string }>
   resetPassword: (email: string, code: string, newPassword: string) => Promise<{ error?: string; message?: string }>
   logout: () => void
   updateUser: (updatedUser: Partial<User>) => void
+  refreshToken: () => Promise<{ success: boolean; error?: string }>
+  isTokenExpiring: (thresholdMinutes?: number) => boolean
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -23,6 +32,37 @@ const AuthContext = createContext<AuthContextType | null>(null)
 const TOKEN_KEY = 'cekreput_access_token'
 const REFRESH_KEY = 'cekreput_refresh_token'
 const USER_KEY = 'cekreput_user'
+
+// ─── JWT Helper Functions ──────────────────────────────────────
+
+/**
+ * Decode JWT token and extract expiry time
+ */
+function getTokenExpiry(token: string): number | null {
+  try {
+    const base64Url = token.split('.')[1]
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+    const payload = JSON.parse(atob(base64))
+    return payload.exp ? payload.exp * 1000 : null // convert to milliseconds
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Check if token is expiring within threshold (default 5 minutes)
+ */
+function isTokenExpiringSoon(token: string, thresholdMinutes = 5): boolean {
+  const expiryTime = getTokenExpiry(token)
+  if (!expiryTime) return false
+  
+  const now = Date.now()
+  const threshold = thresholdMinutes * 60 * 1000
+  const timeUntilExpiry = expiryTime - now
+  
+  // Token is expiring soon if less than threshold remains
+  return timeUntilExpiry <= threshold && timeUntilExpiry > 0
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
@@ -83,6 +123,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       })
     }
   }, [])
+
+  // ─── Proactive Token Refresh (5 minutes before expiry) ────────
+
+  useEffect(() => {
+    if (!token) return
+
+    const checkExpiryAndRefresh = () => {
+      if (isTokenExpiringSoon(token, 5)) {
+        const refreshTokenStored = localStorage.getItem(REFRESH_KEY)
+        if (refreshTokenStored && user) {
+          console.log('[AuthContext] Token expiring soon, auto-refreshing...')
+          authApi.refresh(refreshTokenStored).then(({ data }) => {
+            if (data) {
+              // Update tokens, keep existing user data
+              const userData = data.user || user
+              setUser(userData)
+              setToken(data.accessToken)
+              localStorage.setItem(TOKEN_KEY, data.accessToken)
+              localStorage.setItem(REFRESH_KEY, data.refreshToken)
+              localStorage.setItem(USER_KEY, JSON.stringify(userData))
+              console.log('[AuthContext] Token refreshed successfully')
+            }
+          }).catch(err => {
+            console.error('[AuthContext] Auto-refresh failed:', err)
+          })
+        }
+      }
+    }
+
+    // Check immediately
+    checkExpiryAndRefresh()
+    
+    // Check every 30 seconds
+    const interval = setInterval(checkExpiryAndRefresh, 30 * 1000)
+
+    return () => clearInterval(interval)
+  }, [token, user, saveAuth])
+
+  // ─── Manual Token Refresh Method ─────────────────────────────
 
   const login = async (email: string, password: string) => {
     setIsLoading(true)
@@ -214,6 +293,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(USER_KEY, JSON.stringify(newUser))
   }
 
+  // ─── Manual Token Refresh ─────────────────────────────────────
+
+  const refreshToken = async (): Promise<{ success: boolean; error?: string }> => {
+    const refreshTokenStored = localStorage.getItem(REFRESH_KEY)
+    if (!refreshTokenStored) {
+      return { success: false, error: 'Tidak ada refresh token tersedia' }
+    }
+
+    try {
+      const { data, error } = await authApi.refresh(refreshTokenStored)
+      if (error || !data) {
+        return { success: false, error: error || 'Gagal refresh token' }
+      }
+
+      // Update tokens, keep existing user data
+      const userData = data.user || user
+      setUser(userData)
+      setToken(data.accessToken)
+      localStorage.setItem(TOKEN_KEY, data.accessToken)
+      localStorage.setItem(REFRESH_KEY, data.refreshToken)
+      localStorage.setItem(USER_KEY, JSON.stringify(userData))
+      return { success: true }
+    } catch {
+      return { success: false, error: 'Terjadi kesalahan jaringan' }
+    }
+  }
+
+  const isTokenExpiring = (thresholdMinutes = 5): boolean => {
+    if (!token) return true
+    return isTokenExpiringSoon(token, thresholdMinutes)
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -231,6 +342,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         resetPassword,
         logout,
         updateUser,
+        refreshToken,
+        isTokenExpiring,
       }}
     >
       {children}

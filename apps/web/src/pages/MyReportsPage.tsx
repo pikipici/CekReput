@@ -11,16 +11,35 @@ export default function MyReportsPage() {
   const navigate = useNavigate()
   
   const [reports, setReports] = useState<Report[]>([])
+  const [draftReport, setDraftReport] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
   const limit = 10
+  const DRAFT_KEY = 'cekreput_report_draft'
 
   useEffect(() => {
     if (!isLoggedIn) {
       navigate('/')
       return
+    }
+
+    // ─── Restore Draft Check ────────────────────────────────────
+    const savedDraft = localStorage.getItem(DRAFT_KEY)
+    if (savedDraft) {
+      try {
+        const draft = JSON.parse(savedDraft)
+        const savedTime = new Date(draft.savedAt)
+        const now = new Date()
+        const hoursDiff = (now.getTime() - savedTime.getTime()) / (1000 * 60 * 60)
+        
+        if (hoursDiff < 24) {
+          setDraftReport(draft)
+        }
+      } catch (err) {
+        console.error('Failed to parse draft in MyReports:', err)
+      }
     }
 
     const fetchReports = async () => {
@@ -84,6 +103,48 @@ export default function MyReportsPage() {
             Daftar seluruh laporan penipuan yang telah Anda buat di platform CekReput.
           </p>
         </div>
+
+        {/* Draft Notification Section */}
+        {draftReport && (
+          <div className="mb-8 p-6 lg:p-8 bg-gradient-to-br from-amber-500/10 to-orange-500/5 border border-amber-500/20 rounded-3xl animate-in zoom-in-95 duration-500 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-32 bg-amber-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-amber-500 text-2xl">edit_document</span>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-navy-dark uppercase tracking-wider">Draft Laporan</span>
+                    <span className="text-xs text-amber-500/80 font-medium">Disimpan lokal</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-white mb-1">Lanjutkan Pengisian Laporan Anda</h3>
+                  <p className="text-sm text-slate-300">
+                    Anda memiliki satu formulir laporan yang belum selesai dikirim. Lanjutkan mengisi sebelum draft ini dihapus.
+                  </p>
+                </div>
+              </div>
+              <div className="w-full md:w-auto shrink-0 flex items-center gap-3">
+                 <button
+                   onClick={() => {
+                     localStorage.removeItem(DRAFT_KEY)
+                     setDraftReport(null)
+                   }}
+                   className="px-5 py-3 border border-amber-500/30 text-amber-500 hover:bg-amber-500/10 rounded-xl transition-colors font-medium text-sm flex-1 md:flex-none text-center"
+                 >
+                   Hapus Draft
+                 </button>
+                 <Link 
+                   to="/report"
+                   className="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-navy-dark rounded-xl transition-all font-bold flex gap-2 items-center justify-center flex-1 md:flex-none shadow-lg shadow-amber-500/20"
+                 >
+                   Lanjutkan Laporan
+                   <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
+                 </Link>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Content */}
         {loading && reports.length === 0 ? (

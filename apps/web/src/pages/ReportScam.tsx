@@ -11,6 +11,9 @@ import TurnstileModal from '../components/report/TurnstileModal'
 import ReportFooter from '../components/report/ReportFooter'
 import SEO from '../components/SEO'
 
+// Draft storage key
+const DRAFT_KEY = 'cekreput_report_draft'
+
 export interface ReportFormData {
   accountType: 'bank' | 'ewallet' | 'phone'
   bankName: string
@@ -68,6 +71,62 @@ export default function ReportScam() {
   const [submitError, setSubmitError] = useState('')
   const [submitSuccess, setSubmitSuccess] = useState(false)
   const [showTurnstileModal, setShowTurnstileModal] = useState(false)
+
+  // ─── Restore Draft on Mount ────────────────────────────────────
+
+  useEffect(() => {
+    const savedDraft = localStorage.getItem(DRAFT_KEY)
+    if (savedDraft) {
+      try {
+        const draft = JSON.parse(savedDraft)
+        const savedTime = new Date(draft.savedAt)
+        const now = new Date()
+        const hoursDiff = (now.getTime() - savedTime.getTime()) / (1000 * 60 * 60)
+
+        // Only restore if saved within last 24 hours
+        if (hoursDiff < 24) {
+          setForm((prev) => ({
+            ...prev,
+            ...draft,
+            // Don't restore agreedTerms - user must re-agree
+            agreedTerms: false,
+          }))
+          console.log('[ReportScam] Draft restored successfully')
+        } else {
+          // Draft too old, clear it
+          localStorage.removeItem(DRAFT_KEY)
+          console.log('[ReportScam] Draft too old, cleared')
+        }
+      } catch (err) {
+        console.error('[ReportScam] Failed to restore draft:', err)
+        localStorage.removeItem(DRAFT_KEY)
+      }
+    }
+  }, [])
+
+  // ─── Clear Draft on Success ────────────────────────────────────
+
+  useEffect(() => {
+    if (submitSuccess) {
+      localStorage.removeItem(DRAFT_KEY)
+      console.log('[ReportScam] Draft cleared after successful submit')
+    }
+  }, [submitSuccess])
+
+  // ─── Save Draft ────────────────────────────────────────────────
+
+  useEffect(() => {
+    // Hanya simpan jika ada data yang diisi (agar tidak menimpa dengan form kosong saat load awal) dan belum mensubmit sukses
+    const hasData = form.accountNumber || form.phoneNumber || form.entityName || form.chronology || form.category
+    
+    if (hasData && !submitSuccess) {
+      const draftToSave = {
+        ...form,
+        savedAt: new Date().toISOString()
+      }
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(draftToSave))
+    }
+  }, [form, submitSuccess])
 
   const updateForm = (updates: Partial<ReportFormData>) => {
     setForm((prev) => ({ ...prev, ...updates }))
