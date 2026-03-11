@@ -101,7 +101,7 @@ export default function ProfileDetail() {
       <div className="bg-background-dark font-display text-slate-100 antialiased min-h-screen flex flex-col">
         <ProfileNavbar />
 
-        <main className="flex-grow container max-w-2xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
+        <main className="flex-grow container max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
           {/* Breadcrumbs */}
           <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-400">
             <Link className="hover:text-primary" to="/results">Laporan</Link>

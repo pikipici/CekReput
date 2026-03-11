@@ -82,18 +82,18 @@ export default function ProfileHero({ perpetrator, matchedGameId, matchedGameTyp
 
   return (
     <>
-      <section className="glass-panel rounded-2xl p-4 sm:p-6 lg:p-8 relative overflow-hidden group">
+      <section className="glass-panel rounded-2xl p-5 sm:p-6 lg:p-10 relative overflow-hidden group">
         {/* Decorative Background Element */}
-        <div className={`absolute top-0 right-0 w-40 h-40 sm:w-64 sm:h-64 ${isDanger ? 'bg-danger/10' : 'bg-primary/10'} rounded-full blur-3xl -mr-10 -mt-10 sm:-mr-16 sm:-mt-16 pointer-events-none`}></div>
+        <div className={`absolute top-0 right-0 w-48 h-48 sm:w-64 sm:h-64 lg:w-80 lg:h-80 ${isDanger ? 'bg-danger/10' : 'bg-primary/10'} rounded-full blur-3xl -mr-12 -mt-12 sm:-mr-16 sm:-mt-16 lg:-mr-20 lg:-mt-20 pointer-events-none`}></div>
 
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-center lg:items-start relative z-10">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 items-center lg:items-start relative z-10">
           {/* Entity Image / Icon */}
           <div className="relative mb-4 lg:mb-0">
-            <div className={`h-24 w-24 sm:h-28 sm:w-28 rounded-xl flex items-center justify-center border border-white/10 shadow-xl ${isDanger ? 'bg-danger/10' : 'bg-[#214a42]'}`}>
-              <span className="material-symbols-outlined text-5xl sm:text-6xl text-slate-300">{iconName}</span>
+            <div className={`h-28 w-28 sm:h-32 sm:w-32 rounded-xl flex items-center justify-center border border-white/10 shadow-xl ${isDanger ? 'bg-danger/10' : 'bg-[#214a42]'}`}>
+              <span className="material-symbols-outlined text-6xl sm:text-7xl text-slate-300">{iconName}</span>
             </div>
-            <div className={`absolute -bottom-2 -right-2 ${riskBadgeBg} text-white text-[11px] sm:text-xs font-bold px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full border-2 sm:border-4 border-background-dark shadow-sm flex items-center gap-0.5 sm:gap-1`}>
-              <span className="material-symbols-outlined text-[13px] sm:text-[14px]">
+            <div className={`absolute -bottom-2 -right-2 ${riskBadgeBg} text-white text-xs sm:text-sm font-bold px-3 sm:px-4 py-1 sm:py-1.5 rounded-full border-2 sm:border-4 border-background-dark shadow-sm flex items-center gap-1 sm:gap-1.5`}>
+              <span className="material-symbols-outlined text-[14px] sm:text-[16px]">
                 {isDanger ? 'warning' : 'check_circle'}
               </span>
               {perpetrator.threatLevel.toUpperCase()}
@@ -102,26 +102,26 @@ export default function ProfileHero({ perpetrator, matchedGameId, matchedGameTyp
 
           {/* Entity Details */}
           <div className="w-full lg:flex-1 lg:min-w-0">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-3 lg:mb-4">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-6 mb-4 lg:mb-6">
               {/* Left Side */}
               <div className="text-center lg:text-left">
-                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 sm:gap-3 mb-2">
-                  <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-1.5 sm:gap-2">
-                    <span className="material-symbols-outlined text-2xl sm:text-3xl text-slate-400">
+                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 sm:gap-4 mb-3">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight flex items-center gap-2 sm:gap-3">
+                    <span className="material-symbols-outlined text-3xl sm:text-4xl text-slate-400">
                       {matchedGameId ? 'sports_esports' : isPhone ? 'call' : 'tag'}
                     </span>
                     {identifier}
                   </h1>
-                  <span className={`text-[10px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded uppercase tracking-wider ${riskColor}`}>
+                  <span className={`text-xs sm:text-sm font-bold px-3 py-1 sm:py-1.5 rounded uppercase tracking-wider ${riskColor}`}>
                     {matchedGameId ? 'ID Game' : perpetrator.accountType}
                   </span>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-1.5 sm:gap-2">
-                  <span className="material-symbols-outlined text-slate-500 text-[18px] sm:text-[20px]">
+                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 sm:gap-3">
+                  <span className="material-symbols-outlined text-slate-500 text-[20px] sm:text-[24px]">
                     {isBank ? 'account_balance' : isPhone ? 'smartphone' : 'storefront'}
                   </span>
-                  <p className="text-sm sm:text-base text-slate-300 font-medium">
+                  <p className="text-base sm:text-lg text-slate-300 font-medium">
                     {displayBankName}
                   </p>
                 </div>
@@ -132,9 +132,9 @@ export default function ProfileHero({ perpetrator, matchedGameId, matchedGameTyp
                 <div className="lg:mt-0">
                   <Link
                     to={`/clarify/${perpetrator.id}`}
-                    className="inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors border border-slate-700 text-xs sm:text-sm font-medium w-full sm:w-auto"
+                    className="inline-flex items-center justify-center gap-2.5 px-5 sm:px-7 py-3 sm:py-3.5 rounded-lg sm:rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors border border-slate-700 text-sm sm:text-base font-medium w-full sm:w-auto"
                   >
-                    <span className="material-symbols-outlined text-[16px] sm:text-[18px]">gavel</span>
+                    <span className="material-symbols-outlined text-[18px] sm:text-[20px]">gavel</span>
                     Ajukan Klarifikasi
                   </Link>
                 </div>
@@ -142,51 +142,51 @@ export default function ProfileHero({ perpetrator, matchedGameId, matchedGameTyp
             </div>
 
             {/* Compact Stats Grid - 2 Cols Mobile, 4 Cols Desktop */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mt-4 sm:mt-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 lg:gap-5 mt-6 sm:mt-8">
               {/* Total Laporan */}
-              <div className="bg-background-dark/50 rounded-lg sm:rounded-xl p-2.5 sm:p-3 border border-white/5">
-                <div className="flex flex-col items-center gap-1 sm:gap-1.5 mb-1.5 sm:mb-2">
-                  <span className="material-symbols-outlined text-primary text-[18px] sm:text-[18px]">description</span>
-                  <p className="text-[11px] sm:text-xs text-slate-400 font-semibold uppercase">Laporan</p>
+              <div className="bg-background-dark/50 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-white/5">
+                <div className="flex flex-col items-center gap-1.5 sm:gap-2 mb-2 sm:mb-2.5">
+                  <span className="material-symbols-outlined text-primary text-[20px] sm:text-[22px]">description</span>
+                  <p className="text-xs sm:text-sm text-slate-400 font-semibold uppercase">Laporan</p>
                 </div>
-                <p className="text-xl sm:text-2xl font-bold text-white text-center">{perpetrator.totalReports}</p>
+                <p className="text-2xl sm:text-3xl font-bold text-white text-center">{perpetrator.totalReports}</p>
               </div>
 
               {/* Estimasi Kerugian */}
-              <div className="bg-background-dark/50 rounded-lg sm:rounded-xl p-2.5 sm:p-3 border border-white/5">
-                <div className="flex flex-col items-center gap-1 sm:gap-1.5 mb-1.5 sm:mb-2">
-                  <span className="material-symbols-outlined text-amber-500 text-[18px] sm:text-[18px]">payments</span>
-                  <p className="text-[11px] sm:text-xs text-slate-400 font-semibold uppercase">Kerugian</p>
+              <div className="bg-background-dark/50 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-white/5">
+                <div className="flex flex-col items-center gap-1.5 sm:gap-2 mb-2 sm:mb-2.5">
+                  <span className="material-symbols-outlined text-amber-500 text-[20px] sm:text-[22px]">payments</span>
+                  <p className="text-xs sm:text-sm text-slate-400 font-semibold uppercase">Kerugian</p>
                 </div>
-                <p className="text-sm sm:text-lg font-bold text-white text-center truncate">{estLoss}</p>
+                <p className="text-base sm:text-lg font-bold text-white text-center truncate">{estLoss}</p>
               </div>
 
               {/* Social Media */}
-              <div className="bg-background-dark/50 rounded-lg sm:rounded-xl p-2.5 sm:p-3 border border-white/5">
-                <div className="flex flex-col items-center gap-1 sm:gap-1.5 mb-1.5 sm:mb-2">
-                  <span className="material-symbols-outlined text-emerald-500 text-[18px] sm:text-[18px]">link</span>
-                  <p className="text-[11px] sm:text-xs text-slate-400 font-semibold uppercase">Sosmed</p>
+              <div className="bg-background-dark/50 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-white/5">
+                <div className="flex flex-col items-center gap-1.5 sm:gap-2 mb-2 sm:mb-2.5">
+                  <span className="material-symbols-outlined text-emerald-500 text-[20px] sm:text-[22px]">link</span>
+                  <p className="text-xs sm:text-sm text-slate-400 font-semibold uppercase">Sosmed</p>
                 </div>
                 {perpetrator.socialMedia && perpetrator.socialMedia.trim().length > 0 ? (
                   <button
                     onClick={() => setShowSocialModal(true)}
-                    className="w-full text-[11px] sm:text-xs font-medium text-white bg-primary/20 hover:bg-primary/30 border border-primary/30 py-1 sm:py-1 rounded transition-colors flex items-center justify-center gap-0.5 sm:gap-1"
+                    className="w-full text-xs sm:text-sm font-medium text-white bg-primary/20 hover:bg-primary/30 border border-primary/30 py-1.5 sm:py-2 rounded transition-colors flex items-center justify-center gap-1 sm:gap-1.5"
                   >
-                    <span className="material-symbols-outlined text-[14px] sm:text-[14px]">visibility</span>
+                    <span className="material-symbols-outlined text-[16px] sm:text-[18px]">visibility</span>
                     <span className="truncate">{perpetrator.socialMedia.split(',').filter(s => s.trim().length > 0).length}</span>
                   </button>
                 ) : (
-                  <span className="text-[10px] sm:text-xs font-medium text-slate-500">-</span>
+                  <span className="text-xs sm:text-sm font-medium text-slate-500">-</span>
                 )}
               </div>
 
               {/* Verified Reports */}
-              <div className="bg-background-dark/50 rounded-lg sm:rounded-xl p-2.5 sm:p-3 border border-white/5">
-                <div className="flex flex-col items-center gap-1 sm:gap-1.5 mb-1.5 sm:mb-2">
-                  <span className={`material-symbols-outlined text-[18px] sm:text-[18px] ${isDanger ? 'text-danger' : 'text-primary'}`}>verified</span>
-                  <p className="text-[11px] sm:text-xs text-slate-400 font-semibold uppercase">Verified</p>
+              <div className="bg-background-dark/50 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-white/5">
+                <div className="flex flex-col items-center gap-1.5 sm:gap-2 mb-2 sm:mb-2.5">
+                  <span className={`material-symbols-outlined text-[20px] sm:text-[22px] ${isDanger ? 'text-danger' : 'text-primary'}`}>verified</span>
+                  <p className="text-xs sm:text-sm text-slate-400 font-semibold uppercase">Verified</p>
                 </div>
-                <p className={`text-xl sm:text-2xl font-bold ${isDanger ? 'text-danger' : 'text-primary'} text-center`}>{perpetrator.verifiedReports}</p>
+                <p className={`text-2xl sm:text-3xl font-bold ${isDanger ? 'text-danger' : 'text-primary'} text-center`}>{perpetrator.verifiedReports}</p>
               </div>
             </div>
 
