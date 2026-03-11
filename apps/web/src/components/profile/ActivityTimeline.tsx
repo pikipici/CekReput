@@ -217,11 +217,11 @@ export default function ActivityTimeline({ perpetratorId }: ActivityTimelineProp
       {/* Report Detail Modal */}
       {selectedReport && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-2 sm:p-4 bg-black/90 backdrop-blur-sm"
           onClick={() => setSelectedReport(null)}
         >
           <div
-            className="bg-navy-dark border border-slate-700 rounded-2xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl animate-in fade-in zoom-in-95 duration-200"
+            className="bg-navy-dark border border-slate-700 rounded-2xl p-4 sm:p-6 w-full max-w-3xl max-h-[85vh] overflow-y-auto shadow-2xl animate-in fade-in zoom-in-95 duration-200 relative"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
@@ -334,20 +334,20 @@ export default function ActivityTimeline({ perpetratorId }: ActivityTimelineProp
       {/* Image Lightbox */}
       {selectedImage && (
         <div
-          className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md"
+          className="fixed inset-0 z-[10000] flex items-center justify-center p-2 sm:p-4 bg-black/95 backdrop-blur-md"
           onClick={() => setSelectedImage(null)}
         >
           <button
             onClick={() => setSelectedImage(null)}
-            className="absolute top-4 right-4 text-white hover:text-slate-300 bg-slate-800/50 hover:bg-slate-700/50 h-12 w-12 rounded-full flex items-center justify-center transition-colors z-10"
+            className="absolute top-2 right-2 sm:top-4 sm:right-4 text-white hover:text-slate-300 bg-slate-800/50 hover:bg-slate-700/50 h-10 w-10 sm:h-12 sm:w-12 rounded-full flex items-center justify-center transition-colors z-10"
             title="Tutup"
           >
-            <span className="material-symbols-outlined text-[24px]">close</span>
+            <span className="material-symbols-outlined text-[20px] sm:text-[24px]">close</span>
           </button>
           <img
             src={selectedImage}
             alt="Evidence"
-            className="max-w-full max-h-[90vh] object-contain rounded-lg"
+            className="max-w-full max-h-[85vh] object-contain rounded-lg"
             onClick={(e) => e.stopPropagation()}
           />
         </div>
