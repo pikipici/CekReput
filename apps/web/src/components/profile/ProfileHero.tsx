@@ -172,61 +172,61 @@ export default function ProfileHero({ perpetrator, matchedGameId, matchedGameTyp
             )}
 
             {/* Compact Stats Grid - Opsi A */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mt-4 sm:mt-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mt-4 sm:mt-6">
               {/* Total Laporan */}
-              <div className="bg-background-dark/50 rounded-lg sm:rounded-xl p-2 sm:p-3 border border-white/5">
-                <div className="flex items-center gap-1 sm:gap-1.5 mb-1">
-                  <span className="material-symbols-outlined text-primary text-[16px] sm:text-[18px]">description</span>
-                  <p className="text-[10px] sm:text-xs text-slate-400 font-semibold uppercase">Laporan</p>
+              <div className="bg-background-dark/50 rounded-lg sm:rounded-xl p-2.5 sm:p-3 border border-white/5">
+                <div className="flex items-center gap-1 sm:gap-1.5 mb-1.5 sm:mb-2">
+                  <span className="material-symbols-outlined text-primary text-[18px] sm:text-[18px]">description</span>
+                  <p className="text-[11px] sm:text-xs text-slate-400 font-semibold uppercase">Laporan</p>
                 </div>
-                <p className="text-lg sm:text-2xl font-bold text-white">{perpetrator.totalReports}</p>
-                <p className="text-[9px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1">
+                <p className="text-xl sm:text-2xl font-bold text-white">{perpetrator.totalReports}</p>
+                <p className="text-[10px] sm:text-xs text-slate-500 mt-1 sm:mt-1">
                   Total kasus
                 </p>
               </div>
 
               {/* Estimasi Kerugian */}
-              <div className="bg-background-dark/50 rounded-lg sm:rounded-xl p-2 sm:p-3 border border-white/5 min-w-0">
-                <div className="flex items-center gap-1 sm:gap-1.5 mb-1">
-                  <span className="material-symbols-outlined text-amber-500 text-[16px] sm:text-[18px]">payments</span>
-                  <p className="text-[10px] sm:text-xs text-slate-400 font-semibold uppercase truncate">Kerugian</p>
+              <div className="bg-background-dark/50 rounded-lg sm:rounded-xl p-2.5 sm:p-3 border border-white/5 min-w-0">
+                <div className="flex items-center gap-1 sm:gap-1.5 mb-1.5 sm:mb-2">
+                  <span className="material-symbols-outlined text-amber-500 text-[18px] sm:text-[18px]">payments</span>
+                  <p className="text-[11px] sm:text-xs text-slate-400 font-semibold uppercase truncate">Kerugian</p>
                 </div>
                 <div className="flex items-baseline gap-0.5 sm:gap-1">
                   <span className="text-[10px] sm:text-xs font-bold text-slate-400">Rp</span>
                   <p className="text-sm sm:text-lg font-bold text-white tracking-tight truncate" title={estLoss}>{estLoss}</p>
                 </div>
-                <p className="text-[9px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1">
+                <p className="text-[10px] sm:text-xs text-slate-500 mt-1 sm:mt-1">
                   Estimasi total
                 </p>
               </div>
 
               {/* Social Media */}
-              <div className="bg-background-dark/50 rounded-lg sm:rounded-xl p-2 sm:p-3 border border-white/5">
-                <div className="flex items-center gap-1 sm:gap-1.5 mb-1">
-                  <span className="material-symbols-outlined text-emerald-500 text-[16px] sm:text-[18px]">link</span>
-                  <p className="text-[10px] sm:text-xs text-slate-400 font-semibold uppercase truncate">Sosmed</p>
+              <div className="bg-background-dark/50 rounded-lg sm:rounded-xl p-2.5 sm:p-3 border border-white/5">
+                <div className="flex items-center gap-1 sm:gap-1.5 mb-1.5 sm:mb-2">
+                  <span className="material-symbols-outlined text-emerald-500 text-[18px] sm:text-[18px]">link</span>
+                  <p className="text-[11px] sm:text-xs text-slate-400 font-semibold uppercase truncate">Sosmed</p>
                 </div>
                 {perpetrator.socialMedia && perpetrator.socialMedia.trim().length > 0 ? (
                   <button
                     onClick={() => setShowSocialModal(true)}
-                    className="w-full text-[10px] sm:text-xs font-medium text-white bg-primary/20 hover:bg-primary/30 border border-primary/30 py-0.5 sm:py-1 rounded transition-colors flex items-center justify-center gap-0.5 sm:gap-1"
+                    className="w-full text-[11px] sm:text-xs font-medium text-white bg-primary/20 hover:bg-primary/30 border border-primary/30 py-1 sm:py-1 rounded transition-colors flex items-center justify-center gap-0.5 sm:gap-1"
                   >
-                    <span className="material-symbols-outlined text-[12px] sm:text-[14px]">visibility</span>
+                    <span className="material-symbols-outlined text-[14px] sm:text-[14px]">visibility</span>
                     <span className="truncate">{perpetrator.socialMedia.split(',').filter(s => s.trim().length > 0).length} Akun</span>
                   </button>
                 ) : (
-                  <span className="text-[9px] sm:text-xs font-medium text-slate-500 italic">-</span>
+                  <span className="text-[10px] sm:text-xs font-medium text-slate-500 italic">-</span>
                 )}
               </div>
 
               {/* Verified Reports */}
-              <div className="bg-background-dark/50 rounded-lg sm:rounded-xl p-2 sm:p-3 border border-white/5">
-                <div className="flex items-center gap-1 sm:gap-1.5 mb-1">
-                  <span className={`material-symbols-outlined text-[16px] sm:text-[18px] ${isDanger ? 'text-danger' : 'text-primary'}`}>verified</span>
-                  <p className="text-[10px] sm:text-xs text-slate-400 font-semibold uppercase">Verified</p>
+              <div className="bg-background-dark/50 rounded-lg sm:rounded-xl p-2.5 sm:p-3 border border-white/5">
+                <div className="flex items-center gap-1 sm:gap-1.5 mb-1.5 sm:mb-2">
+                  <span className={`material-symbols-outlined text-[18px] sm:text-[18px] ${isDanger ? 'text-danger' : 'text-primary'}`}>verified</span>
+                  <p className="text-[11px] sm:text-xs text-slate-400 font-semibold uppercase">Verified</p>
                 </div>
-                <p className={`text-lg sm:text-2xl font-bold ${isDanger ? 'text-danger' : 'text-primary'}`}>{perpetrator.verifiedReports}</p>
-                <p className="text-[9px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1">
+                <p className={`text-xl sm:text-2xl font-bold ${isDanger ? 'text-danger' : 'text-primary'}`}>{perpetrator.verifiedReports}</p>
+                <p className="text-[10px] sm:text-xs text-slate-500 mt-1 sm:mt-1">
                   Kasus valid
                 </p>
               </div>
