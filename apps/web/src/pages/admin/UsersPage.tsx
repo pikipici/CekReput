@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import Pagination from '../../components/admin/Pagination'
 import DetailModal, { DetailRow } from '../../components/admin/DetailModal'
@@ -20,7 +21,8 @@ const roleBadge: Record<string, { label: string; className: string }> = {
 }
 
 export default function UsersPage() {
-  const { token, user: currentUser } = useAuth()
+  const { token, refreshToken, user: currentUser } = useAuth()
+  const navigate = useNavigate()
   const [users, setUsers] = useState<UserRow[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -30,10 +32,23 @@ export default function UsersPage() {
   const [total, setTotal] = useState(0)
   const LIMIT = 10
   const [viewUser, setViewUser] = useState<UserRow | null>(null)
+  const [error, setError] = useState('')
+
+  // Helper: Handle 401 errors
+  const handle401 = async () => {
+    const refreshResult = await refreshToken()
+    if (!refreshResult.success) {
+      setError('Session expired. Silakan login ulang.')
+      navigate('/')
+      return false
+    }
+    return true
+  }
 
   useEffect(() => {
     if (!token) return
     setLoading(true)
+    setError('')
     const params = new URLSearchParams()
     if (search) params.append('q', search)
     if (roleFilter !== 'all') params.append('role', roleFilter)
@@ -44,28 +59,56 @@ export default function UsersPage() {
     fetch(`${API_BASE}/api/moderation/users${qs}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then(r => r.json())
-      .then(data => {
-        if (data.users) setUsers(data.users)
-        if (data.total != null) setTotal(data.total)
+      .then(async r => {
+        if (r.status === 401) {
+          if (await handle401()) {
+            return // Will retry on next render
+          }
+          return
+        }
+        return r.json()
       })
-      .catch(() => {})
+      .then(data => {
+        if (data) {
+          if (data.users) setUsers(data.users)
+          if (data.total != null) setTotal(data.total)
+        }
+      })
+      .catch(err => {
+        console.error('Failed to fetch users:', err)
+        setError('Gagal memuat data pengguna.')
+      })
       .finally(() => setLoading(false))
   }, [token, search, roleFilter, page])
 
   const handleRoleChange = async (userId: string, newRole: string) => {
     setChangingRole(userId)
+    setError('')
     try {
       const res = await fetch(`${API_BASE}/api/moderation/users/${userId}/role`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ role: newRole }),
       })
+      
+      if (res.status === 401) {
+        if (await handle401()) {
+          return handleRoleChange(userId, newRole) // Retry
+        }
+        return
+      }
+      
       if (res.ok) {
         setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole as UserRow['role'] } : u))
+      } else {
+        setError('Gagal mengubah role user.')
       }
-    } catch {}
-    setChangingRole(null)
+    } catch (err) {
+      console.error('Failed to change role:', err)
+      setError('Gagal mengubah role user.')
+    } finally {
+      setChangingRole(null)
+    }
   }
 
   return (
@@ -74,6 +117,14 @@ export default function UsersPage() {
         <h1 className="text-2xl font-bold text-white">Pengguna</h1>
         <p className="text-sm text-slate-400 mt-1">Kelola pengguna dan hak akses</p>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="p-4 rounded-xl bg-danger/10 border border-danger/20 text-danger text-sm flex items-center gap-2">
+          <span className="material-symbols-outlined text-[18px]">error</span>
+          {error}
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
