@@ -188,11 +188,13 @@ export default function ActivityTimeline({ perpetratorId, onReportClick }: Activ
               </div>
 
               {/* Body: Chronology */}
-              <div className="pr-4 sm:pr-8">
-                <p className="text-[12px] sm:text-sm text-slate-400 group-hover:text-slate-300 transition-colors line-clamp-1 italic">
-                  "{item.chronology}"
-                </p>
-              </div>
+              {item.chronology && item.chronology.trim() !== '' && (
+                <div className="pr-4 sm:pr-8">
+                  <p className="text-[12px] sm:text-sm text-slate-400 group-hover:text-slate-300 transition-colors line-clamp-1 italic">
+                    "{item.chronology}"
+                  </p>
+                </div>
+              )}
             </div>
           )
         })}

@@ -6,7 +6,7 @@ import ProfileHero from '../components/profile/ProfileHero'
 import ActivityTimeline from '../components/profile/ActivityTimeline'
 import DetailedReports from '../components/profile/DetailedReports'
 import CommunityDiscussion from '../components/profile/CommunityDiscussion'
-import ProfileFooter from '../components/profile/ProfileFooter'
+import Footer from '../components/Footer'
 import SEO from '../components/SEO'
 
 export default function ProfileDetail() {
@@ -129,7 +129,7 @@ export default function ProfileDetail() {
           <CommunityDiscussion />
         </main>
 
-        <ProfileFooter />
+        <Footer />
 
         {/* Report Detail Modal - Root Level */}
         {selectedReport && (
@@ -186,7 +186,9 @@ export default function ProfileDetail() {
                 <div className="glass-panel rounded-xl p-4">
                   <h4 className="text-sm font-semibold text-slate-300 mb-2">Kronologi:</h4>
                   <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">
-                    {selectedReport.chronology}
+                    {selectedReport.chronology && selectedReport.chronology.trim() !== ''
+                      ? selectedReport.chronology
+                      : <span className="text-slate-500 italic">Kronologi tidak tersedia.</span>}
                   </p>
                 </div>
 
@@ -218,7 +220,7 @@ export default function ProfileDetail() {
                     {evidence.map((file, idx) => (
                       <div
                         key={file.id || idx}
-                        className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group"
+                        className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group bg-slate-800"
                         onClick={() => setSelectedImage(file.fileUrl)}
                       >
                         {file.mimeType.startsWith('image/') ? (
@@ -226,13 +228,24 @@ export default function ProfileDetail() {
                             src={file.fileUrl}
                             alt={`Bukti ${idx + 1}`}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                            onError={(e) => {
+                              const target = e.currentTarget
+                              target.style.display = 'none'
+                              const parent = target.parentElement
+                              if (parent) {
+                                const fallback = document.createElement('div')
+                                fallback.className = 'w-full h-full flex flex-col items-center justify-center text-slate-500 gap-1'
+                                fallback.innerHTML = '<span class="material-symbols-outlined text-3xl">broken_image</span><span class="text-[10px]">Gagal memuat</span>'
+                                parent.appendChild(fallback)
+                              }
+                            }}
                           />
                         ) : file.mimeType.startsWith('video/') ? (
-                          <div className="w-full h-full bg-slate-800 flex items-center justify-center">
+                          <div className="w-full h-full flex items-center justify-center">
                             <span className="material-symbols-outlined text-4xl text-slate-400">movie</span>
                           </div>
                         ) : (
-                          <div className="w-full h-full bg-slate-800 flex items-center justify-center">
+                          <div className="w-full h-full flex items-center justify-center">
                             <span className="material-symbols-outlined text-4xl text-slate-400">description</span>
                           </div>
                         )}

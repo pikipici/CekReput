@@ -217,22 +217,9 @@ export default function DetailedReports({ perpetratorId }: DetailedReportsProps)
                     <p className="text-[11px] sm:text-xs text-slate-400 mt-1 truncate">
                       {report.dateStr} {report.platform && `• via ${report.platform}`}
                     </p>
-
-                    {/* Total Kerugian Khusus Mobile (Muncul di bawah username, sejajar dengan teks) */}
-                    <div className="mt-2 block sm:hidden">
-                      <div className="inline-flex flex-col bg-danger/10 px-2.5 py-1.5 rounded-lg border border-danger/20">
-                        <p className="text-danger font-bold text-xs">-{report.lossAmount}</p>
-                        <p className="text-[9px] text-danger/80">Total Kerugian</p>
-                      </div>
-                    </div>
                   </div>
                 </div>
 
-                {/* Total Kerugian Khusus Desktop (Muncul di kanan) */}
-                <div className="hidden sm:block text-right shrink-0">
-                  <p className="text-danger font-bold text-sm">-{report.lossAmount}</p>
-                  <p className="text-xs text-slate-400">Total Kerugian</p>
-                </div>
               </div>
 
               <div className="bg-background-dark/40 rounded-lg p-3 mb-3 border border-white/5">

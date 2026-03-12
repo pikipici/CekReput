@@ -216,6 +216,8 @@ perpetratorsRouter.get('/:id/timeline', async (c) => {
       status: reports.status,
       incidentDate: reports.incidentDate,
       createdAt: reports.createdAt,
+      chronology: reports.chronology,
+      lossAmount: reports.lossAmount,
     })
     .from(reports)
     .where(and(eq(reports.perpetratorId, id), eq(reports.status, 'verified')))

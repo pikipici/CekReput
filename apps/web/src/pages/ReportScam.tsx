@@ -8,7 +8,7 @@ import StepOneForm from '../components/report/StepOneForm'
 import StepTwoForm from '../components/report/StepTwoForm'
 import StepThreeForm from '../components/report/StepThreeForm'
 import TurnstileModal from '../components/report/TurnstileModal'
-import ReportFooter from '../components/report/ReportFooter'
+import Footer from '../components/Footer'
 import SEO from '../components/SEO'
 
 // Draft storage key
@@ -231,31 +231,31 @@ export default function ReportScam() {
         </div>
         <ReportNavbar />
         <main className="relative z-10 flex-grow flex items-center justify-center px-4">
-          <div className="glass-panel rounded-2xl p-8 md:p-12 max-w-lg text-center space-y-6">
-            <div className="w-20 h-20 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
-              <span className="material-symbols-outlined text-primary text-4xl">check_circle</span>
+          <div className="glass-panel rounded-2xl p-5 sm:p-6 max-w-sm text-center space-y-4 mx-auto w-full border border-primary/20 shadow-2xl shadow-primary/5">
+            <div className="w-12 h-12 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
+              <span className="material-symbols-outlined text-primary text-2xl">check_circle</span>
             </div>
-            <h2 className="text-2xl font-bold text-white">Laporan Berhasil Dikirim!</h2>
-            <p className="text-slate-400">
-              Terima kasih atas laporan Anda. Tim moderator kami akan meninjau laporan ini dalam 1-3 hari kerja. Anda akan mendapat notifikasi saat laporan diverifikasi.
+            <h2 className="text-lg font-bold text-white">Laporan Berhasil!</h2>
+            <p className="text-xs text-slate-400 leading-relaxed px-2">
+              Laporan penipuan Anda kini sedang antre ditinjau (1-3 hari kerja). Kami akan segera memberitahu Anda ketika laporan terverifikasi.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
-              <button
-                onClick={() => { setSubmitSuccess(false); setForm(INITIAL_FORM); setCurrentStep(1) }}
-                className="px-6 py-3 rounded-xl border border-slate-600 text-white font-medium hover:bg-slate-700/50 transition-all"
-              >
-                Buat Laporan Lain
-              </button>
+            <div className="flex flex-col gap-2.5 pt-3">
               <button
                 onClick={() => navigate('/')}
-                className="px-6 py-3 rounded-xl bg-primary text-navy-dark font-bold hover:bg-primary/90 transition-all"
+                className="w-full px-4 py-2 rounded-xl bg-primary text-navy-dark text-sm font-bold hover:bg-primary/90 transition-all shadow-md shadow-primary/20"
               >
                 Kembali ke Beranda
+              </button>
+              <button
+                onClick={() => { setSubmitSuccess(false); setForm(INITIAL_FORM); setCurrentStep(1) }}
+                className="w-full px-4 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-600 text-slate-300 text-sm font-medium transition-all"
+              >
+                Buat Laporan Lain
               </button>
             </div>
           </div>
         </main>
-        <ReportFooter />
+        <Footer />
       </div>
       </>
     )
@@ -337,7 +337,7 @@ export default function ReportScam() {
         </div>
       </main>
 
-      <ReportFooter />
+      <Footer />
     </div>
 
     <TurnstileModal 
