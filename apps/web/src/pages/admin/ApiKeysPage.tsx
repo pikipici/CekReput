@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
 interface ApiKeyRow {
@@ -14,22 +15,49 @@ interface ApiKeyRow {
 const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3001'
 
 export default function ApiKeysPage() {
-  const { token } = useAuth()
+  const { token, refreshToken } = useAuth()
+  const navigate = useNavigate()
   const [keys, setKeys] = useState<ApiKeyRow[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  // Helper: Handle 401 errors
+  const handle401 = async () => {
+    const refreshResult = await refreshToken()
+    if (!refreshResult.success) {
+      setError('Session expired. Silakan login ulang.')
+      navigate('/')
+      return false
+    }
+    return true
+  }
 
   useEffect(() => {
     if (!token) return
     setLoading(true)
+    setError('')
     fetch(`${API_BASE}/api/moderation/api-keys`, {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then(r => r.json())
-      .then(data => {
-        if (data.keys) setKeys(data.keys)
-        else if (Array.isArray(data)) setKeys(data)
+      .then(async r => {
+        if (r.status === 401) {
+          if (await handle401()) {
+            return // Will retry on next render
+          }
+          return
+        }
+        return r.json()
       })
-      .catch(() => {})
+      .then(data => {
+        if (data) {
+          if (data.keys) setKeys(data.keys)
+          else if (Array.isArray(data)) setKeys(data)
+        }
+      })
+      .catch(err => {
+        console.error('Failed to fetch API keys:', err)
+        setError('Gagal memuat API keys.')
+      })
       .finally(() => setLoading(false))
   }, [token])
 
@@ -39,6 +67,14 @@ export default function ApiKeysPage() {
         <h1 className="text-2xl font-bold text-white">API Keys</h1>
         <p className="text-sm text-slate-400 mt-1">Daftar semua API key yang terdaftar oleh pengguna</p>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="p-4 rounded-xl bg-danger/10 border border-danger/20 text-danger text-sm flex items-center gap-2">
+          <span className="material-symbols-outlined text-[18px]">error</span>
+          {error}
+        </div>
+      )}
 
       <div className="rounded-2xl border border-white/5 bg-white/[0.02] overflow-hidden">
         <div className="overflow-x-auto">

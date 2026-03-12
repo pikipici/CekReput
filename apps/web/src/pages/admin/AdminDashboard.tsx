@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
 interface ModerationStats {
@@ -12,24 +12,79 @@ interface ModerationStats {
 const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3001'
 
 export default function AdminDashboard() {
-  const { token } = useAuth()
+  const { token, refreshToken } = useAuth()
+  const navigate = useNavigate()
   const [stats, setStats] = useState<ModerationStats>({ pending: 0, verified: 0, rejected: 0, total: 0 })
   const [trends, setTrends] = useState<{ date: string; count: number }[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     if (!token) return
-    fetch(`${API_BASE}/api/moderation/stats`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(r => r.json())
-      .then(data => {
+    
+    const fetchStats = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/moderation/stats`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        
+        // Handle 401 - Token expired
+        if (res.status === 401) {
+          const refreshResult = await refreshToken()
+          if (!refreshResult.success) {
+            setError('Session expired. Silakan login ulang.')
+            navigate('/')
+            return
+          }
+          // Retry with new token
+          return fetchStats()
+        }
+        
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`)
+        }
+        
+        const data = await res.json()
         if (data.stats) setStats(data.stats)
         if (data.trends) setTrends(data.trends)
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [token])
+        setError('')
+      } catch (err) {
+        console.error('Failed to fetch stats:', err)
+        setError('Gagal memuat data dashboard.')
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    fetchStats()
+  }, [token, refreshToken, navigate])
+
+  // Proactive token refresh - check every 30 seconds
+  useEffect(() => {
+    if (!token) return
+    
+    const checkExpiry = async () => {
+      try {
+        const base64Url = token.split('.')[1]
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+        const payload = JSON.parse(atob(base64))
+        const expiryTime = payload.exp * 1000 // convert to milliseconds
+        const now = Date.now()
+        const timeUntilExpiry = expiryTime - now
+        const fiveMinutes = 5 * 60 * 1000
+        
+        // Refresh if less than 5 minutes remaining
+        if (timeUntilExpiry < fiveMinutes && timeUntilExpiry > 0) {
+          await refreshToken()
+        }
+      } catch (err) {
+        console.error('Token expiry check failed:', err)
+      }
+    }
+    
+    const interval = setInterval(checkExpiry, 30000) // Check every 30 seconds
+    return () => clearInterval(interval)
+  }, [token, refreshToken])
 
   const statCards = [
     { label: 'Laporan Pending', value: stats.pending, icon: 'pending_actions', color: 'from-amber-500 to-orange-600', textColor: 'text-amber-400', bgColor: 'bg-amber-500/10' },
@@ -45,6 +100,14 @@ export default function AdminDashboard() {
         <h1 className="text-2xl font-bold text-white">Dashboard</h1>
         <p className="text-sm text-slate-400 mt-1">Ringkasan aktivitas dan statistik CekReput</p>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="p-4 rounded-xl bg-danger/10 border border-danger/20 text-danger text-sm flex items-center gap-2">
+          <span className="material-symbols-outlined text-[18px]">error</span>
+          {error}
+        </div>
+      )}
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">

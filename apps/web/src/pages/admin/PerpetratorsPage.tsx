@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import Pagination from '../../components/admin/Pagination'
 import DetailModal, { DetailRow } from '../../components/admin/DetailModal'
@@ -29,7 +30,8 @@ const threatBadge: Record<string, { label: string; className: string }> = {
 }
 
 export default function PerpetratorsPage() {
-  const { token } = useAuth()
+  const { token, refreshToken } = useAuth()
+  const navigate = useNavigate()
   const [perpList, setPerpList] = useState<PerpetratorRow[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -45,32 +47,69 @@ export default function PerpetratorsPage() {
   const [loadingReports, setLoadingReports] = useState(false)
   const [viewReport, setViewReport] = useState<Report | null>(null)
   const [loadingReportDetail, setLoadingReportDetail] = useState(false)
+  const [error, setError] = useState('')
+
+  // Helper: Handle 401 errors
+  const handle401 = async () => {
+    const refreshResult = await refreshToken()
+    if (!refreshResult.success) {
+      setError('Session expired. Silakan login ulang.')
+      navigate('/')
+      return false
+    }
+    return true
+  }
 
   useEffect(() => {
     if (reportsModalPerpId && token) {
       setLoadingReports(true)
+      setError('')
       const queryParams = reportsModalType === 'verified' ? '?status=verified' : ''
       fetch(`${API_BASE}/api/moderation/perpetrators/${reportsModalPerpId}/reports${queryParams}`, {
         headers: { Authorization: `Bearer ${token}` }
       })
-        .then(res => res.json())
-        .then(data => setModalReportsList(data.reports ?? []))
-        .catch(() => {})
+        .then(async res => {
+          if (res.status === 401) {
+            if (await handle401()) {
+              return // Will retry on next render
+            }
+            return
+          }
+          return res.json()
+        })
+        .then(data => {
+          if (data) setModalReportsList(data.reports ?? [])
+        })
+        .catch(err => {
+          console.error('Failed to fetch reports:', err)
+          setError('Gagal memuat laporan.')
+        })
         .finally(() => setLoadingReports(false))
     }
   }, [reportsModalPerpId, reportsModalType, token])
 
   const handleViewReportDetail = (reportId: string) => {
     setLoadingReportDetail(true)
+    setError('')
     reportsApi.getById(reportId)
-      .then(res => setViewReport(res.data?.report ?? null))
-      .catch(() => {})
+      .then(res => {
+        if (res.error) {
+          setError(res.error)
+        } else {
+          setViewReport(res.data?.report ?? null)
+        }
+      })
+      .catch(err => {
+        console.error('Failed to fetch report detail:', err)
+        setError('Gagal memuat detail laporan.')
+      })
       .finally(() => setLoadingReportDetail(false))
   }
 
   useEffect(() => {
     if (!token) return
     setLoading(true)
+    setError('')
     const params = new URLSearchParams()
     if (search) params.append('q', search)
     if (filterLevel !== 'all') params.append('level', filterLevel)
@@ -80,12 +119,25 @@ export default function PerpetratorsPage() {
     fetch(`${API_BASE}/api/moderation/perpetrators${qs}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then(r => r.json())
-      .then(data => {
-        if (data.perpetrators) setPerpList(data.perpetrators)
-        if (data.total != null) setTotal(data.total)
+      .then(async r => {
+        if (r.status === 401) {
+          if (await handle401()) {
+            return // Will retry on next render
+          }
+          return
+        }
+        return r.json()
       })
-      .catch(() => {})
+      .then(data => {
+        if (data) {
+          if (data.perpetrators) setPerpList(data.perpetrators)
+          if (data.total != null) setTotal(data.total)
+        }
+      })
+      .catch(err => {
+        console.error('Failed to fetch perpetrators:', err)
+        setError('Gagal memuat data pelaku.')
+      })
       .finally(() => setLoading(false))
   }, [token, search, filterLevel, page])
 
@@ -95,6 +147,14 @@ export default function PerpetratorsPage() {
         <h1 className="text-2xl font-bold text-white">Data Pelaku</h1>
         <p className="text-sm text-slate-400 mt-1">Daftar semua pelaku yang pernah dilaporkan</p>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="p-4 rounded-xl bg-danger/10 border border-danger/20 text-danger text-sm flex items-center gap-2">
+          <span className="material-symbols-outlined text-[18px]">error</span>
+          {error}
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">

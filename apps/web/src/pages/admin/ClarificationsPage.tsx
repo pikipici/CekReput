@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { clarificationsApi, type Clarification } from '../../lib/api'
 
 export default function ClarificationsPage() {
-  const { token } = useAuth()
+  const { token, refreshToken } = useAuth()
+  const navigate = useNavigate()
   const [clarifications, setClarifications] = useState<Clarification[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -11,6 +13,18 @@ export default function ClarificationsPage() {
   const [selectedClarification, setSelectedClarification] = useState<Clarification | null>(null)
   const [resetThreat, setResetThreat] = useState(false)
   const [processing, setProcessing] = useState(false)
+  const [error, setError] = useState('')
+
+  // Helper: Handle 401 errors
+  const handle401 = async () => {
+    const refreshResult = await refreshToken()
+    if (!refreshResult.success) {
+      setError('Session expired. Silakan login ulang.')
+      navigate('/')
+      return false
+    }
+    return true
+  }
 
   const handleDownloadEvidence = async (clarification: Clarification) => {
     if (!clarification.evidenceUrls || clarification.evidenceUrls.length === 0) return
@@ -78,12 +92,22 @@ export default function ClarificationsPage() {
   const fetchPending = async () => {
     if (!token) return
     setLoading(true)
+    setError('')
     try {
       const res = await clarificationsApi.getPending(1, token)
       const data = res.data as { clarifications?: Clarification[] } | undefined
-      setClarifications(data?.clarifications ?? [])
-    } catch {
-      console.error('Failed to fetch clarifications')
+      if (data?.clarifications) {
+        setClarifications(data.clarifications)
+      }
+    } catch (err: unknown) {
+      const error = err as { status?: number }
+      if (error.status === 401) {
+        if (await handle401()) {
+          return fetchPending() // Retry
+        }
+      }
+      console.error('Failed to fetch clarifications:', err)
+      setError('Gagal memuat klarifikasi pending.')
     } finally {
       setLoading(false)
     }
@@ -96,19 +120,32 @@ export default function ClarificationsPage() {
   const handleModerate = async (action: 'approve' | 'reject') => {
     if (!token || !selectedClarification) return
     setProcessing(true)
+    setError('')
     try {
-      await clarificationsApi.moderate(
+      const res = await clarificationsApi.moderate(
         selectedClarification.id,
         { action, resetThreat: action === 'approve' ? resetThreat : false },
         token
       )
       
+      if (res.error) {
+        setError(res.error)
+        return
+      }
+
       // Update local state
       setClarifications(prev => prev.filter(c => c.id !== selectedClarification.id))
       setSelectedClarification(null)
       setResetThreat(false)
-    } catch {
-      alert('Gagal memproses klarifikasi')
+    } catch (err: unknown) {
+      const error = err as { status?: number }
+      if (error.status === 401) {
+        if (await handle401()) {
+          return handleModerate(action) // Retry
+        }
+      }
+      console.error('Failed to moderate clarification:', err)
+      setError('Gagal memproses klarifikasi.')
     } finally {
       setProcessing(false)
     }
@@ -128,6 +165,14 @@ export default function ClarificationsPage() {
           </div>
         </div>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="p-4 rounded-xl bg-danger/10 border border-danger/20 text-danger text-sm flex items-center gap-2">
+          <span className="material-symbols-outlined text-[18px]">error</span>
+          {error}
+        </div>
+      )}
 
       <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto min-h-[500px]">

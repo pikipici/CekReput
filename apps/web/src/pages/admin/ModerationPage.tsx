@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import JSZip from 'jszip'
 import saveAs from 'file-saver'
 import { useAuth } from '../../context/AuthContext'
@@ -48,7 +49,8 @@ const categoryLabels: Record<string, string> = {
 }
 
 export default function ModerationPage() {
-  const { token } = useAuth()
+  const { token, refreshToken } = useAuth()
+  const navigate = useNavigate()
   const [reports, setReports] = useState<PendingReport[]>([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
@@ -60,38 +62,79 @@ export default function ModerationPage() {
   const [viewReport, setViewReport] = useState<PendingReport | null>(null)
   const [verifyReport, setVerifyReport] = useState<PendingReport | null>(null)
   const [verifyEvidence, setVerifyEvidence] = useState<UploadedFile[]>([])
+  const [error, setError] = useState('')
 
-  const fetchPending = () => {
+  // Helper: Handle 401 errors
+  const handle401 = async () => {
+    const refreshResult = await refreshToken()
+    if (!refreshResult.success) {
+      setError('Session expired. Silakan login ulang.')
+      navigate('/')
+      return false
+    }
+    return true
+  }
+
+  const fetchPending = async () => {
     if (!token) return
     setLoading(true)
-    const limit = 10
-    fetch(`${API_BASE}/api/moderation/pending?page=${page}&limit=${limit}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(r => r.json())
-      .then(data => {
-        if (data.reports) setReports(data.reports)
-        if (data.total != null) setTotal(data.total)
+    setError('')
+    try {
+      const limit = 10
+      const res = await fetch(`${API_BASE}/api/moderation/pending?page=${page}&limit=${limit}`, {
+        headers: { Authorization: `Bearer ${token}` },
       })
-      .catch(() => {})
-      .finally(() => setLoading(false))
+      
+      if (res.status === 401) {
+        if (await handle401()) {
+          return fetchPending() // Retry
+        }
+        return
+      }
+      
+      const data = await res.json()
+      if (data.reports) setReports(data.reports)
+      if (data.total != null) setTotal(data.total)
+    } catch (err) {
+      console.error('Failed to fetch pending reports:', err)
+      setError('Gagal memuat laporan pending.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => { fetchPending() }, [token, page])
 
   const handleVerify = async (id: string, evidenceFiles: UploadedFile[] = []) => {
     setActionLoading(id)
+    setError('')
     try {
-      await fetch(`${API_BASE}/api/moderation/reports/${id}`, {
+      const res = await fetch(`${API_BASE}/api/moderation/reports/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ action: 'verify', evidenceFiles }),
       })
+      
+      if (res.status === 401) {
+        if (await handle401()) {
+          return handleVerify(id, evidenceFiles) // Retry
+        }
+        return
+      }
+      
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`)
+      }
+      
       setReports(r => r.filter(rep => rep.id !== id))
-    } catch {}
-    setActionLoading(null)
-    setVerifyReport(null)
-    setVerifyEvidence([])
+    } catch (err) {
+      console.error('Failed to verify report:', err)
+      setError('Gagal memverifikasi laporan.')
+    } finally {
+      setActionLoading(null)
+      setVerifyReport(null)
+      setVerifyEvidence([])
+    }
   }
 
   const handleDownloadEvidence = async (report: PendingReport) => {
@@ -195,6 +238,14 @@ export default function ModerationPage() {
         </div>
         <span className="text-sm text-slate-400 tabular-nums">{total} laporan pending</span>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="p-4 rounded-xl bg-danger/10 border border-danger/20 text-danger text-sm flex items-center gap-2">
+          <span className="material-symbols-outlined text-[18px]">error</span>
+          {error}
+        </div>
+      )}
 
       {/* Reports Queue */}
       {loading ? (
