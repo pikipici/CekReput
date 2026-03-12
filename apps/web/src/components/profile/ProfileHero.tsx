@@ -75,7 +75,6 @@ export default function ProfileHero({ perpetrator, matchedGameId, matchedGameTyp
   const isWarning = perpetrator.threatLevel === 'warning'
   
   const riskColor = isDanger ? 'bg-danger/20 text-danger border-danger/30' : isWarning ? 'bg-warning/20 text-warning border-warning/30' : 'bg-primary/20 text-primary border-primary/30'
-  const riskBadgeBg = isDanger ? 'bg-danger' : isWarning ? 'bg-warning' : 'bg-primary'
   
   // Estimate loss
   const estLoss = new Intl.NumberFormat('id-ID').format(perpetrator.totalLoss || 0)
@@ -88,13 +87,17 @@ export default function ProfileHero({ perpetrator, matchedGameId, matchedGameTyp
 
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 items-center lg:items-start relative z-10">
           {/* Entity Image / Icon */}
-          <div className="relative mb-4 lg:mb-0">
-            <div className={`h-28 w-28 sm:h-32 sm:w-32 rounded-xl flex items-center justify-center border border-white/10 shadow-xl ${isDanger ? 'bg-danger/10' : 'bg-[#214a42]'}`}>
-              <span className="material-symbols-outlined text-6xl sm:text-7xl text-slate-300">{iconName}</span>
+          <div className="relative mb-4 lg:mb-0 shrink-0 mx-auto sm:mx-0">
+            <div className={`h-20 w-20 sm:h-28 sm:w-28 rounded-xl flex items-center justify-center border border-white/10 shadow-xl ${isDanger ? 'bg-danger/10' : 'bg-[#214a42]'}`}>
+              <span className="material-symbols-outlined text-4xl sm:text-6xl lg:text-7xl text-slate-300">{iconName}</span>
             </div>
-            <div className={`absolute -bottom-2 -right-2 ${riskBadgeBg} text-white text-xs sm:text-sm font-bold px-3 sm:px-4 py-1 sm:py-1.5 rounded-full border-2 sm:border-4 border-background-dark shadow-sm flex items-center gap-1 sm:gap-1.5`}>
-              <span className="material-symbols-outlined text-[14px] sm:text-[16px]">
-                {isDanger ? 'warning' : 'check_circle'}
+            {/* The Badge: Solid background color based on threat level */}
+            <div 
+              className={`absolute -bottom-3 left-1/2 -translate-x-1/2 text-white text-[10px] sm:text-sm font-bold px-3 sm:px-4 py-1 sm:py-1.5 rounded-full border border-white/20 shadow-lg flex items-center gap-1 sm:gap-1.5 whitespace-nowrap`}
+              style={{ backgroundColor: isDanger ? '#FF4757' : isWarning ? '#F59E0B' : '#05d1a8' }}
+            >
+              <span className="material-symbols-outlined text-[12px] sm:text-[16px]">
+                {isDanger ? 'warning' : isWarning ? 'error' : 'check_circle'}
               </span>
               {perpetrator.threatLevel.toUpperCase()}
             </div>
