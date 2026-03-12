@@ -254,6 +254,9 @@ export const perpetratorsApi = {
 
   getComments: (id: string, page = 1) =>
     request<{ comments: UserComment[]; page: number; limit: number }>(`/api/perpetrators/${id}/comments?page=${page}`),
+
+  getRelatedReports: (id: string, page = 1) =>
+    request<{ reports: Report[] }>(`/api/perpetrators/${id}/related?page=${page}`),
 }
 
 // ─── Comments API ────────────────────────────────────────────────

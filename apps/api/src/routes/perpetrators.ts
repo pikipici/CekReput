@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { eq, desc, and } from 'drizzle-orm'
+import { eq, desc, and, or, not } from 'drizzle-orm'
 import { db } from '../db/index.js'
 import { perpetrators, reports, users, clarifications, comments, evidenceFiles } from '../db/schema.js'
 import { maskAccountNumber, maskPhoneNumber, maskEntityName } from '../utils/masking.js'
@@ -62,6 +62,75 @@ perpetratorsRouter.get('/:id/reports', zValidator('query', paginationSchema), as
     .offset(offset)
 
   return c.json({ reports: perpReports, page, limit })
+})
+
+// ─── Get Related Reports (Info Terkait) ──────────────────────────
+
+perpetratorsRouter.get('/:id/related', zValidator('query', paginationSchema), async (c) => {
+  const id = c.req.param('id')
+  const { page, limit } = c.req.valid('query')
+  const offset = (page - 1) * limit
+
+  // 1. Fetch current perpetrator to get matching criteria
+  const [currentPerp] = await db.select().from(perpetrators).where(eq(perpetrators.id, id)).limit(1)
+
+  if (!currentPerp) {
+    return c.json({ error: 'Data pelaku tidak ditemukan' }, 404)
+  }
+
+  // Define matcher conditions
+  const conditions = []
+  
+  if (currentPerp.phoneNumber) {
+    conditions.push(eq(perpetrators.phoneNumber, currentPerp.phoneNumber))
+  }
+  if (currentPerp.socialMedia) {
+    conditions.push(eq(perpetrators.socialMedia, currentPerp.socialMedia))
+  }
+  if (currentPerp.entityName) {
+    conditions.push(eq(perpetrators.entityName, currentPerp.entityName))
+  }
+  if (currentPerp.accountNumber) {
+    conditions.push(eq(perpetrators.accountNumber, currentPerp.accountNumber))
+  }
+
+  if (conditions.length === 0) {
+    return c.json({ reports: [], page, limit })
+  }
+
+  // 2. Query other reports from DIFFERENT perpetrators that match our conditions
+  const relatedReports = await db
+    .select({
+      id: reports.id,
+      category: reports.category,
+      chronology: reports.chronology,
+      incidentDate: reports.incidentDate,
+      status: reports.status,
+      createdAt: reports.createdAt,
+      // Include perpetrator relation info to show what matched
+      perpetrator: {
+        id: perpetrators.id,
+        entityName: perpetrators.entityName,
+        phoneNumber: perpetrators.phoneNumber,
+        socialMedia: perpetrators.socialMedia,
+        accountNumber: perpetrators.accountNumber,
+        bankName: perpetrators.bankName
+      }
+    })
+    .from(reports)
+    .innerJoin(perpetrators, eq(reports.perpetratorId, perpetrators.id))
+    .where(
+      and(
+        or(...conditions),
+        not(eq(perpetrators.id, id)), // Exclude the current perpetrator
+        eq(reports.status, 'verified')
+      )
+    )
+    .orderBy(desc(reports.createdAt))
+    .limit(limit)
+    .offset(offset)
+
+  return c.json({ reports: relatedReports, page, limit })
 })
 
 // ─── Get Perpetrator's Verified Evidence ──────────────────────────

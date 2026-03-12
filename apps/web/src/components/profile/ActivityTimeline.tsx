@@ -136,7 +136,7 @@ export default function ActivityTimeline({ perpetratorId, onReportClick }: Activ
         Riwayat Aktivitas Laporan
       </h3>
 
-      <div className="space-y-3 sm:space-y-4">
+      <div className="space-y-0">
         {timelineData.map((item, index) => {
           const categoryClass = categoryColors[item.category] || categoryColors.other
           const status = statusConfig[item.status]
@@ -145,47 +145,53 @@ export default function ActivityTimeline({ perpetratorId, onReportClick }: Activ
           return (
             <div
               key={item.id}
-              className={`relative pl-6 sm:pl-8 pb-4 sm:pb-6 ${index !== timelineData.length - 1 ? 'border-l-2 border-slate-700' : 'border-l-2 border-slate-700'} last:pb-0`}
+              className={`relative pl-8 sm:pl-10 py-4 sm:py-5 group cursor-pointer ${
+                index !== timelineData.length - 1 ? 'border-b border-white/5' : ''
+              }`}
+              onClick={() => onReportClick?.(item)}
             >
-              {/* Timeline Dot - Larger */}
-              <div className="absolute left-[-6px] sm:left-[-7px] top-0 w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-primary border-4 border-background-dark"></div>
+              {/* Timeline Thread Line */}
+              {index !== timelineData.length - 1 && (
+                <div className="absolute left-[9px] sm:left-[11px] top-10 bottom-[-1.25rem] w-[2px] bg-slate-800"></div>
+              )}
 
-              {/* Date - Larger Text */}
-              <div className="text-[11px] sm:text-xs text-slate-400 mb-1.5 sm:mb-2 flex items-center gap-1.5 sm:gap-2">
-                <span className="material-symbols-outlined text-[13px] sm:text-[14px]">calendar_today</span>
-                {formatDate(item.createdAt)}
-              </div>
+              {/* Timeline Dot with Glow */}
+              <div className="absolute left-0 sm:left-1 top-5 sm:top-6 w-[20px] h-[20px] rounded-full bg-background-dark border-[3px] border-primary z-10 shadow-[0_0_8px_rgba(5,217,168,0.5)] group-hover:scale-110 transition-transform"></div>
 
-              {/* Content Card - Clickable - Better Padding */}
-              <div
-                className="glass-panel rounded-lg sm:rounded-xl p-3 sm:p-4 hover:bg-slate-800/50 transition-colors cursor-pointer"
-                onClick={() => onReportClick?.(item)}
-              >
-                {/* Badges - Larger Text */}
-                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2.5 sm:mb-3">
-                  <span className={`px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold border ${categoryClass}`}>
+              {/* Hover Background Layer */}
+              <div className="absolute inset-x-0 inset-y-1 -left-4 rounded-xl transition-colors duration-300 group-hover:bg-card-hover/40 -z-10 pointer-events-none"></div>
+
+              {/* Header Row: Date & Loss */}
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+                <div className="flex items-center gap-3">
+                  <div className="text-xs sm:text-sm font-semibold text-slate-200 flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[14px] sm:text-[16px] text-slate-400">calendar_today</span>
+                    {formatDate(item.createdAt)}
+                  </div>
+                  <span className={`px-2 py-0.5 rounded-md text-[10px] sm:text-[11px] font-bold border ${categoryClass}`}>
                     {categoryLabel}
-                  </span>
-                  <span className={`flex items-center gap-1 text-[10px] sm:text-xs font-medium ${status.color}`}>
-                    <span className="material-symbols-outlined text-[13px] sm:text-[14px]">{status.icon}</span>
-                    {status.label}
                   </span>
                 </div>
 
-                {/* Chronology Preview - Larger Text */}
-                <p className="text-[11px] sm:text-sm text-slate-300 leading-relaxed mb-2.5 sm:mb-3 line-clamp-2">
-                  {item.chronology}
-                </p>
+                <div className="flex items-center gap-3">
+                   {item.lossAmount && (
+                    <div className="flex items-center gap-1 text-xs sm:text-sm font-bold text-danger bg-danger/10 px-2 py-1 rounded-lg border border-danger/20">
+                      <span className="material-symbols-outlined text-[14px]">payments</span>
+                      -{formatCurrency(item.lossAmount)}
+                    </div>
+                  )}
+                  <span className={`flex items-center gap-1 text-[10px] sm:text-xs font-bold px-2 py-1 rounded-md border border-current ${status.color} bg-current/10`}>
+                    <span className="material-symbols-outlined text-[13px]">{status.icon}</span>
+                    <span className="hidden sm:inline">{status.label}</span>
+                  </span>
+                </div>
+              </div>
 
-                {/* Loss Amount (if exists) - Larger Text */}
-                {item.lossAmount && (
-                  <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-slate-400">
-                    <span className="material-symbols-outlined text-[13px] sm:text-[14px]">payments</span>
-                    <span className="font-medium text-slate-300">
-                      Kerugian: {formatCurrency(item.lossAmount)}
-                    </span>
-                  </div>
-                )}
+              {/* Body: Chronology */}
+              <div className="pr-4 sm:pr-8">
+                <p className="text-[12px] sm:text-sm text-slate-400 group-hover:text-slate-300 transition-colors line-clamp-1 italic">
+                  "{item.chronology}"
+                </p>
               </div>
             </div>
           )
