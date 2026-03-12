@@ -85,12 +85,18 @@ export default function ReportScam() {
 
         // Only restore if saved within last 24 hours
         if (hoursDiff < 24) {
+          // Save current scroll position to restore after draft is loaded
+          const scrollPosition = window.scrollY
           setForm((prev) => ({
             ...prev,
             ...draft,
             // Don't restore agreedTerms - user must re-agree
             agreedTerms: false,
           }))
+          // Restore scroll position after form is updated (prevent auto-scroll to bottom)
+          setTimeout(() => {
+            window.scrollTo({ top: scrollPosition, behavior: 'auto' })
+          }, 0)
           console.log('[ReportScam] Draft restored successfully')
         } else {
           // Draft too old, clear it

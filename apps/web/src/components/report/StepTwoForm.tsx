@@ -79,7 +79,6 @@ export default function StepTwoForm({ isActive, form, updateForm, onNext, onBack
                 onChange={(e) => updateForm({ customCategory: e.target.value })}
                 className="glass-input w-full rounded-lg px-4 py-3 placeholder:text-slate-500 focus:ring-0 text-slate-100 border-primary/50"
                 placeholder="Contoh: Penipuan Travel Umroh"
-                autoFocus
               />
             </div>
           )}
@@ -95,7 +94,6 @@ export default function StepTwoForm({ isActive, form, updateForm, onNext, onBack
                   onChange={(e) => updateForm({ gameType: e.target.value })}
                   className="glass-input w-full rounded-lg px-4 py-3 placeholder:text-slate-500 focus:ring-0 text-slate-100 border-primary/50"
                   placeholder="Contoh: Mobile Legends"
-                  autoFocus
                 />
               </div>
               <div>

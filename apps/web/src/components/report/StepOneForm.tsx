@@ -153,7 +153,6 @@ export default function StepOneForm({ isActive, form, updateForm, onNext }: Step
                     onChange={(e) => updateForm({ customBankName: e.target.value } as Partial<ReportFormData> & { customBankName: string })}
                     className="glass-input w-full h-14 rounded-lg pl-4 pr-10 py-3 placeholder:text-slate-500 focus:ring-0 text-slate-100 border-primary/50"
                     placeholder={`Ketik nama ${form.accountType === 'bank' ? 'bank' : 'e-wallet'}...`}
-                    autoFocus
                   />
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                     <span className="material-symbols-outlined text-slate-500 text-xl">edit</span>
