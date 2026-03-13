@@ -4,5 +4,12 @@
   "workspaces": [
     "apps/*"
   ],
-  "devDependencies": {}
+  "devDependencies": {},
+  "overrides": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "scripts": {
+    "check:single-react": "node scripts/check-single-react.js"
+  }
 }
