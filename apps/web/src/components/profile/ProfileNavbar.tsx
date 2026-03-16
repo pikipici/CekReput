@@ -44,8 +44,8 @@ export default function ProfileNavbar() {
             {/* Search & Actions */}
             <div className="flex items-center gap-4 flex-1 justify-end">
 
-              <button onClick={handleReportScam} className="bg-primary hover:bg-primary-dark text-[#0f231f] px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-transform active:scale-95 shrink-0">
-                <span className="material-symbols-outlined text-[20px]">add_alert</span>
+              <button onClick={handleReportScam} className="bg-transparent hover:bg-primary/10 text-slate-300 hover:text-primary px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95 shrink-0 border border-slate-600 hover:border-primary/50">
+                <span className="material-symbols-outlined text-[16px]">add_alert</span>
                 <span className="hidden sm:inline">Report Scam</span>
               </button>
               {user ? (

@@ -267,6 +267,12 @@ export interface UserComment {
   upvotes: number
   downvotes: number
   createdAt: string
+  user: {
+    id: string
+    name: string
+    role: string
+    badges?: string[] | null
+  }
   perpetrator: {
     id: string
     entityName: string | null

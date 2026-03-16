@@ -7,33 +7,41 @@
 export async function verifyTurnstile(token: string, ip?: string): Promise<boolean> {
   const isDev = process.env.NODE_ENV !== 'production'
   
-  // If we are in development mode, the frontend is likely using the testing sitekey ('1x00000000000000000000AA').
-  // Therefore, we MUST use the corresponding testing secret key here to pass Cloudflare's validation.
-  const secretKey = isDev 
-    ? '1x0000000000000000000000000000000AA' 
+  console.log('[TURNSTILE] Verification started:', {
+    isDev,
+    nodeEnv: process.env.NODE_ENV
+  })
+
+  // ALWAYS use testing secret key in development mode
+  // This ensures compatibility with frontend testing sitekey
+  const effectiveSecretKey = isDev
+    ? '1x0000000000000000000000000000000AA' // Cloudflare testing secret - ALWAYS use in dev
     : process.env.TURNSTILE_SECRET_KEY
 
+  console.log('[TURNSTILE] Mode:', isDev ? 'DEVELOPMENT (testing key)' : 'PRODUCTION')
+  console.log('[TURNSTILE] Using secret key:', effectiveSecretKey ? '***' + effectiveSecretKey.slice(-10) : 'NONE')
+
   // Fail securely in production if secret is not configured
-  if (!secretKey) {
-    if (!isDev) {
-      console.error('[TURNSTILE] CRITICAL: Secret key not configured in production!')
-      return false
-    }
-    // Only bypass in non-production environments for development convenience
-    console.warn('[TURNSTILE] No secret key configured, bypassing validation (development only).')
-    return true
+  if (!effectiveSecretKey) {
+    console.error('[TURNSTILE] CRITICAL: Secret key not configured in production!')
+    return false
   }
 
   // If the token is empty
-  if (!token) return false
+  if (!token) {
+    console.error('[TURNSTILE] Token is empty')
+    return false
+  }
 
   try {
     const formData = new URLSearchParams()
-    formData.append('secret', secretKey)
+    formData.append('secret', effectiveSecretKey)
     formData.append('response', token)
     if (ip) {
       formData.append('remoteip', ip)
     }
+
+    console.log('[TURNSTILE] Sending verification request to Cloudflare...')
 
     const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
       method: 'POST',
@@ -41,11 +49,13 @@ export async function verifyTurnstile(token: string, ip?: string): Promise<boole
     })
 
     const data = await res.json() as { success: boolean; 'error-codes'?: string[] }
-    
+
+    console.log('[TURNSTILE] Cloudflare response:', data)
+
     if (!data.success) {
       console.error('[TURNSTILE] Failed verification:', data)
     }
-    
+
     return data.success === true
   } catch (error) {
     console.error('[TURNSTILE] Error verifying token:', error)

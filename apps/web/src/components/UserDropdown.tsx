@@ -39,7 +39,7 @@ export default function UserDropdown({ userName, userEmail, userAvatarUrl, userB
       {/* Avatar Trigger */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 sm:gap-2 rounded-lg sm:rounded-xl py-1 px-1.5 sm:py-1.5 sm:px-2 hover:bg-slate-700/40 transition-all group"
+        className="flex items-center gap-2 sm:gap-3 rounded-lg sm:rounded-xl py-1 px-1.5 sm:py-1.5 sm:px-2 hover:bg-slate-700/40 transition-all group"
       >
         <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg bg-gradient-to-br from-primary to-emerald-600 flex items-center justify-center text-xs sm:text-sm font-bold text-white shadow-md shadow-primary/20 overflow-hidden flex-shrink-0">
           {userAvatarUrl ? (
@@ -48,9 +48,14 @@ export default function UserDropdown({ userName, userEmail, userAvatarUrl, userB
             initials
           )}
         </div>
-        <span className="hidden sm:block text-sm font-medium text-slate-300 group-hover:text-white transition-colors max-w-[100px] truncate">
-          {userName}
-        </span>
+        <div className="hidden sm:flex flex-col items-start gap-0.5">
+          <span className="text-sm font-medium text-slate-300 group-hover:text-white transition-colors max-w-[120px] truncate">
+            {userName}
+          </span>
+          {userBadges && userBadges.length > 0 && (
+            <UserBadge badges={userBadges} />
+          )}
+        </div>
         <span className={`material-symbols-outlined text-[16px] sm:text-[18px] text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
           expand_more
         </span>
@@ -63,9 +68,6 @@ export default function UserDropdown({ userName, userEmail, userAvatarUrl, userB
           <div className="px-3 sm:px-4 py-3 border-b border-slate-700/60 flex flex-col gap-1">
             <p className="text-sm font-semibold text-white truncate">{userName}</p>
             <p className="text-xs text-slate-400 truncate mb-1">{userEmail ?? ''}</p>
-            {userBadges && userBadges.length > 0 && (
-               <UserBadge badges={userBadges} />
-            )}
           </div>
 
           {/* Menu Items */}
