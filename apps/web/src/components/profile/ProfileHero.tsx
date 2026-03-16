@@ -73,11 +73,16 @@ export default function ProfileHero({ perpetrator, matchedGameId, matchedGameTyp
   
   const isDanger = perpetrator.threatLevel === 'danger'
   const isWarning = perpetrator.threatLevel === 'warning'
-  
-  const riskColor = isDanger ? 'bg-danger/20 text-danger border-danger/30' : isWarning ? 'bg-warning/20 text-warning border-warning/30' : 'bg-primary/20 text-primary border-primary/30'
-  
-  // Estimate loss
-  const estLoss = new Intl.NumberFormat('id-ID').format(perpetrator.totalLoss || 0)
+
+  // Format currency with Rp prefix
+  const formatCurrency = (amount: number | null) => {
+    if (!amount || amount === 0) return 'Rp 0'
+    return `Rp ${new Intl.NumberFormat('id-ID').format(amount)}`
+  }
+
+  // Determine icon box background color based on threat level
+  const iconBoxBg = isDanger ? 'bg-danger/10' : isWarning ? 'bg-warning/10' : 'bg-[#214a42]'
+  const iconBoxBorder = isDanger ? 'border-danger/30' : isWarning ? 'border-warning/30' : 'border-white/10'
 
   return (
     <>
@@ -88,7 +93,7 @@ export default function ProfileHero({ perpetrator, matchedGameId, matchedGameTyp
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 items-center lg:items-start relative z-10">
           {/* Entity Image / Icon */}
           <div className="relative mb-4 lg:mb-0 shrink-0 mx-auto sm:mx-0">
-            <div className={`h-20 w-20 sm:h-28 sm:w-28 rounded-xl flex items-center justify-center border border-white/10 shadow-xl ${isDanger ? 'bg-danger/10' : 'bg-[#214a42]'}`}>
+            <div className={`h-20 w-20 sm:h-28 sm:w-28 rounded-xl flex items-center justify-center border ${iconBoxBorder} shadow-xl ${iconBoxBg}`}>
               <span className="material-symbols-outlined text-4xl sm:text-6xl lg:text-7xl text-slate-300">{iconName}</span>
             </div>
             {/* The Badge: Solid background color based on threat level */}
@@ -115,9 +120,11 @@ export default function ProfileHero({ perpetrator, matchedGameId, matchedGameTyp
                     </span>
                     {identifier}
                   </h1>
-                  <span className={`text-xs sm:text-sm font-bold px-3 py-1 sm:py-1.5 rounded uppercase tracking-wider ${riskColor}`}>
-                    {matchedGameId ? 'ID Game' : perpetrator.accountType}
-                  </span>
+                  {!matchedGameId && (
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-slate-700/50 text-slate-300 border border-slate-600">
+                      {isBank ? 'Bank' : isPhone ? 'Telepon' : 'Entitas'}
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 sm:gap-3">
@@ -161,11 +168,11 @@ export default function ProfileHero({ perpetrator, matchedGameId, matchedGameTyp
                   <span className="material-symbols-outlined text-amber-500 text-[20px] sm:text-[22px]">payments</span>
                   <p className="text-xs sm:text-sm text-slate-400 font-semibold uppercase">Kerugian</p>
                 </div>
-                <p className="text-base sm:text-lg font-bold text-white text-center truncate">{estLoss}</p>
+                <p className="text-base sm:text-lg font-bold text-white text-center truncate">{formatCurrency(perpetrator.totalLoss)}</p>
               </div>
 
               {/* Social Media */}
-              <div className="bg-background-dark/50 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-white/5">
+              <div className={`rounded-lg sm:rounded-xl p-3 sm:p-4 border ${perpetrator.socialMedia && perpetrator.socialMedia.trim().length > 0 ? 'bg-background-dark/50 border-white/5' : 'bg-background-dark/30 border-white/5 opacity-60'}`}>
                 <div className="flex flex-col items-center gap-1.5 sm:gap-2 mb-2 sm:mb-2.5">
                   <span className="material-symbols-outlined text-emerald-500 text-[20px] sm:text-[22px]">link</span>
                   <p className="text-xs sm:text-sm text-slate-400 font-semibold uppercase">Sosmed</p>
@@ -179,17 +186,19 @@ export default function ProfileHero({ perpetrator, matchedGameId, matchedGameTyp
                     <span className="truncate">{perpetrator.socialMedia.split(',').filter(s => s.trim().length > 0).length}</span>
                   </button>
                 ) : (
-                  <span className="text-xs sm:text-sm font-medium text-slate-500">-</span>
+                  <div className="flex items-center justify-center">
+                    <span className="text-xs sm:text-sm font-medium text-slate-600 text-center">Tidak Ada</span>
+                  </div>
                 )}
               </div>
 
-              {/* Verified Reports */}
+              {/* Laporan Valid */}
               <div className="bg-background-dark/50 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-white/5">
                 <div className="flex flex-col items-center gap-1.5 sm:gap-2 mb-2 sm:mb-2.5">
-                  <span className={`material-symbols-outlined text-[20px] sm:text-[22px] ${isDanger ? 'text-danger' : 'text-primary'}`}>verified</span>
-                  <p className="text-xs sm:text-sm text-slate-400 font-semibold uppercase">Verified</p>
+                  <span className={`material-symbols-outlined text-[20px] sm:text-[22px] ${isDanger ? 'text-danger' : isWarning ? 'text-warning' : 'text-slate-400'}`}>verified</span>
+                  <p className="text-xs sm:text-sm text-slate-400 font-semibold uppercase">Laporan Valid</p>
                 </div>
-                <p className={`text-2xl sm:text-3xl font-bold ${isDanger ? 'text-danger' : 'text-primary'} text-center`}>{perpetrator.verifiedReports}</p>
+                <p className={`text-2xl sm:text-3xl font-bold ${isDanger ? 'text-danger' : isWarning ? 'text-warning' : 'text-slate-300'} text-center`}>{perpetrator.verifiedReports}</p>
               </div>
             </div>
 
